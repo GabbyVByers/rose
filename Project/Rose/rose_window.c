@@ -173,6 +173,124 @@ ROSE_Window* ROSE_WindowCreate(const char* title, i32 width, i32 height, bool vk
 		.num_samplers = 1,
 	};
 
+	SDL_GPUShader* vertex_shader_program = SDL_CreateGPUShader(window->device, &vertex_shader_create_info);
+	if (!vertex_shader_program) {
+		fprintf(stderr, "SDL_CreateGPUShader() Failed: %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	SDL_GPUShader* fragment_shader_program = SDL_CreateGPUShader(window->device, &fragment_shader_create_info);
+	if (!fragment_shader_program) {
+		fprintf(stderr, "SDL_CreateGPUShader() Failed: %s\n", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	SDL_GPUVertexAttribute position_attribute = {
+		.location = 0,
+		.buffer_slot = 0,
+		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
+		.offset = offsetof(ROSE_Vertex, pos),
+	};
+
+	SDL_GPUVertexAttribute texcoords_attribute = {
+		.location = 1,
+		.buffer_slot = 0,
+		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
+		.offset = offsetof(ROSE_Vertex, uv),
+	};
+
+	SDL_GPUVertexAttribute vertex_attributes[2] = {
+		position_attribute,
+		texcoords_attribute,
+	};
+
+	SDL_GPUVertexBufferDescription vertex_buffer_description = {
+		.pitch = sizeof(ROSE_Vertex),
+		.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX,
+	};
+
+	SDL_GPUColorTargetDescription color_target_description = {
+		.format = SDL_GetGPUSwapchainTextureFormat(window->device, window),
+		.blend_state = {
+			.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
+			.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+			.color_blend_op = SDL_GPU_BLENDOP_ADD,
+			.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
+			.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+			.alpha_blend_op = SDL_GPU_BLENDOP_ADD,
+			.enable_blend = true,
+		},
+	};
+
+	SDL_GPUSamplerCreateInfo sampler_create_info = {
+		.min_filter = SDL_GPU_FILTER_NEAREST,
+		.mag_filter = SDL_GPU_FILTER_NEAREST,
+		.mipmap_mode = SDL_GPU_SAMPLERMIPMAPMODE_NEAREST,
+		.address_mode_u = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		.address_mode_v = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
+	};
+
+	SDL_GPUTextureCreateInfo depth_texture_create_info = {
+		.type = SDL_GPU_TEXTURETYPE_2D,
+		.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
+		.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
+		.width = window->screen_width,
+		.height = window->screen_height,
+		.layer_count_or_depth = 1,
+		.num_levels = 1,
+		.sample_count = SDL_GPU_SAMPLECOUNT_1
+	};
+
+	SDL_GPUGraphicsPipelineCreateInfo graphics_pipeline_create_info = {
+		.vertex_shader = vertex_shader_program,
+		.fragment_shader = fragment_shader_program,
+		.vertex_input_state = {
+			.vertex_buffer_descriptions = &vertex_buffer_description,
+			.num_vertex_buffers = 1,
+			.vertex_attributes = vertex_attributes,
+			.num_vertex_attributes = sizeof(vertex_attributes) / sizeof(vertex_attributes[0]),
+		},
+		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
+		.depth_stencil_state = {
+			.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL,
+			.enable_depth_test = true,
+			.enable_depth_write = true,
+		},
+		.target_info = {
+			.color_target_descriptions = &color_target_description,
+			.num_color_targets = 1,
+			.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
+			.has_depth_stencil_target = true,
+		},
+	};
+
+	window->sampler = SDL_CreateGPUSampler(window->device, &sampler_create_info);
+	if (!window->sampler) {
+		fprintf(stderr, "SDL_CreateGPUSampler() Failed: %s", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	window->depth_texture = SDL_CreateGPUTexture(window->device, &depth_texture_create_info);
+	if (!window->depth_texture) {
+		fprintf(stderr, "SDL_CreateGPUTexture() Failed: %s", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	window->pipeline = SDL_CreateGPUGraphicsPipeline(window->device, &graphics_pipeline_create_info);
+	if (!window->pipeline) {
+		fprintf(stderr, "SDL_CreateGPUGraphicsPipeline() Failed: %s", SDL_GetError());
+		exit(EXIT_FAILURE);
+	}
+
+	fclose(vertex_file);
+	fclose(fragment_file);
+	free(vertex_code);
+	free(fragment_code);
+
+	SDL_ReleaseGPUShader(window->device, vertex_shader_program);
+	SDL_ReleaseGPUShader(window->device, fragment_shader_program);
+
 	return window;
 }
 
