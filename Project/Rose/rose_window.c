@@ -8,72 +8,35 @@
 #define ROSE_MIN_WIDTH 32
 #define ROSE_MIN_HEIGHT 32
 
-typedef struct ROSE_Window {
-	i32 screen_width;
-	i32 screen_height;
-	SDL_Window* window;
-	SDL_GPUDevice* device;
-	SDL_GPUSampler* sampler;
-	SDL_GPUTexture* depth_texture;
-	SDL_GPUGraphicsPipeline* pipeline;
-	SDL_GPUTexture* ascii_texture;
-	bool frame;
-	bool minimized;
-	SDL_GPURenderPass* render_pass;
-	SDL_GPUTexture* swapchain_texture;
-	SDL_GPUCommandBuffer* command_buffer;
-	float mouse_px;
-	float mouse_py;
-	float mouse_vx;
-	float mouse_vy;
-	float saved_mouse_px;
-	float saved_mouse_py;
-	int curr_mouse_state;
-	int prev_mouse_state;
-	float mouse_scroll;
-	bool curr_keyboard_state[SDL_SCANCODE_COUNT];
-	bool prev_keyboard_state[SDL_SCANCODE_COUNT];
-} ROSE_Window;
+static i32 screen_width;
+static i32 screen_height;
+static SDL_Window* window;
+static SDL_GPUDevice* device;
+static SDL_GPUSampler* sampler;
+static SDL_GPUTexture* depth_texture;
+static SDL_GPUGraphicsPipeline* pipeline;
+static SDL_GPUTexture* ascii_texture;
 
-ROSE_Window* ROSE_WindowCreate(const char* title, i32 width, i32 height, bool vkdebug) {
+static bool frame;
+static bool minimized;
+static SDL_GPURenderPass* render_pass;
+static SDL_GPUTexture* swapchain_texture;
+static SDL_GPUCommandBuffer* command_buffer;
 
-	ROSE_Window* window = malloc(sizeof(ROSE_Window));
-	if (!window) {
-		fprintf(stderr, "ROSE_WindowCreate() Failed\n");
-		fprintf(stderr, "NULL Allocation\n");
-		exit(EXIT_FAILURE);
-	}
+static float mouse_px;
+static float mouse_py;
+static float mouse_vx;
+static float mouse_vy;
+static float saved_mouse_px;
+static float saved_mouse_py;
+static int curr_mouse_state;
+static int prev_mouse_state;
+static float mouse_scroll;
 
-	window->screen_width = 0;
-	window->screen_height = 0;
+static bool curr_keyboard_state[SDL_SCANCODE_COUNT];
+static bool prev_keyboard_state[SDL_SCANCODE_COUNT];
 
-	window->window = NULL;
-	window->device = NULL;
-	window->sampler = NULL;
-	window->depth_texture = NULL;
-	window->pipeline = NULL;
-	window->ascii_texture = NULL;
-
-	window->frame = false;
-	window->minimized = false;
-	window->render_pass = NULL;
-	window->swapchain_texture = NULL;
-	window->command_buffer = NULL;
-
-	window->mouse_px = 0.0f;
-	window->mouse_py = 0.0f;
-	window->mouse_vx = 0.0f;
-	window->mouse_vy = 0.0f;
-	window->saved_mouse_px = 0.0f;
-	window->saved_mouse_py = 0.0f;
-	window->curr_mouse_state = 0;
-	window->prev_mouse_state = 0;
-	window->mouse_scroll = 0.0f;
-
-	for (i32 i = 0; i < SDL_SCANCODE_COUNT; i++) {
-		window->curr_keyboard_state[SDL_SCANCODE_COUNT] = false;
-		window->prev_keyboard_state[SDL_SCANCODE_COUNT] = false;
-	}
+void ROSE_Init(const char* title, i32 width, i32 height, bool vkdebug) {
 
 	if (!SDL_Init(SDL_INIT_VIDEO)) {
 		fprintf(stderr, "SDL_Init() Failed: %s", SDL_GetError());
@@ -82,32 +45,32 @@ ROSE_Window* ROSE_WindowCreate(const char* title, i32 width, i32 height, bool vk
 
 	if (width < ROSE_MIN_WIDTH) { width = ROSE_MIN_WIDTH; }
 	if (height < ROSE_MIN_HEIGHT) { height = ROSE_MIN_HEIGHT; }
-	window->screen_width = width;
-	window->screen_height = height;
+	screen_width = width;
+	screen_height = height;
 
-	window->window = SDL_CreateWindow(title, window->screen_width, window->screen_height, SDL_WINDOW_RESIZABLE);
-	if (!window->window) {
+	window = SDL_CreateWindow(title, screen_width, screen_height, SDL_WINDOW_RESIZABLE);
+	if (!window) {
 		SDL_Log("SDL_CreateWindow() Failed: %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
-	window->device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, vkdebug, NULL);
-	if (!window->device) {
+	device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, vkdebug, NULL);
+	if (!device) {
 		SDL_Log("SDL_CreateGPUDevice() Failed: %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
-	if (!SDL_ClaimWindowForGPUDevice(window->device, window)) {
+	if (!SDL_ClaimWindowForGPUDevice(device, window)) {
 		SDL_Log("SDL_ClaimWindowForGPUDevice() Failed: %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
-	if (!SDL_SetGPUSwapchainParameters(window->device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
+	if (!SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC)) {
 		SDL_Log("SDL_SetGPUSwapchainParameters() Failed: %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
-	if (!SDL_SetWindowMinimumSize(window->window, ROSE_MIN_WIDTH, ROSE_MIN_HEIGHT)) {
+	if (!SDL_SetWindowMinimumSize(window, ROSE_MIN_WIDTH, ROSE_MIN_HEIGHT)) {
 		SDL_Log("SDL_SetWindowMinimumSize() Failed: %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
@@ -173,13 +136,13 @@ ROSE_Window* ROSE_WindowCreate(const char* title, i32 width, i32 height, bool vk
 		.num_samplers = 1,
 	};
 
-	SDL_GPUShader* vertex_shader_program = SDL_CreateGPUShader(window->device, &vertex_shader_create_info);
+	SDL_GPUShader* vertex_shader_program = SDL_CreateGPUShader(device, &vertex_shader_create_info);
 	if (!vertex_shader_program) {
 		fprintf(stderr, "SDL_CreateGPUShader() Failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
-	SDL_GPUShader* fragment_shader_program = SDL_CreateGPUShader(window->device, &fragment_shader_create_info);
+	SDL_GPUShader* fragment_shader_program = SDL_CreateGPUShader(device, &fragment_shader_create_info);
 	if (!fragment_shader_program) {
 		fprintf(stderr, "SDL_CreateGPUShader() Failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
@@ -210,7 +173,7 @@ ROSE_Window* ROSE_WindowCreate(const char* title, i32 width, i32 height, bool vk
 	};
 
 	SDL_GPUColorTargetDescription color_target_description = {
-		.format = SDL_GetGPUSwapchainTextureFormat(window->device, window),
+		.format = SDL_GetGPUSwapchainTextureFormat(device, window),
 		.blend_state = {
 			.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
 			.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
@@ -235,8 +198,8 @@ ROSE_Window* ROSE_WindowCreate(const char* title, i32 width, i32 height, bool vk
 		.type = SDL_GPU_TEXTURETYPE_2D,
 		.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
 		.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
-		.width = window->screen_width,
-		.height = window->screen_height,
+		.width = screen_width,
+		.height = screen_height,
 		.layer_count_or_depth = 1,
 		.num_levels = 1,
 		.sample_count = SDL_GPU_SAMPLECOUNT_1
@@ -265,20 +228,20 @@ ROSE_Window* ROSE_WindowCreate(const char* title, i32 width, i32 height, bool vk
 		},
 	};
 
-	window->sampler = SDL_CreateGPUSampler(window->device, &sampler_create_info);
-	if (!window->sampler) {
+	sampler = SDL_CreateGPUSampler(device, &sampler_create_info);
+	if (!sampler) {
 		fprintf(stderr, "SDL_CreateGPUSampler() Failed: %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
-	window->depth_texture = SDL_CreateGPUTexture(window->device, &depth_texture_create_info);
-	if (!window->depth_texture) {
+	depth_texture = SDL_CreateGPUTexture(device, &depth_texture_create_info);
+	if (!depth_texture) {
 		fprintf(stderr, "SDL_CreateGPUTexture() Failed: %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
 
-	window->pipeline = SDL_CreateGPUGraphicsPipeline(window->device, &graphics_pipeline_create_info);
-	if (!window->pipeline) {
+	pipeline = SDL_CreateGPUGraphicsPipeline(device, &graphics_pipeline_create_info);
+	if (!pipeline) {
 		fprintf(stderr, "SDL_CreateGPUGraphicsPipeline() Failed: %s", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
@@ -288,9 +251,40 @@ ROSE_Window* ROSE_WindowCreate(const char* title, i32 width, i32 height, bool vk
 	free(vertex_code);
 	free(fragment_code);
 
-	SDL_ReleaseGPUShader(window->device, vertex_shader_program);
-	SDL_ReleaseGPUShader(window->device, fragment_shader_program);
+	SDL_ReleaseGPUShader(device, vertex_shader_program);
+	SDL_ReleaseGPUShader(device, fragment_shader_program);
 
-	return window;
+}
+
+void ROSE_Quit(void) {
+
+}
+
+void ROSE_ToggleVSync(bool vsync) {
+
+}
+
+void ROSE_GetScreenSize(i32* width, i32* height) {
+
+}
+
+bool ROSE_PollEvents(void) {
+	return false;
+}
+
+void ROSE_ClearScreen(ROSE_Color color) {
+
+}
+
+void ROSE_DrawSprite(ROSE_Sprite* sprite, i32 x, i32 y, double scale, ROSE_Color color) {
+
+}
+
+void ROSE_DrawText(ROSE_Text* text, i32 x, i32 y, double scale, ROSE_Color color) {
+
+}
+
+void ROSE_SwapBuffers(void) {
+
 }
 

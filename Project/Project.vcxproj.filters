@@ -299,5 +299,8 @@
     <ClInclude Include="Libraries\SDL3-3.4.16\include\SDL3\SDL_vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Rose\core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
