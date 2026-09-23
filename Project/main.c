@@ -7,11 +7,11 @@
 
 int main(void) {
 	ROSE_Init("App", 1200, 700, TRUE);
-	ROSE_ToggleVSync(TRUE);
+	ROSE_WindowToggleVSync(TRUE);
 
-	while (ROSE_PollEvents()) {
-		ROSE_ClearScreen(ROSE_COLOR_PURPLE);
-		ROSE_SwapBuffers();
+	while (ROSE_WindowPollEvents()) {
+		ROSE_WindowClearScreen(ROSE_COLOR_PURPLE);
+		ROSE_WindowSwapBuffers();
 	}
 	
 	ROSE_Quit();

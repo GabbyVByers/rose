@@ -25,19 +25,16 @@ typedef struct ROSE_Image ROSE_Image;
 typedef struct ROSE_Sprite ROSE_Sprite;
 typedef struct ROSE_Text ROSE_Text;
 
-#define ROSE_EXCEPTION_INFO __FILE__, __LINE__
-void ROSE_DebugTriggerException(const char*, i32);
-void ROSE_DebugExit(void);
-
 void ROSE_Init(const char*, i32, i32, bool);
 void ROSE_Quit(void);
-void ROSE_ToggleVSync(bool);
-void ROSE_GetScreenSize(i32*, i32*);
-bool ROSE_PollEvents(void);
-void ROSE_ClearScreen(ROSE_Color);
-void ROSE_DrawSprite(ROSE_Sprite*, i32, i32, double, ROSE_Color);
-void ROSE_DrawText(ROSE_Text*, i32, i32, double, ROSE_Color);
-void ROSE_SwapBuffers(void);
+
+void ROSE_WindowToggleVSync(bool);
+void ROSE_WindowGetDimensions(i32*, i32*);
+bool ROSE_WindowPollEvents(void);
+void ROSE_WindowClearScreen(ROSE_Color);
+void ROSE_WindowDrawSprite(ROSE_Sprite*, i32, i32, double, ROSE_Color);
+void ROSE_WindowDrawText(ROSE_Text*, i32, i32, double, ROSE_Color);
+void ROSE_WindowSwapBuffers(void);
 
 ROSE_Image* ROSE_ImageCreate(i32, i32);
 void        ROSE_ImageDestroy(ROSE_Image*);

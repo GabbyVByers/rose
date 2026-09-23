@@ -13,13 +13,13 @@ typedef struct ROSE_Image {
 
 ROSE_Image* ROSE_ImageCreate(i32 width, i32 height) {
 	ROSE_Image* image = malloc(sizeof(ROSE_Image));
-	if (!image) { exit(EXIT_FAILURE); }
+	assert(image);
 
 	usize buffer_size = (usize)width * (usize)height * 4;
 	u8* pixels = malloc(buffer_size);
-	if (!pixels) { exit(EXIT_FAILURE); }
+	assert(pixels);
 	memset(pixels, 255, buffer_size);
-
+	
 	image->width = width;
 	image->height = height;
 	image->pixels = pixels;
@@ -34,16 +34,16 @@ void ROSE_ImageDestroy(ROSE_Image* image) {
 
 ROSE_Image* ROSE_ImageLoadFromFile(const char* path) {
 	ROSE_Image* image = malloc(sizeof(ROSE_Image));
-	if (!image) { exit(EXIT_FAILURE); }
+	assert(image);
 	
 	int width, height, n;
 	stbi_set_flip_vertically_on_load(TRUE);
 	u8* stbi_image = stbi_load(path, &width, &height, &n, 4);
-	if (!stbi_image) { exit(EXIT_FAILURE); }
+	assert(stbi_image);
 
 	usize buffer_size = (usize)width * (usize)height * 4;
 	u8* pixels = malloc(buffer_size);
-	if (!pixels) { exit(EXIT_FAILURE); }
+	assert(pixels);
 
 	memcpy(pixels, stbi_image, buffer_size);
 	stbi_image_free(stbi_image);
@@ -59,13 +59,14 @@ void ROSE_ImageSaveAsPNG(ROSE_Image* image, const char* name) {
 	i32 height = image->height;
 	i32 stride = image->width * 4;
 	stbi_flip_vertically_on_write(TRUE);
-	stbi_write_png(name, width, height, 4, image->pixels, stride);
+	i32 success = stbi_write_png(name, width, height, 4, image->pixels, stride);
+	assert(success);
 }
 
 void ROSE_ImageResize(ROSE_Image* image, i32 width, i32 height) {
 	usize new_buffer_size = (usize)width * (usize)height * 4;
 	u8* new_pixels = malloc(new_buffer_size);
-	if (!new_pixels) { exit(EXIT_FAILURE); }
+	assert(new_pixels);
 	memset(new_pixels, 255, new_buffer_size);
 
 	i32 copy_width = (width < image->width) ? width : image->width;
