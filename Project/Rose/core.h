@@ -55,7 +55,6 @@ typedef ptrdiff_t isize;
 
 typedef struct {
 	float pos[2];
-	float color[4];
 	float uv[2];
 } ROSE_Vertex;
 
