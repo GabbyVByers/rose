@@ -159,6 +159,8 @@
     <ClCompile Include="libraries\stb-master\stb_image_write.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="rose\source\rose_image.c" />
+    <ClCompile Include="rose\source\rose_sprite.c" />
+    <ClCompile Include="rose\source\rose_text.c" />
     <ClCompile Include="rose\source\rose_window.c" />
   </ItemGroup>
   <ItemGroup>
@@ -252,6 +254,16 @@
     <ClInclude Include="libraries\stb-master\stb_image_write.h" />
     <ClInclude Include="rose\core.h" />
     <ClInclude Include="rose\rose.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\ascii.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shaders\compile.bat" />
+    <None Include="shaders\fragment.spv" />
+    <None Include="shaders\shader.frag" />
+    <None Include="shaders\shader.vert" />
+    <None Include="shaders\vertex.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

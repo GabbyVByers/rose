@@ -53,5 +53,38 @@ typedef uint64_t u64;
 typedef size_t    usize;
 typedef ptrdiff_t isize;
 
+typedef struct {
+	float pos[2];
+	float color[4];
+	float uv[2];
+} ROSE_Vertex;
+
+typedef struct {
+	float r;
+	float g;
+	float b;
+	float a;
+} ROSE_Color;
+
+typedef struct {
+	i32 width;
+	i32 height;
+	u8* pixels;
+} ROSE_Image;
+
+typedef struct {
+	i32 width;
+	i32 height;
+	SDL_GPUBuffer* buffer;
+	SDL_GPUTexture* texture;
+} ROSE_Sprite;
+
+typedef struct {
+	i32 width;
+	i32 height;
+	usize num_vertices;
+	SDL_GPUBuffer* buffer;
+} ROSE_Text;
+
 #endif /* ROSE_CORE_HEADER_GUARD */
 

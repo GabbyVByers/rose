@@ -5,12 +5,6 @@
 
 #include "rose.h"
 
-typedef struct ROSE_Image {
-	i32 width;
-	i32 height;
-	u8* pixels;
-} ROSE_Image;
-
 ROSE_Image* ROSE_ImageCreate(i32 width, i32 height) {
 	ROSE_Image* image = malloc(sizeof(ROSE_Image));
 	assert(image);
@@ -85,11 +79,6 @@ void ROSE_ImageResize(ROSE_Image* image, i32 width, i32 height) {
 	image->width = width;
 	image->height = height;
 	image->pixels = new_pixels;
-}
-
-void ROSE_ImageGetDimensions(ROSE_Image* image, i32* width, i32* height) {
-	*width = image->width;
-	*height = image->height;
 }
 
 ROSE_Color ROSE_ImageGetPixel(ROSE_Image* image, i32 x, i32 y) {

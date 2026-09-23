@@ -8,22 +8,7 @@
 
 #include "core.h"
 
-typedef struct {
-	float pos[2];
-	float color[4];
-	float uv[2];
-} ROSE_Vertex;
-
-typedef struct {
-	float r;
-	float g;
-	float b;
-	float a;
-} ROSE_Color;
-
-typedef struct ROSE_Image ROSE_Image;
-typedef struct ROSE_Sprite ROSE_Sprite;
-typedef struct ROSE_Text ROSE_Text;
+/* Public API */
 
 void ROSE_Init(const char*, i32, i32, bool);
 void ROSE_Quit(void);
@@ -40,13 +25,22 @@ void        ROSE_ImageDestroy(ROSE_Image*);
 ROSE_Image* ROSE_ImageLoadFromFile(const char*);
 void        ROSE_ImageSaveAsPNG(ROSE_Image*, const char*);
 void        ROSE_ImageResize(ROSE_Image*, i32, i32);
-void        ROSE_ImageGetDimensions(ROSE_Image*, i32*, i32*);
 ROSE_Color  ROSE_ImageGetPixel(ROSE_Image*, i32, i32);
 void        ROSE_ImageSetPixel(ROSE_Image*, i32, i32, ROSE_Color);
 
+ROSE_Sprite* ROSE_SpriteCreate(const char*);
+void         ROSE_SpriteDestroy(ROSE_Sprite*);
+void         ROSE_SpriteUploadTexture(ROSE_Sprite*);
 
+ROSE_Text* ROSE_TextCreate(const char*);
+void       ROSE_TextDestroy(ROSE_Text*);
+
+/* Internal */
 
 SDL_GPUTexture* ROSE_INTERNAL_CreateDepthTexture(void);
+SDL_GPUTexture* ROSE_INTERNAL_CreateRenderTexture(i32, i32);
+void            ROSE_INTERNAL_UploadImageToRenderTexture(ROSE_Image*, SDL_GPUTexture*);
+SDL_GPUBuffer*  ROSE_INTERNAL_CreateVertexBuffer(ROSE_Vertex*, usize);
 
 #endif /* ROSE_ROSE_HEADER_GUARD */
 
