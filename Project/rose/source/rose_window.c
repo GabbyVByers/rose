@@ -19,20 +19,19 @@ SDL_GPURenderPass* render_pass = NULL;
 SDL_GPUTexture* swapchain_texture = NULL;
 SDL_GPUCommandBuffer* command_buffer = NULL;
 
-float mouse_px = 0.0f;
-float mouse_py = 0.0f;
-float mouse_vx = 0.0f;
-float mouse_vy = 0.0f;
-float saved_mouse_px = 0.0f;
-float saved_mouse_py = 0.0f;
-i32 curr_mouse_state = 0;
-i32 prev_mouse_state = 0;
-float mouse_scroll = 0.0f;
+extern float mouse_px;
+extern float mouse_py;
+extern float mouse_vx;
+extern float mouse_vy;
+extern i32 curr_mouse_state;
+extern i32 prev_mouse_state;
+extern float mouse_scroll;
 
-bool curr_keyboard_state[SDL_SCANCODE_COUNT] = { FALSE };
-bool prev_keyboard_state[SDL_SCANCODE_COUNT] = { FALSE };
+extern bool curr_keyboard_state[SDL_SCANCODE_COUNT];
+extern bool prev_keyboard_state[SDL_SCANCODE_COUNT];
 
 void ROSE_Init(const char* title, i32 width, i32 height, bool vkdebug) {
+	assert(title);
 	const i32 min = 256;
 	screen_width = (width < min) ? min : width;
 	screen_height = (height < min) ? min : height;
@@ -282,6 +281,7 @@ void ROSE_WindowClearScreen(ROSE_Color color) {
 }
 
 void ROSE_WindowDrawSprite(ROSE_Sprite* sprite, i32 px, i32 py, double scale, ROSE_Color color) {
+	if (minimized) { return; }
 	SDL_GPUBufferBinding buffer_binding = {
 		.buffer = sprite->buffer,
 	};
@@ -331,6 +331,7 @@ void ROSE_WindowDrawSprite(ROSE_Sprite* sprite, i32 px, i32 py, double scale, RO
 }
 
 void ROSE_WindowDrawText(ROSE_Text* text, i32 px, i32 py, double scale, ROSE_Color color) {
+	if (minimized) { return; }
 	SDL_GPUBufferBinding buffer_binding = {
 		.buffer = text->buffer,
 	};
@@ -404,6 +405,9 @@ SDL_GPUTexture* ROSE_INTERNAL_CreateDepthTexture(void) {
 }
 
 SDL_GPUTexture* ROSE_INTERNAL_CreateRenderTexture(i32 width, i32 height) {
+	assert(width > 0);
+	assert(height > 0);
+
 	SDL_GPUTextureCreateInfo texture_create_info = {
 		.type = SDL_GPU_TEXTURETYPE_2D,
 		.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
@@ -420,6 +424,9 @@ SDL_GPUTexture* ROSE_INTERNAL_CreateRenderTexture(i32 width, i32 height) {
 }
 
 void ROSE_INTERNAL_UploadImageToRenderTexture(ROSE_Image* image, SDL_GPUTexture* texture) {
+	assert(image);
+	assert(texture);
+
 	usize image_size = (usize)image->width * (usize)image->height * 4;
 	SDL_GPUTransferBufferCreateInfo transfer_buffer_create_info = {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
@@ -455,6 +462,9 @@ void ROSE_INTERNAL_UploadImageToRenderTexture(ROSE_Image* image, SDL_GPUTexture*
 }
 
 SDL_GPUBuffer* ROSE_INTERNAL_CreateVertexBuffer(ROSE_Vertex* vertices, usize num_vertices) {
+	assert(vertices);
+	assert(num_vertices != 0);
+
 	SDL_GPUBufferCreateInfo buffer_create_info = {
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
 		.size = (u32)(num_vertices * sizeof(ROSE_Vertex)),

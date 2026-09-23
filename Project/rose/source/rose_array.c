@@ -19,15 +19,16 @@ ROSE_Array* ROSE_ArrayCreate(usize stride) {
 void ROSE_ArrayPushback(ROSE_Array* array, void* element) {
 	if (array->size >= array->capacity) {
 		usize new_capacity = array->capacity * 2;
-		void* new_data = malloc(new_capacity * array->stride);
+		u8* new_data = malloc(new_capacity * array->stride);
 		assert(new_data);
 		memcpy(new_data, array->data, array->capacity * array->stride);
+		memcpy(new_data + (array->stride * array->size), element, array->stride);
 		free(array->data);
 		array->capacity = new_capacity;
 		array->data = new_data;
-	}
-
-	memcpy(array->data + (array->stride * array->size), element, array->stride);
+		array->size++;
+		return;
+	} memcpy(array->data + (array->stride * array->size), element, array->stride);
 	array->size++;
 }
 

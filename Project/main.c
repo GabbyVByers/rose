@@ -25,7 +25,11 @@ int main(void) {
 
 	while (ROSE_WindowIsOpen()) {
 		ROSE_WindowClearScreen((ROSE_Color){ 0.1f, 0.1f, 0.1f, 1.0f });
-		ROSE_WindowDrawText(text, 20, 20, 5.0, ROSE_COLOR_RED);
+
+		i32 x, y;
+		ROSE_MousePosition(&x, &y);
+
+		ROSE_WindowDrawText(text, x, y, 5.0, ROSE_COLOR_RED);
 		ROSE_WindowDrawSprite(sprite, 300, 20, 5.0, ROSE_COLOR_WHITE);
 		ROSE_WindowRender();
 	}

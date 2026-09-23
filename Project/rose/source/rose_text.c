@@ -14,6 +14,8 @@
 extern SDL_GPUDevice* device;
 
 ROSE_Text* ROSE_TextCreate(const char* string) {
+	assert(string);
+
 	ROSE_Text* text = malloc(sizeof(ROSE_Text));
 	assert(text);
 
@@ -24,7 +26,7 @@ ROSE_Text* ROSE_TextCreate(const char* string) {
 	static ROSE_Vertex vertices[BUFFER_SIZE];
 	for (usize i = 0; i < num_characters; i++) {
 		usize index = i * 6;
-		char character_index = (string[i] - 32); // todo: map oor chars to '?'
+		char character_index = (string[i] - 32);
 		float w = (1.0f / 95.0f);
 		float x = (w * (float)character_index);
 		vertices[index + 0] = (ROSE_Vertex){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };

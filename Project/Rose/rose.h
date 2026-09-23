@@ -7,6 +7,17 @@
 #define ROSE_ROSE_HEADER_GUARD
 
 #include "rose_core.h"
+#include "rose_keys.h"
+
+/* 
+ * 
+ * todo list
+ * 
+ * perlin noise image
+ * arbitrary shapes / line segment/strips?
+ * shader-drawn circles (immediate mode)
+ * 
+ */
 
 /* Public API */
 
@@ -20,7 +31,20 @@ void ROSE_WindowDrawSprite(ROSE_Sprite*, i32, i32, double, ROSE_Color);
 void ROSE_WindowDrawText(ROSE_Text*, i32, i32, double, ROSE_Color);
 void ROSE_WindowRender(void);
 
-ROSE_Array*  ROSE_ArrayCreate(usize);
+bool ROSE_MouseHide(void);
+bool ROSE_MouseReveal(void);
+bool ROSE_MousePressing(i32);
+bool ROSE_MousePressed(i32);
+bool ROSE_MouseReleased(i32);
+void ROSE_MousePosition(i32*, i32*);
+void ROSE_MouseVelocity(i32*, i32*);
+i32  ROSE_MouseScroll(void);
+
+bool ROSE_KeyboardPressing(i32);
+bool ROSE_KeyboardPressed(i32);
+bool ROSE_KeyboardReleased(i32);
+
+ROSE_Array*  ROSE_ArrayCreate(usize); // remove?
 void         ROSE_ArrayPushback(ROSE_Array*, void*);
 void         ROSE_ArrayDestroy(ROSE_Array*);
 
