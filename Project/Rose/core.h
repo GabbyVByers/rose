@@ -37,7 +37,7 @@
 #endif /* bool */
 
 typedef _Bool bool;
-#define TRUE  ((_Bool)0)
+#define TRUE  ((_Bool)1)
 #define FALSE ((_Bool)0)
 
 typedef int8_t  i8;
