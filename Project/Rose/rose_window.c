@@ -5,37 +5,37 @@
 
 #include "rose.h"
 
-static i32 screen_width;
-static i32 screen_height;
-static SDL_Window* window;
-static SDL_GPUDevice* device;
-static SDL_GPUSampler* sampler;
-static SDL_GPUTexture* depth_texture;
-static SDL_GPUGraphicsPipeline* pipeline;
-static SDL_GPUTexture* ascii_texture;
+static i32 screen_width = 0;
+static i32 screen_height = 0;
+static SDL_Window* window = NULL;
+static SDL_GPUDevice* device = NULL;
+static SDL_GPUSampler* sampler = NULL;
+static SDL_GPUTexture* depth_texture = NULL;
+static SDL_GPUGraphicsPipeline* pipeline = NULL;
+static SDL_GPUTexture* ascii_texture = NULL;
 
-static bool minimized;
-static SDL_GPURenderPass* render_pass;
-static SDL_GPUTexture* swapchain_texture;
-static SDL_GPUCommandBuffer* command_buffer;
+static bool minimized = FALSE;
+static SDL_GPURenderPass* render_pass = NULL;
+static SDL_GPUTexture* swapchain_texture = NULL;
+static SDL_GPUCommandBuffer* command_buffer = NULL;
 
-static float mouse_px;
-static float mouse_py;
-static float mouse_vx;
-static float mouse_vy;
-static float saved_mouse_px;
-static float saved_mouse_py;
-static int curr_mouse_state;
-static int prev_mouse_state;
-static float mouse_scroll;
+static float mouse_px = 0.0f;
+static float mouse_py = 0.0f;
+static float mouse_vx = 0.0f;
+static float mouse_vy = 0.0f;
+static float saved_mouse_px = 0.0f;
+static float saved_mouse_py = 0.0f;
+static i32 curr_mouse_state = 0;
+static i32 prev_mouse_state = 0;
+static float mouse_scroll = 0.0f;
 
-static bool curr_keyboard_state[SDL_SCANCODE_COUNT];
-static bool prev_keyboard_state[SDL_SCANCODE_COUNT];
+static bool curr_keyboard_state[SDL_SCANCODE_COUNT] = { FALSE };
+static bool prev_keyboard_state[SDL_SCANCODE_COUNT] = { FALSE };
 
 void ROSE_Init(const char* title, i32 width, i32 height, bool vkdebug) {
 	const i32 min = 32;
-	screen_width = (width < min) ? width : min;
-	screen_height = (height < min) ? height : min;
+	screen_width = (width < min) ? min : width;
+	screen_height = (height < min) ? min : height;
 
 	SDL_Init(SDL_INIT_VIDEO);
 	window = SDL_CreateWindow(title, screen_width, screen_height, SDL_WINDOW_RESIZABLE);
