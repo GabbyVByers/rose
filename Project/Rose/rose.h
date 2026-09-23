@@ -45,8 +45,9 @@ bool ROSE_KeyboardPressed(i32);
 bool ROSE_KeyboardReleased(i32);
 
 ROSE_Image*  ROSE_ImageCreate(i32, i32);
-void         ROSE_ImageDestroy(ROSE_Image*);
+ROSE_Image*  ROSE_ImagePerlinNoise(i32, i32);
 ROSE_Image*  ROSE_ImageLoadFromFile(const char*);
+void         ROSE_ImageDestroy(ROSE_Image*);
 void         ROSE_ImageSaveAsPNG(ROSE_Image*, const char*);
 void         ROSE_ImageResize(ROSE_Image*, i32, i32);
 ROSE_Color   ROSE_ImageGetPixel(ROSE_Image*, i32, i32);

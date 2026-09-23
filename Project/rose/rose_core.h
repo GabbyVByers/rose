@@ -13,6 +13,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+
+#include <math.h>
+#include <float.h>
 #include <assert.h>
 
 #define ROSE_COLOR_WHITE  ((ROSE_Color){ 1.0f, 1.0f, 1.0f, 1.0f })
