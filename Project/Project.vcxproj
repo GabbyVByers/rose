@@ -158,6 +158,7 @@
     <ClCompile Include="libraries\stb-master\stb_image.c" />
     <ClCompile Include="libraries\stb-master\stb_image_write.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="rose\source\rose_array.c" />
     <ClCompile Include="rose\source\rose_image.c" />
     <ClCompile Include="rose\source\rose_sprite.c" />
     <ClCompile Include="rose\source\rose_text.c" />
@@ -252,7 +253,7 @@
     <ClInclude Include="libraries\SDL3-3.4.16\include\SDL3\SDL_vulkan.h" />
     <ClInclude Include="libraries\stb-master\stb_image.h" />
     <ClInclude Include="libraries\stb-master\stb_image_write.h" />
-    <ClInclude Include="rose\core.h" />
+    <ClInclude Include="rose\rose_core.h" />
     <ClInclude Include="rose\rose.h" />
   </ItemGroup>
   <ItemGroup>

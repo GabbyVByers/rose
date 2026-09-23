@@ -6,7 +6,7 @@
 #ifndef ROSE_ROSE_HEADER_GUARD
 #define ROSE_ROSE_HEADER_GUARD
 
-#include "core.h"
+#include "rose_core.h"
 
 /* Public API */
 
@@ -20,20 +20,24 @@ void ROSE_WindowDrawSprite(ROSE_Sprite*, i32, i32, double, ROSE_Color);
 void ROSE_WindowDrawText(ROSE_Text*, i32, i32, double, ROSE_Color);
 void ROSE_WindowRender(void);
 
-ROSE_Image* ROSE_ImageCreate(i32, i32);
-void        ROSE_ImageDestroy(ROSE_Image*);
-ROSE_Image* ROSE_ImageLoadFromFile(const char*);
-void        ROSE_ImageSaveAsPNG(ROSE_Image*, const char*);
-void        ROSE_ImageResize(ROSE_Image*, i32, i32);
-ROSE_Color  ROSE_ImageGetPixel(ROSE_Image*, i32, i32);
-void        ROSE_ImageSetPixel(ROSE_Image*, i32, i32, ROSE_Color);
+ROSE_Array*  ROSE_ArrayCreate(usize);
+void         ROSE_ArrayPushback(ROSE_Array*, void*);
+void         ROSE_ArrayDestroy(ROSE_Array*);
+
+ROSE_Image*  ROSE_ImageCreate(i32, i32);
+void         ROSE_ImageDestroy(ROSE_Image*);
+ROSE_Image*  ROSE_ImageLoadFromFile(const char*);
+void         ROSE_ImageSaveAsPNG(ROSE_Image*, const char*);
+void         ROSE_ImageResize(ROSE_Image*, i32, i32);
+ROSE_Color   ROSE_ImageGetPixel(ROSE_Image*, i32, i32);
+void         ROSE_ImageSetPixel(ROSE_Image*, i32, i32, ROSE_Color);
 
 ROSE_Sprite* ROSE_SpriteCreate(const char*);
 void         ROSE_SpriteDestroy(ROSE_Sprite*);
-void         ROSE_SpriteUploadTexture(ROSE_Sprite*);
+void         ROSE_SpriteUploadTexture(ROSE_Sprite*, ROSE_Image*);
 
-ROSE_Text* ROSE_TextCreate(const char*);
-void       ROSE_TextDestroy(ROSE_Text*);
+ROSE_Text*   ROSE_TextCreate(const char*);
+void         ROSE_TextDestroy(ROSE_Text*);
 
 /* Internal */
 

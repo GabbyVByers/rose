@@ -234,7 +234,7 @@ bool ROSE_WindowIsOpen(void) {
 }
 
 void ROSE_WindowClearScreen(ROSE_Color color) {
-	unsigned int new_width, new_height;
+	u32 new_width, new_height;
 	command_buffer = SDL_AcquireGPUCommandBuffer(device);
 	SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, &swapchain_texture, &new_width, &new_height);
 	
@@ -247,8 +247,8 @@ void ROSE_WindowClearScreen(ROSE_Color color) {
 	}
 
 	const bool resize_depth_texture = (new_screen_width != screen_width) || (new_screen_height != screen_height);
-	screen_width = new_screen_width;
-	screen_height = new_screen_height;
+	screen_width = (i32)new_screen_width;
+	screen_height = (i32)new_screen_height;
 
 	if (resize_depth_texture) {
 		SDL_ReleaseGPUTexture(device, depth_texture);
@@ -376,7 +376,7 @@ void ROSE_WindowDrawText(ROSE_Text* text, i32 px, i32 py, double scale, ROSE_Col
 	SDL_PushGPUVertexUniformData(command_buffer, 0, ((void*)&uniform), sizeof(uniform));
 	SDL_BindGPUVertexBuffers(render_pass, 0, &buffer_binding, 1);
 	SDL_BindGPUFragmentSamplers(render_pass, 0, &texture_binding, 1);
-	SDL_DrawGPUPrimitives(render_pass, text->num_vertices, 1, 0, 0);
+	SDL_DrawGPUPrimitives(render_pass, (u32)text->num_vertices, 1, 0, 0);
 }
 
 void ROSE_WindowRender(void) {
@@ -423,7 +423,7 @@ void ROSE_INTERNAL_UploadImageToRenderTexture(ROSE_Image* image, SDL_GPUTexture*
 	usize image_size = (usize)image->width * (usize)image->height * 4;
 	SDL_GPUTransferBufferCreateInfo transfer_buffer_create_info = {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-		.size = image_size,
+		.size = (u32)image_size,
 	};
 
 	SDL_GPUTransferBuffer* transfer_buffer = SDL_CreateGPUTransferBuffer(device, &transfer_buffer_create_info);
@@ -457,14 +457,14 @@ void ROSE_INTERNAL_UploadImageToRenderTexture(ROSE_Image* image, SDL_GPUTexture*
 SDL_GPUBuffer* ROSE_INTERNAL_CreateVertexBuffer(ROSE_Vertex* vertices, usize num_vertices) {
 	SDL_GPUBufferCreateInfo buffer_create_info = {
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
-		.size = num_vertices * sizeof(ROSE_Vertex),
+		.size = (u32)(num_vertices * sizeof(ROSE_Vertex)),
 	};
 
 	SDL_GPUBuffer* vertex_buffer = SDL_CreateGPUBuffer(device, &buffer_create_info);
 	
 	SDL_GPUTransferBufferCreateInfo transfer_buffer_create_info = {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-		.size = num_vertices * sizeof(ROSE_Vertex),
+		.size = (u32)(num_vertices * sizeof(ROSE_Vertex)),
 	};
 
 	SDL_GPUTransferBuffer* transfer_buffer = SDL_CreateGPUTransferBuffer(device, &transfer_buffer_create_info);
@@ -480,7 +480,7 @@ SDL_GPUBuffer* ROSE_INTERNAL_CreateVertexBuffer(ROSE_Vertex* vertices, usize num
 
 	SDL_GPUBufferRegion destination_buffer_region = {
 		.buffer = vertex_buffer,
-		.size = num_vertices * sizeof(ROSE_Vertex),
+		.size = (u32)(num_vertices * sizeof(ROSE_Vertex)),
 	};
 
 	SDL_UploadToGPUBuffer(copy_pass, &source_buffer_location, &destination_buffer_region, TRUE);

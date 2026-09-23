@@ -36,6 +36,9 @@
     <ClCompile Include="rose\source\rose_text.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rose\source\rose_array.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rose\rose.h">
@@ -305,7 +308,7 @@
     <ClInclude Include="libraries\SDL3-3.4.16\include\SDL3\SDL_vulkan.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="rose\core.h">
+    <ClInclude Include="rose\rose_core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
