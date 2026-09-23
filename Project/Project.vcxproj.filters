@@ -36,9 +36,6 @@
     <ClCompile Include="rose\source\rose_text.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rose\source\rose_array.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rose\source\rose_peripherals.c">
       <Filter>Source Files</Filter>
     </ClCompile>

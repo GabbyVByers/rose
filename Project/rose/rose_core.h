@@ -66,13 +66,6 @@ typedef struct {
 } ROSE_Color;
 
 typedef struct {
-	u8* data;
-	usize stride;
-	usize size;
-	usize capacity;
-} ROSE_Array;
-
-typedef struct {
 	i32 width;
 	i32 height;
 	u8* pixels;

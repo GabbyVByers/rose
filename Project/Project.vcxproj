@@ -158,7 +158,6 @@
     <ClCompile Include="libraries\stb-master\stb_image.c" />
     <ClCompile Include="libraries\stb-master\stb_image_write.c" />
     <ClCompile Include="main.c" />
-    <ClCompile Include="rose\source\rose_array.c" />
     <ClCompile Include="rose\source\rose_image.c" />
     <ClCompile Include="rose\source\rose_peripherals.c" />
     <ClCompile Include="rose\source\rose_sprite.c" />

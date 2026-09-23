@@ -44,10 +44,6 @@ bool ROSE_KeyboardPressing(i32);
 bool ROSE_KeyboardPressed(i32);
 bool ROSE_KeyboardReleased(i32);
 
-ROSE_Array*  ROSE_ArrayCreate(usize); // remove?
-void         ROSE_ArrayPushback(ROSE_Array*, void*);
-void         ROSE_ArrayDestroy(ROSE_Array*);
-
 ROSE_Image*  ROSE_ImageCreate(i32, i32);
 void         ROSE_ImageDestroy(ROSE_Image*);
 ROSE_Image*  ROSE_ImageLoadFromFile(const char*);
