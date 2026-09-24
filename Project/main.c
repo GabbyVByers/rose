@@ -5,47 +5,55 @@
 
 #include "rose.h"
 
+extern i32 screen_width;
+extern i32 screen_height;
+
 int main(void) {
 	ROSE_Init("App", 1200, 700, TRUE);
 	ROSE_WindowToggleVSync(TRUE);
 
-	ROSE_Text* text = ROSE_TextCreate("hello!");
+	double zoom = 1.0;
+	i32 px = 100;
+	i32 py = 100;
 
-	ROSE_Image* image = ROSE_ImageCreate(50, 50);
-	for (i32 x = 0; x < 50; x++) {
-		for (i32 y = 0; y < 50; y++) {
-			if (x != y) {
-				ROSE_ImagePutPixel(image, x, y, ROSE_COLOR_CYAN);
-			}
-		}
-	}
+	ROSE_Image* canvas_image = ROSE_ImageCreate(100, 100);
 
-	ROSE_Sprite* sprite = ROSE_SpriteCreate(NULL);
-	ROSE_SpriteUploadTexture(sprite, image);
+	ROSE_Sprite* canvas_sprite = ROSE_SpriteCreate(NULL);
+	ROSE_SpriteUploadTexture(canvas_sprite, canvas_image);
 
-	ROSE_Image* perlin = ROSE_ImagePerlinNoise(500, 9);
-	ROSE_Sprite* perlin_sprite = ROSE_SpriteCreate(NULL);
-	ROSE_SpriteUploadTexture(perlin_sprite, perlin);
-
-	ROSE_ImageSaveAsPNG(perlin, "perlin.png");
+	// save button
+	ROSE_Text* save_text = ROSE_TextCreate("SAVE");
+	ROSE_Sprite* save_up = ROSE_SpriteCreate("textures/button_up.png");
+	ROSE_Sprite* save_down = ROSE_SpriteCreate("textures/button_down.png");
 
 	while (ROSE_WindowIsOpen()) {
-		ROSE_WindowClearScreen((ROSE_Color){ 0.1f, 0.1f, 0.1f, 1.0f });
+		i32 mouse_x, mouse_y;
+		ROSE_MousePosition(&mouse_x, &mouse_y);
+		
+		ROSE_WindowClearScreen(ROSE_COLOR_BLACK);
+		ROSE_WindowDrawSprite(canvas_sprite, px, py, zoom, ROSE_COLOR_WHITE);
+		
+		{ // SAVE BUTTON
+			i32 w = save_up->width;
+			i32 h = save_up->height;
+			i32 x = 100;
+			i32 y = screen_height - 100;
+			ROSE_WindowDrawSprite(save_up, x, y, 1.0, ROSE_COLOR_WHITE);
+			ROSE_WindowDrawText(save_text, x + w, y, 2.0, ROSE_COLOR_WHITE);
+			
+			if (((x <= mouse_x) && (mouse_x < (x + h))) && ((y <= mouse_y) && (mouse_y < (y + h)))) {
+				if (ROSE_MousePressing(ROSE_MOUSE_LEFT)) {
+					ROSE_WindowDrawSprite(save_down, x, y, 1.0, ROSE_COLOR_WHITE);
+				}
+				if (ROSE_MousePressed(ROSE_MOUSE_LEFT)) {
+					ROSE_ImageSaveAsPNG(canvas_image, "untitled.png");
+				}
+			}
+		}
 
-		i32 x, y;
-		ROSE_MousePosition(&x, &y);
-
-		ROSE_WindowDrawText(text, x, y, 5.0, ROSE_COLOR_RED);
-		ROSE_WindowDrawSprite(sprite, 20, 20, 5.0, ROSE_COLOR_WHITE);
-		ROSE_WindowDrawSprite(perlin_sprite, 500, 100, 1.0, ROSE_COLOR_WHITE);
 		ROSE_WindowRender();
 	}
 	
-	ROSE_TextDestroy(text);
-	ROSE_ImageDestroy(image);
-	ROSE_ImageDestroy(perlin);
-	ROSE_SpriteDestroy(sprite);
-	ROSE_SpriteDestroy(perlin_sprite);
 	ROSE_Quit();
 	return EXIT_SUCCESS;
 }

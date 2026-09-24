@@ -22,19 +22,6 @@ bool prev_keyboard_state[SDL_SCANCODE_COUNT] = { FALSE };
 
 /* Mouse */
 
-bool ROSE_MouseHide(void) {
-	saved_mouse_px = mouse_px;
-	saved_mouse_py = mouse_py;
-	SDL_SetWindowRelativeMouseMode(window, TRUE);
-}
-
-bool ROSE_MouseReveal(void) {
-	mouse_px = saved_mouse_px;
-	mouse_py = saved_mouse_py;
-	SDL_WarpMouseInWindow(window, mouse_px, mouse_py);
-	SDL_SetWindowRelativeMouseMode(window, FALSE);
-}
-
 bool ROSE_MousePressing(i32 button) {
 	return (curr_mouse_state & SDL_BUTTON_MASK(button)) != 0;
 }
@@ -57,6 +44,19 @@ void ROSE_MousePosition(i32* px, i32* py) {
 void ROSE_MouseVelocity(i32* vx, i32* vy) {
 	*vx = (i32)mouse_vx;
 	*vy = (i32)mouse_vy;
+}
+
+bool ROSE_MouseHide(void) {
+	saved_mouse_px = mouse_px;
+	saved_mouse_py = mouse_py;
+	SDL_SetWindowRelativeMouseMode(window, TRUE);
+}
+
+bool ROSE_MouseReveal(void) {
+	mouse_px = saved_mouse_px;
+	mouse_py = saved_mouse_py;
+	SDL_WarpMouseInWindow(window, mouse_px, mouse_py);
+	SDL_SetWindowRelativeMouseMode(window, FALSE);
 }
 
 i32  ROSE_MouseScroll(void) {

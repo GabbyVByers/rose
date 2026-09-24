@@ -9,16 +9,6 @@
 #include "rose_core.h"
 #include "rose_keys.h"
 
-/* 
- * 
- * todo list
- * 
- * perlin noise image
- * arbitrary shapes / line segment/strips?
- * shader-drawn circles (immediate mode)
- * 
- */
-
 /* Public API */
 
 void ROSE_Init(const char*, i32, i32, bool);
@@ -31,13 +21,13 @@ void ROSE_WindowDrawSprite(ROSE_Sprite*, i32, i32, double, ROSE_Color);
 void ROSE_WindowDrawText(ROSE_Text*, i32, i32, double, ROSE_Color);
 void ROSE_WindowRender(void);
 
-bool ROSE_MouseHide(void);
-bool ROSE_MouseReveal(void);
 bool ROSE_MousePressing(i32);
 bool ROSE_MousePressed(i32);
 bool ROSE_MouseReleased(i32);
 void ROSE_MousePosition(i32*, i32*);
 void ROSE_MouseVelocity(i32*, i32*);
+bool ROSE_MouseHide(void);
+bool ROSE_MouseReveal(void);
 i32  ROSE_MouseScroll(void);
 
 bool ROSE_KeyboardPressing(i32);

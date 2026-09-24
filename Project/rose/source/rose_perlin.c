@@ -14,12 +14,14 @@ static float smoothstep(float value) {
 	return 0.5f + (sin((value * pi) - (pi * 0.5f)) * 0.5f);
 }
 
-static float* layer(usize width, usize divisions) {
+ROSE_Image* ROSE_ImagePerlinNoise(i32 _width, i32 _divisions) {
 	typedef struct {
 		float px, py;
 		float dx, dy;
 	} Arrow;
 
+	usize width = (usize)_width;
+	usize divisions = (usize)_divisions;
 	usize arrow_buffer_width = divisions + 3;
 	usize num_arrows = arrow_buffer_width * arrow_buffer_width;
 	Arrow* arrow_buffer = malloc(num_arrows * sizeof(Arrow));
@@ -102,24 +104,6 @@ static float* layer(usize width, usize divisions) {
 
 	free(arrow_buffer);
 	free(intensity_buffer);
-	return image;
-}
-
-void ROSE_ImagePerlinNoise(i32 width, i32 num_layers, float attenuation) {
-
-	float** layers = malloc(sizeof(float*) * num_layers);
-
-	usize divs = 1;
-	for (i32 i = 0; i < num_layers; i++) {
-		layers[i] = layer((usize)width, divs);
-		divs *= 2;
-	}
-	
-	ROSE_Image* image = malloc(sizeof(ROSE_Image));
-	
-	for (i32 i = 0; i < num_layers; i++) {
-		free(layers[i]);
-	} free(layers);
 	return image;
 }
 
