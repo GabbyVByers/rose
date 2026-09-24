@@ -15,7 +15,7 @@ int main(void) {
 	for (i32 x = 0; x < 50; x++) {
 		for (i32 y = 0; y < 50; y++) {
 			if (x != y) {
-				ROSE_ImageSetPixel(image, x, y, ROSE_COLOR_CYAN);
+				ROSE_ImagePutPixel(image, x, y, ROSE_COLOR_CYAN);
 			}
 		}
 	}
@@ -26,6 +26,8 @@ int main(void) {
 	ROSE_Image* perlin = ROSE_ImagePerlinNoise(500, 9);
 	ROSE_Sprite* perlin_sprite = ROSE_SpriteCreate(NULL);
 	ROSE_SpriteUploadTexture(perlin_sprite, perlin);
+
+	ROSE_ImageSaveAsPNG(perlin, "perlin.png");
 
 	while (ROSE_WindowIsOpen()) {
 		ROSE_WindowClearScreen((ROSE_Color){ 0.1f, 0.1f, 0.1f, 1.0f });

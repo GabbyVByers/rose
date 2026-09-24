@@ -31,7 +31,6 @@ extern bool curr_keyboard_state[SDL_SCANCODE_COUNT];
 extern bool prev_keyboard_state[SDL_SCANCODE_COUNT];
 
 void ROSE_Init(const char* title, i32 width, i32 height, bool vkdebug) {
-	assert(title);
 	const i32 min = 256;
 	screen_width = (width < min) ? min : width;
 	screen_height = (height < min) ? min : height;
@@ -46,8 +45,6 @@ void ROSE_Init(const char* title, i32 width, i32 height, bool vkdebug) {
 
 	FILE* vertex_file = fopen("shaders/vertex.spv", "rb");
 	FILE* fragment_file = fopen("shaders/fragment.spv", "rb");
-	assert(vertex_file);
-	assert(fragment_file);
 
 	fseek(vertex_file, 0, SEEK_END);
 	fseek(fragment_file, 0, SEEK_END);
@@ -58,9 +55,6 @@ void ROSE_Init(const char* title, i32 width, i32 height, bool vkdebug) {
 
 	u8* vertex_code = malloc(vertex_code_size);
 	u8* fragment_code = malloc(fragment_code_size);
-	assert(vertex_code);
-	assert(fragment_code);
-	
 	fread(vertex_code, 1, vertex_code_size, vertex_file);
 	fread(fragment_code, 1, fragment_code_size, fragment_file);
 
@@ -405,9 +399,6 @@ SDL_GPUTexture* ROSE_INTERNAL_CreateDepthTexture(void) {
 }
 
 SDL_GPUTexture* ROSE_INTERNAL_CreateRenderTexture(i32 width, i32 height) {
-	assert(width > 0);
-	assert(height > 0);
-
 	SDL_GPUTextureCreateInfo texture_create_info = {
 		.type = SDL_GPU_TEXTURETYPE_2D,
 		.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
@@ -424,9 +415,6 @@ SDL_GPUTexture* ROSE_INTERNAL_CreateRenderTexture(i32 width, i32 height) {
 }
 
 void ROSE_INTERNAL_UploadImageToRenderTexture(ROSE_Image* image, SDL_GPUTexture* texture) {
-	assert(image);
-	assert(texture);
-
 	usize image_size = (usize)image->width * (usize)image->height * 4;
 	SDL_GPUTransferBufferCreateInfo transfer_buffer_create_info = {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
@@ -462,9 +450,6 @@ void ROSE_INTERNAL_UploadImageToRenderTexture(ROSE_Image* image, SDL_GPUTexture*
 }
 
 SDL_GPUBuffer* ROSE_INTERNAL_CreateVertexBuffer(ROSE_Vertex* vertices, usize num_vertices) {
-	assert(vertices);
-	assert(num_vertices != 0);
-
 	SDL_GPUBufferCreateInfo buffer_create_info = {
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
 		.size = (u32)(num_vertices * sizeof(ROSE_Vertex)),

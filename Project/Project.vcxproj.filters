@@ -39,6 +39,9 @@
     <ClCompile Include="rose\source\rose_peripherals.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rose\source\rose_perlin.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rose\rose.h">

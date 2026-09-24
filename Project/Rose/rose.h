@@ -50,8 +50,8 @@ ROSE_Image*  ROSE_ImageLoadFromFile(const char*);
 void         ROSE_ImageDestroy(ROSE_Image*);
 void         ROSE_ImageSaveAsPNG(ROSE_Image*, const char*);
 void         ROSE_ImageResize(ROSE_Image*, i32, i32);
+void         ROSE_ImagePutPixel(ROSE_Image*, i32, i32, ROSE_Color);
 ROSE_Color   ROSE_ImageGetPixel(ROSE_Image*, i32, i32);
-void         ROSE_ImageSetPixel(ROSE_Image*, i32, i32, ROSE_Color);
 
 ROSE_Sprite* ROSE_SpriteCreate(const char*);
 void         ROSE_SpriteDestroy(ROSE_Sprite*);

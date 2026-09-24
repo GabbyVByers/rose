@@ -36,33 +36,25 @@ bool ROSE_MouseReveal(void) {
 }
 
 bool ROSE_MousePressing(i32 button) {
-	assert(ROSE_MOUSE_MIN <= button);
-	assert(button <= ROSE_MOUSE_MAX);
 	return (curr_mouse_state & SDL_BUTTON_MASK(button)) != 0;
 }
 
 bool ROSE_MousePressed(i32 button) {
-	assert(ROSE_MOUSE_MIN <= button);
-	assert(button <= ROSE_MOUSE_MAX);
-	return ((prev_mouse_state & SDL_BUTTON_MASK(button)) == 0) && ((curr_mouse_state & SDL_BUTTON_MASK(button)) != 0);
+	return ((prev_mouse_state & SDL_BUTTON_MASK(button)) == 0)
+		&& ((curr_mouse_state & SDL_BUTTON_MASK(button)) != 0);
 }
 
 bool ROSE_MouseReleased(i32 button) {
-	assert(ROSE_MOUSE_MIN <= button);
-	assert(button <= ROSE_MOUSE_MAX);
-	return ((prev_mouse_state & SDL_BUTTON_MASK(button)) != 0) && ((curr_mouse_state & SDL_BUTTON_MASK(button)) == 0);
+	return ((prev_mouse_state & SDL_BUTTON_MASK(button)) != 0)
+		&& ((curr_mouse_state & SDL_BUTTON_MASK(button)) == 0);
 }
 
 void ROSE_MousePosition(i32* px, i32* py) {
-	assert(px);
-	assert(py);
 	*px = (i32)mouse_px;
 	*py = (i32)mouse_py;
 }
 
 void ROSE_MouseVelocity(i32* vx, i32* vy) {
-	assert(vx);
-	assert(vy);
 	*vx = (i32)mouse_vx;
 	*vy = (i32)mouse_vy;
 }
@@ -74,20 +66,16 @@ i32  ROSE_MouseScroll(void) {
 /* Keyboard */
 
 bool ROSE_KeyboardPressing(i32 button) {
-	assert(ROSE_KEYBOARD_MIN <= button);
-	assert(button <= ROSE_KEYBOARD_MAX);
 	return curr_keyboard_state[button];
 }
 
 bool ROSE_KeyboardPressed(i32 button) {
-	assert(ROSE_KEYBOARD_MIN <= button);
-	assert(button <= ROSE_KEYBOARD_MAX);
-	return (!prev_keyboard_state[button]) && (curr_keyboard_state[button]);
+	return (!prev_keyboard_state[button])
+		&& (curr_keyboard_state[button]);
 }
 
 bool ROSE_KeyboardReleased(i32 button) {
-	assert(ROSE_KEYBOARD_MIN <= button);
-	assert(button <= ROSE_KEYBOARD_MAX);
-	return (prev_keyboard_state[button]) && (!curr_keyboard_state[button]);
+	return (prev_keyboard_state[button])
+		&& (!curr_keyboard_state[button]);
 }
 

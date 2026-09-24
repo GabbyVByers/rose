@@ -9,12 +9,9 @@ extern SDL_GPUDevice* device;
 
 ROSE_Sprite* ROSE_SpriteCreate(const char* path) {
 	ROSE_Sprite* sprite = (ROSE_Sprite*)malloc(sizeof(ROSE_Sprite));
-	assert(sprite);
-
 	ROSE_Image* image = NULL;
 	if (path) { image = ROSE_ImageLoadFromFile(path); }
 	else { image = ROSE_ImageCreate(10, 10); }
-	assert(image);
 
 	sprite->width = image->width;
 	sprite->height = image->height;

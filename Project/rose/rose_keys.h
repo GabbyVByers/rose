@@ -100,10 +100,5 @@
 #define ROSE_KEY_RIGHT_SHIFT       229
 #define ROSE_KEY_RIGHT_ALT         230
 
-#define ROSE_MOUSE_MIN             1
-#define ROSE_MOUSE_MAX             5
-#define ROSE_KEYBOARD_MIN          4
-#define ROSE_KEYBOARD_MAX          230
-
 #endif /* ROSE_KEYS_HEADER_GUARD */
 

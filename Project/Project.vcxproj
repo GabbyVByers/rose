@@ -160,6 +160,7 @@
     <ClCompile Include="main.c" />
     <ClCompile Include="rose\source\rose_image.c" />
     <ClCompile Include="rose\source\rose_peripherals.c" />
+    <ClCompile Include="rose\source\rose_perlin.c" />
     <ClCompile Include="rose\source\rose_sprite.c" />
     <ClCompile Include="rose\source\rose_text.c" />
     <ClCompile Include="rose\source\rose_window.c" />

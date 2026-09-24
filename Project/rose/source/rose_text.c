@@ -14,16 +14,11 @@
 extern SDL_GPUDevice* device;
 
 ROSE_Text* ROSE_TextCreate(const char* string) {
-	assert(string);
-
 	ROSE_Text* text = malloc(sizeof(ROSE_Text));
-	assert(text);
-
 	usize num_characters = strlen(string);
 	usize num_vertices = num_characters * 6;
-	assert(num_vertices < BUFFER_SIZE);
+	ROSE_Vertex* vertices = malloc(num_vertices * sizeof(ROSE_Vertex));
 	
-	static ROSE_Vertex vertices[BUFFER_SIZE];
 	for (usize i = 0; i < num_characters; i++) {
 		usize index = i * 6;
 		char character_index = (string[i] - 32);
@@ -41,6 +36,7 @@ ROSE_Text* ROSE_TextCreate(const char* string) {
 	text->height = 11;
 	text->buffer = ROSE_INTERNAL_CreateVertexBuffer(vertices, num_vertices);
 	text->num_vertices = num_vertices;
+	free(vertices);
 	return text;
 }
 
