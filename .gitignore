@@ -1,0 +1,8 @@
+
+# gitignore
+# Sept 2026
+# Gabitha Byers
+
+.vs/
+build/
+
