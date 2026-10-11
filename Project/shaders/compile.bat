@@ -17,15 +17,11 @@
 ::            `*-*   `*-*  `*-*'
 ::
 
-@echo off
-echo Compiling...
-
 @echo on
-glslc "shader.vert" -o "vertex.spv"
-glslc "shader.frag" -o "fragment.spv"
-
-@echo off
-echo Done!
+glslc "source/sprite.vert" -o "sprite_vertex.spv"
+glslc "source/sprite.frag" -o "sprite_fragment.spv"
+glslc "source/mesh.vert" -o "mesh_vertex.spv"
+glslc "source/mesh.frag" -o "mesh_fragment.spv"
 
 @echo off
 pause

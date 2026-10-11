@@ -322,7 +322,11 @@
     <None Include="shaders\compile.bat">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="shaders\shader.frag" />
-    <None Include="shaders\shader.vert" />
+    <None Include="shaders\source\sprite.frag" />
+    <None Include="shaders\source\sprite.vert" />
+    <None Include="shaders\fragment.spv" />
+    <None Include="shaders\vertex.spv" />
+    <None Include="shaders\source\mesh.frag" />
+    <None Include="shaders\source\mesh.vert" />
   </ItemGroup>
 </Project>

@@ -1,6 +1,6 @@
 
 /*
- *   Fragment Shader [shader.frag]
+ *   Fragment Shader [sprite.frag]
  */
 
 #version 460 core
