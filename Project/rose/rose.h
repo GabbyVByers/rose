@@ -94,34 +94,38 @@ bool ROSE_KeyboardPressing(ROSE_Scancode);
 bool ROSE_KeyboardPressed(ROSE_Scancode);
 bool ROSE_KeyboardReleased(ROSE_Scancode);
 
-ROSE_Image*     ROSE_ImageCreate(u32, u32);
-void            ROSE_ImageDestroy(ROSE_Image*);
-ROSE_Image*     ROSE_ImageLoad(const char*);
-void            ROSE_ImageSavePNG(ROSE_Image*, const char*);
-void            ROSE_ImageResize(ROSE_Image*, u32, u32);
-ROSE_RGBA       ROSE_ImageGetPixelRGBA(ROSE_Image*, u32, u32);
-ROSE_Color4     ROSE_ImageGetPixelColor4(ROSE_Image*, u32, u32);
-void            ROSE_ImageSetPixelRGBA(ROSE_Image*, ROSE_RGBA, u32, u32);
-void            ROSE_ImageSetPixelColor4(ROSE_Image*, ROSE_Color4, u32, u32);
-u32             ROSE_ImageWidth(ROSE_Image*);
-u32             ROSE_ImageHeight(ROSE_Image*);
-const u8*       ROSE_ImagePixels(ROSE_Image*);
+ROSE_Image*  ROSE_ImageCreate(u32, u32);
+void         ROSE_ImageDestroy(ROSE_Image*);
+ROSE_Image*  ROSE_ImageLoad(const char*);
+void         ROSE_ImageSavePNG(ROSE_Image*, const char*);
+void         ROSE_ImageResize(ROSE_Image*, u32, u32);
+ROSE_RGBA    ROSE_ImageGetPixelRGBA(ROSE_Image*, u32, u32);
+ROSE_Color4  ROSE_ImageGetPixelColor4(ROSE_Image*, u32, u32);
+void         ROSE_ImageSetPixelRGBA(ROSE_Image*, ROSE_RGBA, u32, u32);
+void         ROSE_ImageSetPixelColor4(ROSE_Image*, ROSE_Color4, u32, u32);
+u32          ROSE_ImageWidth(ROSE_Image*);
+u32          ROSE_ImageHeight(ROSE_Image*);
+const u8*    ROSE_ImagePixels(ROSE_Image*);
 
-ROSE_Text*      ROSE_TextCreate(const char*);
-void            ROSE_TextDestroy(ROSE_Text*);
-void            ROSE_TextUpdateString(ROSE_Text*, const char*);
-void            ROSE_TextDraw(ROSE_Text*, i32, i32, float, ROSE_Color4);
-u32             ROSE_TextWidth(ROSE_Text*);
-u32             ROSE_TextHeight(ROSE_Text*);
+ROSE_Text*   ROSE_TextCreate(const char*);
+void         ROSE_TextDestroy(ROSE_Text*);
+void         ROSE_TextUpdateString(ROSE_Text*, const char*);
+void         ROSE_TextDraw(ROSE_Text*, i32, i32, float, ROSE_Color4);
+u32          ROSE_TextWidth(ROSE_Text*);
+u32          ROSE_TextHeight(ROSE_Text*);
 
-ROSE_Sprite*    ROSE_SpriteCreate(ROSE_Image*);
-void            ROSE_SpriteDestroy(ROSE_Sprite*);
-void            ROSE_SpriteDraw(ROSE_Sprite*, i32, i32, float, ROSE_Color4);
-u32             ROSE_SpriteWidth(ROSE_Sprite*);
-u32             ROSE_SpriteHeight(ROSE_Sprite*);
+ROSE_Sprite* ROSE_SpriteCreate(ROSE_Image*);
+void         ROSE_SpriteDestroy(ROSE_Sprite*);
+void         ROSE_SpriteDraw(ROSE_Sprite*, i32, i32, float, ROSE_Color4);
+u32          ROSE_SpriteWidth(ROSE_Sprite*);
+u32          ROSE_SpriteHeight(ROSE_Sprite*);
 
-SDL_GPUTexture* ROSE_SDLCreateTexture(ROSE_Image*);
-SDL_GPUBuffer*  ROSE_SDLCreateVertexBuffer(ROSE_Vertex2D*, u32, u32);
+SDL_GPUSampler*          ROSE_SDLCreateSampler(void);
+SDL_GPUTexture*          ROSE_SDLCreateDepthTexture(void);
+SDL_GPUTexture*          ROSE_SDLCreateTexture(ROSE_Image*);
+SDL_GPUBuffer*           ROSE_SDLCreateVertexBuffer(ROSE_Vertex2D*, u32, u32);
+SDL_GPUGraphicsPipeline* ROSE_SDLCreateGraphicsPipelineSprite(void);
+SDL_GPUGraphicsPipeline* ROSE_SDLCreateGraphicsPipelineMesh(void);
 
 #endif /* ROSE_ROSE_HEADER_GUARD */
 

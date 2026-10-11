@@ -173,7 +173,7 @@ void ROSE_WindowClear(ROSE_Color4 color)
 		exit(EXIT_FAILURE);
 	}
 
-	SDL_BindGPUGraphicsPipeline(render_pass, pipeline);
+	SDL_BindGPUGraphicsPipeline(render_pass, sprite_pipeline); // this may not want to live here
 }
 
 void ROSE_WindowRender(void)
