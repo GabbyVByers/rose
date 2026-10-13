@@ -7,13 +7,7 @@
 #include "rose.h"
 #include "rose_state.h"
 
-typedef struct ROSE_Image {
-	u32 width;
-	u32 height;
-	u8* pixels;
-} ROSE_Image;
-
-ROSE_Image* ROSE_ImageCreate(u32 width, u32 height)
+ROSE_Image ROSE_ImageCreate(u32 width, u32 height)
 {
 	assert(width != 0);
 	assert(height != 0);
@@ -22,25 +16,22 @@ ROSE_Image* ROSE_ImageCreate(u32 width, u32 height)
 	u8* pixels = calloc(count, sizeof(ROSE_RGBA));
 	memset(pixels, 255, count * sizeof(ROSE_RGBA));
 
-	ROSE_Image* image = malloc(sizeof(ROSE_Image));
-	image->width = width;
-	image->height = height;
-	image->pixels = pixels;
-	return image;
+	return (ROSE_Image) {
+		.width = width,
+		.height = height,
+		.pixels = pixels,
+	};
 }
 
 void ROSE_ImageDestroy(ROSE_Image* image)
 {
-	if (!image)
-	{
-		return;
-	}
-
 	free(image->pixels);
-	free(image);
+	image->width = 0;
+	image->height = 0;
+	image->pixels = NULL;
 }
 
-ROSE_Image* ROSE_ImageLoad(const char* path)
+ROSE_Image ROSE_ImageLoad(const char* path)
 {
 	int width, height, num;
 	stbi_set_flip_vertically_on_load(true);
@@ -57,11 +48,11 @@ ROSE_Image* ROSE_ImageLoad(const char* path)
 	memcpy(pixels, stbi_image, count * sizeof(ROSE_RGBA));
 	stbi_image_free(stbi_image);
 
-	ROSE_Image* image = malloc(sizeof(ROSE_Image));
-	image->width = width;
-	image->height = height;
-	image->pixels = pixels;
-	return image;
+	return (ROSE_Image) {
+		.width = width,
+		.height = height,
+		.pixels = pixels,
+	};
 }
 
 void ROSE_ImageSavePNG(ROSE_Image* image, const char* path)

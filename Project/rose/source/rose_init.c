@@ -12,8 +12,8 @@ void ROSE_Init(const char* title, u32 width, u32 height, bool vkdebug)
 	assert(height != 0);
 
 	const u32 min = 256;
-	screen_width = (width < min) ? min : width;
-	screen_height = (height < min) ? min : height;
+	ROSE_SCREEN_WIDTH = (width < min) ? min : width;
+	ROSE_SCREEN_HEIGHT = (height < min) ? min : height;
 
 	if (!SDL_Init(SDL_INIT_VIDEO))
 	{
@@ -21,7 +21,7 @@ void ROSE_Init(const char* title, u32 width, u32 height, bool vkdebug)
 		exit(EXIT_FAILURE);
 	}
 
-	window = SDL_CreateWindow(title, (int)screen_width, (int)screen_height, SDL_WINDOW_RESIZABLE);
+	window = SDL_CreateWindow(title, (int)ROSE_SCREEN_WIDTH, (int)ROSE_SCREEN_HEIGHT, SDL_WINDOW_RESIZABLE);
 
 	if (!window)
 	{
@@ -63,6 +63,10 @@ void ROSE_Init(const char* title, u32 width, u32 height, bool vkdebug)
 	ROSE_Image* ascii_image = ROSE_ImageLoad("textures/ascii.png");
 	ascii_texture = ROSE_SDLCreateTexture(ascii_image);
 	ROSE_ImageDestroy(ascii_image);
+
+	ROSE_Image* dummy_image = ROSE_ImageCreate(1, 1);
+	dummy_texture = ROSE_SDLCreateTexture(dummy_image);
+	ROSE_ImageDestroy(dummy_image);
 }
 
 void ROSE_Quit(void)

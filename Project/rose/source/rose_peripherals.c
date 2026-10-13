@@ -29,8 +29,8 @@ bool ROSE_MouseReleased(u32 button)
 
 void ROSE_MouseHide(void)
 {
-	saved_mouse_px = mouse_px;
-	saved_mouse_py = mouse_py;
+	saved_mouse_px = ROSE_MOUSE_PX;
+	saved_mouse_py = ROSE_MOUSE_PY;
 
 	if (!SDL_SetWindowRelativeMouseMode(window, true))
 	{
@@ -41,40 +41,15 @@ void ROSE_MouseHide(void)
 
 void ROSE_MouseReveal(void)
 {
-	mouse_px = saved_mouse_px;
-	mouse_py = saved_mouse_py;
-	SDL_WarpMouseInWindow(window, mouse_px, mouse_py);
+	ROSE_MOUSE_PX = saved_mouse_px;
+	ROSE_MOUSE_PY = saved_mouse_py;
+	SDL_WarpMouseInWindow(window, ROSE_MOUSE_PX, ROSE_MOUSE_PY);
 
 	if (!SDL_SetWindowRelativeMouseMode(window, false))
 	{
 		fprintf(stderr, "SDL_SetWindowRelativeMouseMode() Failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-}
-
-f32 ROSE_MouseScroll(void)
-{
-	return mouse_scroll;
-}
-
-f32 ROSE_MousePositionX(void)
-{
-	return mouse_px;
-}
-
-f32 ROSE_MousePositionY(void)
-{
-	return mouse_py;
-}
-
-f32 ROSE_MouseVelocityX(void)
-{
-	return mouse_vx;
-}
-
-f32 ROSE_MouseVelocityY(void)
-{
-	return mouse_vy;
 }
 
 bool ROSE_KeyboardPressing(ROSE_Scancode button)

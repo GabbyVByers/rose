@@ -51,9 +51,9 @@ void ROSE_WindowToggleVSync(bool vsync)
 
 bool ROSE_WindowIsOpen(void)
 {
-	mouse_vx = 0.0f;
-	mouse_vy = 0.0f;
-	mouse_scroll = 0.0f;
+	ROSE_MOUSE_VX = 0.0f;
+	ROSE_MOUSE_VY = 0.0f;
+	ROSE_MOUSE_SCROLL = 0.0f;
 
 	SDL_Event event;
 	while (SDL_PollEvent(&event))
@@ -65,13 +65,13 @@ bool ROSE_WindowIsOpen(void)
 
 		if (event.type == SDL_EVENT_MOUSE_WHEEL)
 		{
-			mouse_scroll += event.wheel.y;
+			ROSE_MOUSE_SCROLL += event.wheel.y;
 		}
 
 		if (event.type == SDL_EVENT_MOUSE_MOTION)
 		{
-			mouse_vx += event.motion.xrel;
-			mouse_vy += event.motion.yrel;
+			ROSE_MOUSE_VX += event.motion.xrel;
+			ROSE_MOUSE_VY += event.motion.yrel;
 		}
 	}
 
@@ -79,7 +79,7 @@ bool ROSE_WindowIsOpen(void)
 	memcpy(curr_keyboard_state, SDL_GetKeyboardState(NULL), sizeof(bool) * SDL_SCANCODE_COUNT);
 
 	prev_mouse_state = curr_mouse_state;
-	curr_mouse_state = SDL_GetMouseState(&mouse_px, &mouse_py);
+	curr_mouse_state = SDL_GetMouseState(&ROSE_MOUSE_PX, &ROSE_MOUSE_PY);
 	return true;
 }
 
@@ -115,9 +115,9 @@ void ROSE_WindowClear(ROSE_Color4 color)
 		return;
 	}
 
-	const bool resize_depth_texture = (width != screen_width) || (height != screen_height);
-	screen_width = width;
-	screen_height = height;
+	const bool resize_depth_texture = (width != ROSE_SCREEN_WIDTH) || (height != ROSE_SCREEN_HEIGHT);
+	ROSE_SCREEN_WIDTH = width;
+	ROSE_SCREEN_HEIGHT = height;
 
 	if (resize_depth_texture)
 	{
@@ -127,8 +127,8 @@ void ROSE_WindowClear(ROSE_Color4 color)
 			.type = SDL_GPU_TEXTURETYPE_2D,
 			.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
 			.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
-			.width = screen_width,
-			.height = screen_height,
+			.width = ROSE_SCREEN_WIDTH,
+			.height = ROSE_SCREEN_HEIGHT,
 			.layer_count_or_depth = 1,
 			.num_levels = 1,
 			.sample_count = SDL_GPU_SAMPLECOUNT_1
@@ -172,8 +172,6 @@ void ROSE_WindowClear(ROSE_Color4 color)
 		fprintf(stderr, "SDL_BeginGPURenderPass() Failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-
-	SDL_BindGPUGraphicsPipeline(render_pass, sprite_pipeline); // this may not want to live here
 }
 
 void ROSE_WindowRender(void)
@@ -190,15 +188,5 @@ void ROSE_WindowRender(void)
 		fprintf(stderr, "SDL_SubmitGPUCommandBuffer() Failed: %s\n", SDL_GetError());
 		exit(EXIT_FAILURE);
 	}
-}
-
-u32 ROSE_WindowWidth(void)
-{
-	return screen_width;
-}
-
-u32 ROSE_WindowHeight(void)
-{
-	return screen_height;
 }
 

@@ -153,9 +153,11 @@
   <ItemGroup>
     <ClCompile Include="libraries\stb-master\stb.c" />
     <ClCompile Include="main.c" />
+    <ClCompile Include="rose\source\rose_camera.c" />
     <ClCompile Include="rose\source\rose_gpu.c" />
     <ClCompile Include="rose\source\rose_image.c" />
     <ClCompile Include="rose\source\rose_init.c" />
+    <ClCompile Include="rose\source\rose_mesh.c" />
     <ClCompile Include="rose\source\rose_peripherals.c" />
     <ClCompile Include="rose\source\rose_sprite.c" />
     <ClCompile Include="rose\source\rose_text.c" />

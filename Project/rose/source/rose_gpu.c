@@ -13,8 +13,8 @@ SDL_GPUTexture* ROSE_SDLCreateDepthTexture(void)
 		.type = SDL_GPU_TEXTURETYPE_2D,
 		.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
 		.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
-		.width = screen_width,
-		.height = screen_height,
+		.width = ROSE_SCREEN_WIDTH,
+		.height = ROSE_SCREEN_HEIGHT,
 		.layer_count_or_depth = 1,
 		.num_levels = 1,
 		.sample_count = SDL_GPU_SAMPLECOUNT_1

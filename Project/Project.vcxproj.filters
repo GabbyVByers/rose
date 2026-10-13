@@ -42,6 +42,12 @@
     <ClCompile Include="libraries\stb-master\stb.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rose\source\rose_mesh.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rose\source\rose_camera.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rose\rose.h">

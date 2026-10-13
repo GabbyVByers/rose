@@ -64,11 +64,6 @@ typedef struct {
 	f32 texcoords[2];
 } ROSE_Vertex3D;
 
-typedef struct ROSE_Image  ROSE_Image;
-typedef struct ROSE_Text   ROSE_Text;
-typedef struct ROSE_Sprite ROSE_Sprite;
-typedef struct ROSE_Mesh   ROSE_Mesh;
-
 void ROSE_Init(const char*, u32, u32, bool);
 void ROSE_Quit(void);
 
@@ -76,49 +71,94 @@ void ROSE_WindowToggleVSync(bool);
 bool ROSE_WindowIsOpen(void);
 void ROSE_WindowClear(ROSE_Color4);
 void ROSE_WindowRender(void);
-u32  ROSE_WindowWidth(void);
-u32  ROSE_WindowHeight(void);
 
 bool ROSE_MousePressing(u32);
 bool ROSE_MousePressed(u32);
 bool ROSE_MouseReleased(u32);
 void ROSE_MouseHide(void);
 void ROSE_MouseReveal(void);
-f32  ROSE_MouseScroll(void);
-f32  ROSE_MousePositionX(void);
-f32  ROSE_MousePositionY(void);
-f32  ROSE_MouseVelocityX(void);
-f32  ROSE_MouseVelocityY(void);
 
 bool ROSE_KeyboardPressing(ROSE_Scancode);
 bool ROSE_KeyboardPressed(ROSE_Scancode);
 bool ROSE_KeyboardReleased(ROSE_Scancode);
 
-ROSE_Image*  ROSE_ImageCreate(u32, u32);
-void         ROSE_ImageDestroy(ROSE_Image*);
-ROSE_Image*  ROSE_ImageLoad(const char*);
-void         ROSE_ImageSavePNG(ROSE_Image*, const char*);
-void         ROSE_ImageResize(ROSE_Image*, u32, u32);
-ROSE_RGBA    ROSE_ImageGetPixelRGBA(ROSE_Image*, u32, u32);
-ROSE_Color4  ROSE_ImageGetPixelColor4(ROSE_Image*, u32, u32);
-void         ROSE_ImageSetPixelRGBA(ROSE_Image*, ROSE_RGBA, u32, u32);
-void         ROSE_ImageSetPixelColor4(ROSE_Image*, ROSE_Color4, u32, u32);
-u32          ROSE_ImageWidth(ROSE_Image*);
-u32          ROSE_ImageHeight(ROSE_Image*);
-const u8*    ROSE_ImagePixels(ROSE_Image*);
+/*
+ * double > float
+ * float or double > i32 (for px/py)
+ */
+
+typedef struct {
+	u32 width;
+	u32 height;
+	u8* pixels;
+} ROSE_Image;
+
+typedef struct {
+	u32 width;
+	u32 height;
+	u32 full_width;
+	u32 num_vertices;
+	SDL_GPUBuffer* buffer;
+} ROSE_Text;
+
+typedef struct {
+	i32 px, py;
+	f32 scale;
+	ROSE_Color4 color;
+	u32 width, height;
+	SDL_GPUBuffer* buffer;
+	SDL_GPUTexture* texture;
+} ROSE_Sprite;
+
+typedef struct {
+	f32 fov;
+	f32 near_plane;
+	f32 px, py, pz;
+	f32 qw, qx, qy, qz;
+} ROSE_Camera;
+
+typedef struct {
+	f32 scale;
+	f32 px, py, pz;
+	f32 qw, qx, qy, qz;
+	ROSE_Color4 color;
+	u32 count;
+	SDL_GPUBuffer* buffer;
+	SDL_GPUTexture* texture;
+} ROSE_Mesh;
+
+ROSE_Image  ROSE_ImageCreate(u32, u32);
+ROSE_Image  ROSE_ImageLoad(const char*);
+void        ROSE_ImageDestroy(ROSE_Image*);
+void        ROSE_ImageSavePNG(ROSE_Image*, const char*);
+void        ROSE_ImageResize(ROSE_Image*, u32, u32);
+ROSE_RGBA   ROSE_ImageGetPixelRGBA(ROSE_Image*, u32, u32);
+ROSE_Color4 ROSE_ImageGetPixelColor4(ROSE_Image*, u32, u32);
+void        ROSE_ImageSetPixelRGBA(ROSE_Image*, ROSE_RGBA, u32, u32);
+void        ROSE_ImageSetPixelColor4(ROSE_Image*, ROSE_Color4, u32, u32);
 
 ROSE_Text*   ROSE_TextCreate(const char*);
 void         ROSE_TextDestroy(ROSE_Text*);
 void         ROSE_TextUpdateString(ROSE_Text*, const char*);
-void         ROSE_TextDraw(ROSE_Text*, i32, i32, float, ROSE_Color4);
+void         ROSE_TextDraw(ROSE_Text*, i32, i32, f32, ROSE_Color4);
 u32          ROSE_TextWidth(ROSE_Text*);
 u32          ROSE_TextHeight(ROSE_Text*);
 
-ROSE_Sprite* ROSE_SpriteCreate(ROSE_Image*);
-void         ROSE_SpriteDestroy(ROSE_Sprite*);
-void         ROSE_SpriteDraw(ROSE_Sprite*, i32, i32, float, ROSE_Color4);
-u32          ROSE_SpriteWidth(ROSE_Sprite*);
-u32          ROSE_SpriteHeight(ROSE_Sprite*);
+ROSE_Sprite ROSE_SpriteCreate(ROSE_Image*);
+void        ROSE_SpriteDestroy(ROSE_Sprite*);
+void        ROSE_SpriteDraw(ROSE_Sprite*);
+
+ROSE_Camera ROSE_CameraInit(void);
+void        ROSE_CameraRotate(f32, f32, f32, f32);
+void        ROSE_CameraDirectionUp(f32*, f32*, f32*);
+void        ROSE_CameraDirectionRight(f32*, f32*, f32*);
+void        ROSE_CameraDirectionForward(f32*, f32*, f32*);
+
+ROSE_Mesh ROSE_MeshCreate(void);
+void      ROSE_MeshDestroy(ROSE_Mesh*);
+void      ROSE_MeshUploadVertices(ROSE_Mesh*, ROSE_Vertex3D*, u32);
+void      ROSE_MeshUploadTexture(ROSE_Mesh*, ROSE_Image*);
+void      ROSE_MeshDraw(ROSE_Mesh*, f32, f32, f32, f32, ROSE_Color4);
 
 SDL_GPUSampler*          ROSE_SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE_SDLCreateDepthTexture(void);
