@@ -56,7 +56,7 @@ void ROSE_TextUpdateString(ROSE_Text* text, const char* string)
 	assert(false && "NOT IMPLEMENTED");
 }
 
-void ROSE_TextDraw(ROSE_Text* text, i32 px, i32 py, f32 scale, ROSE_Color4 color)
+void ROSE_TextDraw(ROSE_Text* text, i32 px, i32 py, f32 scale, ROSE_Color color)
 {
 	if (minimized)
 	{

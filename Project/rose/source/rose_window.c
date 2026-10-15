@@ -83,7 +83,7 @@ bool ROSE_WindowIsOpen(void)
 	return true;
 }
 
-void ROSE_WindowClear(ROSE_Color4 color)
+void ROSE_WindowClear(ROSE_Color color)
 {
 	command_buffer = SDL_AcquireGPUCommandBuffer(device);
 

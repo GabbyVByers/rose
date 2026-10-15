@@ -39,7 +39,7 @@ void ROSE_SpriteDestroy(ROSE_Sprite* sprite)
 	free(sprite);
 }
 
-void ROSE_SpriteDraw(ROSE_Sprite* sprite, i32 px, i32 py, f32 scale, ROSE_Color4 color)
+void ROSE_SpriteDraw(ROSE_Sprite* sprite, i32 px, i32 py, f32 scale, ROSE_Color color)
 {
 	if (minimized)
 	{

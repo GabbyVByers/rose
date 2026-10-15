@@ -25,10 +25,10 @@ ROSE_Image ROSE_ImageCreate(u32 width, u32 height)
 
 void ROSE_ImageDestroy(ROSE_Image* image)
 {
-	free(image->pixels);
-	image->width = 0;
-	image->height = 0;
-	image->pixels = NULL;
+	if (image->_pixels)
+	{
+		free(image->_pixels);
+	}
 }
 
 ROSE_Image ROSE_ImageLoad(const char* path)
@@ -97,29 +97,14 @@ void ROSE_ImageResize(ROSE_Image* image, u32 width, u32 height)
 	image->pixels = pixels;
 }
 
-ROSE_RGBA ROSE_ImageGetPixelRGBA(ROSE_Image* image, u32 x, u32 y)
+ROSE_Color ROSE_ImageGetPixelColor(ROSE_Image* image, u32 x, u32 y)
 {
 	assert(x < image->width);
 	assert(y < image->height);
 
 	usize index = ((((((usize)image->height - 1) - y) * image->width) + x) * sizeof(ROSE_RGBA));
 
-	ROSE_RGBA color = { 0 };
-	color.r = image->pixels[index + 0];
-	color.g = image->pixels[index + 1];
-	color.b = image->pixels[index + 2];
-	color.a = image->pixels[index + 3];
-	return color;
-}
-
-ROSE_Color4 ROSE_ImageGetPixelColor4(ROSE_Image* image, u32 x, u32 y)
-{
-	assert(x < image->width);
-	assert(y < image->height);
-
-	usize index = ((((((usize)image->height - 1) - y) * image->width) + x) * sizeof(ROSE_RGBA));
-
-	ROSE_Color4 color = { 0 };
+	ROSE_Color color = { 0 };
 	color.r = ((float)(image->pixels[index + 0]) / 255.0f);
 	color.g = ((float)(image->pixels[index + 1]) / 255.0f);
 	color.b = ((float)(image->pixels[index + 2]) / 255.0f);
@@ -127,20 +112,7 @@ ROSE_Color4 ROSE_ImageGetPixelColor4(ROSE_Image* image, u32 x, u32 y)
 	return color;
 }
 
-void ROSE_ImageSetPixelRGBA(ROSE_Image* image, ROSE_RGBA color, u32 x, u32 y)
-{
-	assert(x < image->width);
-	assert(y < image->height);
-
-	usize index = ((((((usize)image->height - 1) - y) * image->width) + x) * sizeof(ROSE_RGBA));
-
-	image->pixels[index + 0] = color.r;
-	image->pixels[index + 1] = color.g;
-	image->pixels[index + 2] = color.b;
-	image->pixels[index + 3] = color.a;
-}
-
-void ROSE_ImageSetPixelColor4(ROSE_Image* image, ROSE_Color4 color, u32 x, u32 y)
+void ROSE_ImageSetPixelColor(ROSE_Image* image, ROSE_Color color, u32 x, u32 y)
 {
 	assert(x < image->width);
 	assert(y < image->height);

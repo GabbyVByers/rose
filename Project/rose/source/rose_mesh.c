@@ -25,48 +25,46 @@ static void mmult(f32* a, f32* b, f32* result)
 	}
 }
 
-ROSE_Mesh* ROSE_MeshCreate(void)
+ROSE_Mesh ROSE_MeshCreate(void)
 {
-	ROSE_Mesh* mesh = malloc(sizeof(ROSE_Mesh));
-	mesh->qw = 1.0f;
-	mesh->qx = 0.0f;
-	mesh->qy = 0.0f;
-	mesh->qz = 0.0f;
-	mesh->count = 0;
-	mesh->buffer = NULL;
-	mesh->texture = NULL;
-	return mesh;
+	return (ROSE_Mesh) {
+		.scale = 1.0f,
+		.px = 0.0f,
+		.py = 0.0f,
+		.pz = 0.0f,
+		.qw = 1.0f,
+		.qx = 0.0f,
+		.qy = 0.0f,
+		.qz = 0.0f,
+		.color = ROSE_ColorROSE_COLOR_WHITE,
+		.count = 0,
+		.vertices = NULL,
+		.texture = NULL,
+	};
 }
 
 void ROSE_MeshDestroy(ROSE_Mesh* mesh)
 {
-	if (!mesh)
+	if (mesh->vertices)
 	{
-		return;
-	}
-
-	if (mesh->buffer)
-	{
-		SDL_ReleaseGPUBuffer(device, mesh->buffer);
+		SDL_ReleaseGPUBuffer(device, mesh->vertices);
 	}
 
 	if (mesh->texture)
 	{
 		SDL_ReleaseGPUTexture(device, mesh->texture);
 	}
-
-	free(mesh);
 }
 
 void ROSE_MeshUploadVertices(ROSE_Mesh* mesh, ROSE_Vertex3D* vertices, u32 count)
 {
-	if (mesh->buffer)
+	if (mesh->vertices)
 	{
-		SDL_ReleaseGPUBuffer(device, mesh->buffer);
+		SDL_ReleaseGPUBuffer(device, mesh->vertices);
 	}
 
 	mesh->count = count;
-	mesh->buffer = ROSE_SDLCreateVertexBuffer(vertices, count, sizeof(ROSE_Vertex3D));
+	mesh->vertices = ROSE_SDLCreateVertexBuffer(vertices, count, sizeof(ROSE_Vertex3D));
 }
 
 void ROSE_MeshUploadTexture(ROSE_Mesh* mesh, ROSE_Image* image)
@@ -79,7 +77,7 @@ void ROSE_MeshUploadTexture(ROSE_Mesh* mesh, ROSE_Image* image)
 	mesh->texture = ROSE_SDLCreateTexture(image);
 }
 
-void ROSE_MeshDraw(ROSE_Mesh* mesh)
+void ROSE_MeshDraw(ROSE_Mesh* mesh, ROSE_Camera* camera)
 {
 	if (minimized)
 	{
@@ -87,7 +85,7 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 	}
 
 	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = mesh->buffer,
+		.buffer = mesh->vertices,
 	};
 
 	SDL_GPUTextureSamplerBinding texture_binding = {
@@ -137,9 +135,9 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 	}
 
 	{
-		f32 px = camera_px;
-		f32 py = camera_py;
-		f32 pz = camera_pz;
+		f32 px = camera->px;
+		f32 py = camera->py;
+		f32 pz = camera->pz;
 
 		f32 translation[16] = {
 			1, 0, 0, -px,
@@ -148,10 +146,10 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 			0, 0, 0, 1,
 		};
 
-		f32 w = camera_qw;
-		f32 x = -camera_qx;
-		f32 y = -camera_qy;
-		f32 z = -camera_qz;
+		f32 w =  camera->qw;
+		f32 x = -camera->qx;
+		f32 y = -camera->qy;
+		f32 z = -camera->qz;
 
 		f32 rotation[16] = {
 			1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w), 0,
@@ -164,8 +162,8 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 	}
 
 	f32 asp = (f32)ROSE_SCREEN_WIDTH / (f32)ROSE_SCREEN_HEIGHT;
-	f32 f = 1.0f / tanf(camera_fov * 0.5f);
-	f32 n = camera_near;
+	f32 f = 1.0f / tanf(camera->fov * 0.5f);
+	f32 n = camera->near_plane;
 
 	f32 project[16] = {
 		f / asp, 0, 0, 0,

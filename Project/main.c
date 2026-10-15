@@ -38,10 +38,10 @@ int main(void)
         i32 mouse_x = ROSE_MousePositionX();
         i32 mouse_y = ROSE_MousePositionY();
 
-        ROSE_WindowClear(ROSE_COLOR(80, 80, 80, 255));
+        ROSE_WindowClear(ROSE_ColorROSE_COLOR(80, 80, 80, 255));
         ROSE_MeshDraw(mesh);
-        ROSE_SpriteDraw(sprite, 100, 100, 1.0f, ROSE_COLOR_WHITE);
-        ROSE_TextDraw(text, mouse_x, mouse_y, 3.0f, ROSE_COLOR_PURPLE);
+        ROSE_SpriteDraw(sprite, 100, 100, 1.0f, ROSE_ColorROSE_COLOR_WHITE);
+        ROSE_TextDraw(text, mouse_x, mouse_y, 3.0f, ROSE_ColorROSE_COLOR_PURPLE);
         ROSE_WindowRender();
     }
 
