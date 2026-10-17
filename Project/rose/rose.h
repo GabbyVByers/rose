@@ -34,30 +34,6 @@ typedef size_t    usize;
 typedef ptrdiff_t isize;
 
 typedef struct {
-	f32 r;
-	f32 g;
-	f32 b;
-	f32 a;
-} ROSE_Color;
-
-#define ROSE_COLOR(r, g, b, a) \
-((ROSE_Color) {                \
-(float)r / 255.0f,             \
-(float)g / 255.0f,             \
-(float)b / 255.0f,             \
-(float)a / 255.0f })
-
-#define ROSE_COLOR_WHITE  ROSE_COLOR(255, 255, 255, 255)
-#define ROSE_COLOR_BLACK  ROSE_COLOR(  0,   0,   0, 255)
-#define ROSE_COLOR_RED    ROSE_COLOR(255,   0,   0, 255)
-#define ROSE_COLOR_GREEN  ROSE_COLOR(  0, 255,   0, 255)
-#define ROSE_COLOR_BLUE   ROSE_COLOR(  0,   0, 255, 255)
-#define ROSE_COLOR_CYAN   ROSE_COLOR(  0, 255, 255, 255)
-#define ROSE_COLOR_PURPLE ROSE_COLOR(255,   0, 255, 255)
-#define ROSE_COLOR_YELLOW ROSE_COLOR(255, 255,   0, 255)
-#define ROSE_COLOR_TRANS  ROSE_COLOR(255, 255, 255,   0)
-
-typedef struct {
 	f32 position[2];
 	f32 texcoords[2];
 } ROSE_Vertex2D;
@@ -69,53 +45,60 @@ typedef struct {
 } ROSE_Vertex3D;
 
 typedef struct {
-	u32 width;
-	u32 height;
+	u32 _width;
+	u32 _height;
 	u8* _pixels;
 } ROSE_Image;
 
 typedef struct {
-	f32 scale;
-	i32 px, py;
-	u32 width;
-	u32 height;
-	ROSE_Color color;
+	f64 scale;
+	f64 xpos;
+	f64 ypos;
+	f32 color[4];
+	u32 _width;
+	u32 _height;
 	u32 _count;
 	SDL_GPUBuffer* _vertices;
 } ROSE_Text;
 
 typedef struct {
-	f32 scale;
-	i32 px, py;
-	u32 width;
-	u32 height;
-	ROSE_Color color;
+	f64 scale;
+	f64 xpos;
+	f64 ypos;
+	f32 color[4];
+	u32 _width;
+	u32 _height;
 	SDL_GPUBuffer* _vertices;
 	SDL_GPUTexture* _texture;
 } ROSE_Sprite;
 
 typedef struct {
-	f32 fov, near;
-	f32 px, py, pz;
-	f32 _qw, _qx, _qy, _qz;
+	f64 fov;
+	f64 near;
+	f64 xpos;
+	f64 ypos;
+	f64 zpos;
+	f64 _quat[4];
 } ROSE_Camera;
 
 typedef struct {
-	f32 scale;
-	f32 px, py, pz;
-	ROSE_Color color;
-	f32 _qw, _qx, _qy, _qz;
+	f64 scale;
+	f64 xpos;
+	f64 ypos;
+	f64 zpos;
+	f64 color[4];
+	f64 _quat[4];
 	u32 _count;
 	SDL_GPUBuffer* _vertices;
 	SDL_GPUTexture* _texture;
 } ROSE_Mesh;
 
-void ROSE_Init(const char*, u32, u32, bool);
+void ROSE_Init(const char* title, u32 width, u32 height, bool vkdebug);
 void ROSE_Quit(void);
 
-void ROSE_WindowToggleVSync(bool);
+void ROSE_WindowToggleVSync(bool vsync);
 bool ROSE_WindowIsOpen(void);
-void ROSE_WindowClear(ROSE_Color);
+void ROSE_WindowClear(float color[4]);
 void ROSE_WindowRender(void);
 
 bool ROSE_MousePressing(u32);
@@ -128,24 +111,22 @@ bool ROSE_KeyboardPressing(ROSE_Scancode);
 bool ROSE_KeyboardPressed(ROSE_Scancode);
 bool ROSE_KeyboardReleased(ROSE_Scancode);
 
-ROSE_Image  ROSE_ImageCreate(u32, u32);
-void        ROSE_ImageDestroy(ROSE_Image*);
-void        ROSE_ImageLoadFromFile(ROSE_Image*, const char*);
-void        ROSE_ImageSavePNG(ROSE_Image*, const char*);
-void        ROSE_ImageResize(ROSE_Image*, u32, u32);
-ROSE_Color  ROSE_ImageGetPixelColor(ROSE_Image*, u32, u32);
-void        ROSE_ImageSetPixelColor(ROSE_Image*, ROSE_Color, u32, u32);
+ROSE_Image  ROSE_ImageCreate(u32 width, u32 height);
+void        ROSE_ImageDestroy(ROSE_Image* image);
+void        ROSE_ImageLoadFromFile(ROSE_Image* image, const char* path);
+void        ROSE_ImageSavePNG(ROSE_Image* image, const char* path);
+void        ROSE_ImageResize(ROSE_Image* image, u32 width, u32 height);
+void        ROSE_ImageGetPixelColor(ROSE_Image* image, u32 xpos, u32 ypos, float color[4]);
+void        ROSE_ImageSetPixelColor(ROSE_Image* image, u32 xpos, u32 ypos, float color[4]);
 
-ROSE_Text   ROSE_TextCreate(const char*);
-void        ROSE_TextDestroy(ROSE_Text*);
-void        ROSE_TextUpdateString(ROSE_Text*, const char*);
-void        ROSE_TextDraw(ROSE_Text*);
-u32         ROSE_TextWidth(ROSE_Text*);
-u32         ROSE_TextHeight(ROSE_Text*);
+ROSE_Text   ROSE_TextCreate(const char* string);
+void        ROSE_TextDestroy(ROSE_Text* text);
+void        ROSE_TextUpdateString(ROSE_Text* text, const char* string);
+void        ROSE_TextDraw(ROSE_Text* text);
 
-ROSE_Sprite ROSE_SpriteCreate(ROSE_Image*);
-void        ROSE_SpriteDestroy(ROSE_Sprite*);
-void        ROSE_SpriteDraw(ROSE_Sprite*);
+ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image);
+void        ROSE_SpriteDestroy(ROSE_Sprite* sprite);
+void        ROSE_SpriteDraw(ROSE_Sprite* sprite);
 
 ROSE_Camera ROSE_CameraInit(void);
 void        ROSE_CameraRotate(ROSE_Camera*, f32, f32, f32, f32);

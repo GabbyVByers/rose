@@ -9,17 +9,19 @@
 
 ROSE_Image ROSE_ImageCreate(u32 width, u32 height)
 {
-	assert(width != 0);
-	assert(height != 0);
+	usize size = (usize)width * height * 4;
+	u8* pixels = NULL;
 
-	usize count = (usize)width * height;
-	u8* pixels = calloc(count, sizeof(ROSE_RGBA));
-	memset(pixels, 255, count * sizeof(ROSE_RGBA));
+	if (size != 0)
+	{
+		pixels = malloc(size);
+		memset(pixels, 255, size);
+	}
 
 	return (ROSE_Image) {
-		.width = width,
-		.height = height,
-		.pixels = pixels,
+		._width = width,
+		._height = height,
+		._pixels = pixels,
 	};
 }
 
@@ -29,114 +31,101 @@ void ROSE_ImageDestroy(ROSE_Image* image)
 	{
 		free(image->_pixels);
 	}
+
+	image->_width = 0;
+	image->_height = 0;
+	image->_pixels = NULL;
 }
 
-ROSE_Image ROSE_ImageLoad(const char* path)
+void ROSE_ImageLoadFromFile(ROSE_Image* image, const char* path)
 {
-	int width, height, num;
-	stbi_set_flip_vertically_on_load(true);
-	u8* stbi_image = stbi_load(path, &width, &height, &num, sizeof(ROSE_RGBA));
-
-	if (!stbi_image)
+	if (image->_pixels)
 	{
-		fprintf(stderr, "stbi_load() Failed: %s\n", stbi_failure_reason());
-		exit(EXIT_FAILURE);
+		free(image->_pixels);
 	}
 
-	usize count = (usize)width * height;
-	u8* pixels = calloc(count, sizeof(ROSE_RGBA));
-	memcpy(pixels, stbi_image, count * sizeof(ROSE_RGBA));
+	image->_width = 0;
+	image->_height = 0;
+	image->_pixels = NULL;
+
+	int width, height, num;
+	stbi_set_flip_vertically_on_load(true);
+	u8* stbi_image = stbi_load(path, &width, &height, &num, 4);
+	assert(stbi_image && "stbi_load() Failed!");
+
+	usize size = (usize)width * height * 4;
+	u8* pixels = malloc(size);
+	memcpy(pixels, stbi_image, size);
 	stbi_image_free(stbi_image);
 
-	return (ROSE_Image) {
-		.width = width,
-		.height = height,
-		.pixels = pixels,
-	};
+	image->_width = width;
+	image->_height = height;
+	image->_pixels = pixels;
 }
 
 void ROSE_ImageSavePNG(ROSE_Image* image, const char* path)
 {
-	int width = (int)image->width;
-	int height = (int)image->height;
-	void* pixels = (void*)image->pixels;
-	int stride = (int)image->width * 4;
+	int width = (int)image->_width;
+	int height = (int)image->_height;
+	void* pixels = (void*)image->_pixels;
+	int stride = (int)image->_width * 4;
 	stbi_flip_vertically_on_write(true);
-
-	if (!stbi_write_png(path, width, height, 4, pixels, stride))
-	{
-		fprintf(stderr, "stbi_write_png() Failed!\n");
-		exit(EXIT_FAILURE);
-	}
+	bool success = stbi_write_png(path, width, height, 4, pixels, stride);
+	assert(success && "stbi_write_png() Failed!");
 }
 
 void ROSE_ImageResize(ROSE_Image* image, u32 width, u32 height)
 {
-	assert(width != 0);
-	assert(height != 0);
-
-	usize count = (usize)width * height;
-	u8* pixels = calloc(count, sizeof(ROSE_RGBA));
-	memset(pixels, 255, count * sizeof(ROSE_RGBA));
-
-	usize copy_width = (width < image->width) ? width : image->width;
-	usize copy_height = (height < image->height) ? height : image->height;
-	usize src_offset = image->height - copy_height;
-	usize dst_offset = height - copy_height;
-
-	for (usize y = 0; y < copy_height; y++)
+	usize size = (usize)width * height * 4;
+	u8* pixels = NULL;
+	
+	if (size != 0)
 	{
-		usize src_index = (src_offset + y) * image->width * sizeof(ROSE_RGBA);
-		usize dst_index = (dst_offset + y) * width * sizeof(ROSE_RGBA);
-		memcpy(pixels + dst_index, image->pixels + src_index, copy_width * sizeof(ROSE_RGBA));
+		pixels = malloc(size);
+		memset(pixels, 255, size);
 	}
 
-	free(image->pixels);
-	image->width = width;
-	image->height = height;
-	image->pixels = pixels;
+	if (pixels && image->_pixels)
+	{
+		usize copy_width = (width < image->_width) ? width : image->_width;
+		usize copy_height = (height < image->_height) ? height : image->_height;
+		usize src_offset = image->_height - copy_height;
+		usize dst_offset = height - copy_height;
+
+		for (usize y = 0; y < copy_height; y++)
+		{
+			usize src_index = (src_offset + y) * image->_width * 4;
+			usize dst_index = (dst_offset + y) * width * 4;
+			memcpy(pixels + dst_index, image->_pixels + src_index, copy_width * 4);
+		}
+	}
+
+	if (image->_pixels)
+	{
+		free(image->_pixels);
+	}
+
+	image->_width = width;
+	image->_height = height;
+	image->_pixels = pixels;
 }
 
-ROSE_Color ROSE_ImageGetPixelColor(ROSE_Image* image, u32 x, u32 y)
+void ROSE_ImageGetPixelColor(ROSE_Image* image, u32 xpos, u32 ypos, float color[4])
 {
-	assert(x < image->width);
-	assert(y < image->height);
-
-	usize index = ((((((usize)image->height - 1) - y) * image->width) + x) * sizeof(ROSE_RGBA));
-
-	ROSE_Color color = { 0 };
-	color.r = ((float)(image->pixels[index + 0]) / 255.0f);
-	color.g = ((float)(image->pixels[index + 1]) / 255.0f);
-	color.b = ((float)(image->pixels[index + 2]) / 255.0f);
-	color.a = ((float)(image->pixels[index + 3]) / 255.0f);
+	usize index = ((((((usize)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
+	color[0] = ((float)(image->_pixels[index + 0]) / 255.0f);
+	color[1] = ((float)(image->_pixels[index + 1]) / 255.0f);
+	color[2] = ((float)(image->_pixels[index + 2]) / 255.0f);
+	color[3] = ((float)(image->_pixels[index + 3]) / 255.0f);
 	return color;
 }
 
-void ROSE_ImageSetPixelColor(ROSE_Image* image, ROSE_Color color, u32 x, u32 y)
+void ROSE_ImageSetPixelColor(ROSE_Image* image, u32 xpos, u32 ypos, float color[4])
 {
-	assert(x < image->width);
-	assert(y < image->height);
-
-	usize index = ((((((usize)image->height - 1) - y) * image->width) + x) * sizeof(ROSE_RGBA));
-
-	image->pixels[index + 0] = (u8)(color.r * 255.0f);
-	image->pixels[index + 1] = (u8)(color.g * 255.0f);
-	image->pixels[index + 2] = (u8)(color.b * 255.0f);
-	image->pixels[index + 3] = (u8)(color.a * 255.0f);
-}
-
-u32 ROSE_ImageWidth(ROSE_Image* image)
-{
-	return image->width;
-}
-
-u32 ROSE_ImageHeight(ROSE_Image* image)
-{
-	return image->height;
-}
-
-const u8* ROSE_ImagePixels(ROSE_Image* image)
-{
-	return image->pixels;
+	usize index = ((((((usize)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
+	image->_pixels[index + 0] = (u8)(color[0] * 255.0f);
+	image->_pixels[index + 1] = (u8)(color[1] * 255.0f);
+	image->_pixels[index + 2] = (u8)(color[2] * 255.0f);
+	image->_pixels[index + 3] = (u8)(color[3] * 255.0f);
 }
 

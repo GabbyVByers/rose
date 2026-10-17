@@ -17,8 +17,8 @@ type var = { (type)0 };
 extern type var;
 #endif
 
-ROSE_GLOBAL(u32, ROSE_SCREEN_WIDTH)
-ROSE_GLOBAL(u32, ROSE_SCREEN_HEIGHT)
+ROSE_GLOBAL(u32, screen_width)
+ROSE_GLOBAL(u32, screen_height)
 ROSE_GLOBAL(SDL_Window*, window)
 ROSE_GLOBAL(SDL_GPUDevice*, device)
 ROSE_GLOBAL(SDL_GPUSampler*, sampler)
@@ -33,10 +33,10 @@ ROSE_GLOBAL(SDL_GPURenderPass*, render_pass)
 ROSE_GLOBAL(SDL_GPUTexture*, swapchain_texture)
 ROSE_GLOBAL(SDL_GPUCommandBuffer*, command_buffer)
 
-ROSE_GLOBAL(float, ROSE_MOUSE_PX)
-ROSE_GLOBAL(float, ROSE_MOUSE_PY)
-ROSE_GLOBAL(float, ROSE_MOUSE_VX)
-ROSE_GLOBAL(float, ROSE_MOUSE_VY)
+ROSE_GLOBAL(float, mouse_xpos)
+ROSE_GLOBAL(float, mouse_ypox)
+ROSE_GLOBAL(float, mouse_xvel)
+ROSE_GLOBAL(float, mouse_yvel)
 ROSE_GLOBAL(float, saved_mouse_px)
 ROSE_GLOBAL(float, saved_mouse_py)
 ROSE_GLOBAL(u32, curr_mouse_state)

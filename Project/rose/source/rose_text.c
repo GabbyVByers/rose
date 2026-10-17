@@ -7,7 +7,10 @@
 #include "rose.h"
 #include "rose_state.h"
 
-ROSE_Text* ROSE_TextCreate(const char* string)
+#define ASCII_WIDTH 7
+#define ASCII_HEIGHT 11
+
+ROSE_Text ROSE_TextCreate(const char* string)
 {
 	u32 num_characters = strlen(string);
 	u32 num_vertices = num_characters * 6;
@@ -27,36 +30,38 @@ ROSE_Text* ROSE_TextCreate(const char* string)
 		vertices[index + 5] = (ROSE_Vertex2D){ { (float)(i + 0), -1.0f }, { (float)(x),     0.0f } };
 	}
 
-	static const u32 ascii_width = 7;
-	static const u32 ascii_height = 11;
+	ROSE_Text text = {
+		.scale = 1.0,
+		.xpos = 0.0,
+		.ypos = 0.0,
+		.color = { 1.0f, 1.0f, 1.0f, 1.0f },
+		._width = ASCII_WIDTH * num_characters,
+		._height = ASCII_HEIGHT,
+		._count = num_vertices,
+		._vertices = ROSE_SDLCreateVertexBuffer(vertices, num_vertices, sizeof(ROSE_Vertex2D)),
+	};
 
-	ROSE_Text* text = calloc(1, sizeof(ROSE_Text));
-	text->width = ascii_width;
-	text->height = ascii_height;
-	text->full_width = num_characters * ascii_width;
-	text->buffer = ROSE_SDLCreateVertexBuffer(vertices, num_vertices, sizeof(ROSE_Vertex2D));
-	text->num_vertices = num_vertices;
 	free(vertices);
 	return text;
 }
 
 void ROSE_TextDestroy(ROSE_Text* text)
 {
-	if (!text)
+	if (text->_vertices)
 	{
-		return;
+		SDL_ReleaseGPUBuffer(device, text->_vertices);
 	}
-
-	SDL_ReleaseGPUBuffer(device, text->buffer);
-	free(text);
+	
+	text->_count = 0;
+	text->_vertices = NULL;
 }
 
 void ROSE_TextUpdateString(ROSE_Text* text, const char* string)
 {
-	assert(false && "NOT IMPLEMENTED");
+	assert(false && "Not Implemented!");
 }
 
-void ROSE_TextDraw(ROSE_Text* text, i32 px, i32 py, f32 scale, ROSE_Color color)
+void ROSE_TextDraw(ROSE_Text* text)
 {
 	if (minimized)
 	{
@@ -64,7 +69,7 @@ void ROSE_TextDraw(ROSE_Text* text, i32 px, i32 py, f32 scale, ROSE_Color color)
 	}
 
 	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = text->buffer,
+		.buffer = text->_vertices,
 	};
 
 	SDL_GPUTextureSamplerBinding texture_binding = {
@@ -72,13 +77,13 @@ void ROSE_TextDraw(ROSE_Text* text, i32 px, i32 py, f32 scale, ROSE_Color color)
 		.sampler = sampler,
 	};
 
-	f32 scaled_width = (f32)text->width * scale;
-	f32 scaled_height = (f32)text->height * scale;
+	f64 scaled_width = (f64)text->_width * text->scale;
+	f64 scaled_height = (f64)ASCII_HEIGHT * text->scale;
 
-	f32 w = (scaled_width / (f32)ROSE_SCREEN_WIDTH) * 2.0f;
-	f32 h = (scaled_height / (f32)ROSE_SCREEN_HEIGHT) * 2.0f;
-	f32 x = -1.0f + (((f32)px / (f32)ROSE_SCREEN_WIDTH) * 2.0f);
-	f32 y = 1.0f - (((f32)py / (f32)ROSE_SCREEN_HEIGHT) * 2.0f);
+	f64 w = (scaled_width / (f64)screen_width) * 2.0;
+	f64 h = (scaled_height / (f64)screen_height) * 2.0;
+	f64 x = -1.0f + ((text->xpos / (f64)screen_width) * 2.0);
+	f64 y = 1.0f - ((text->ypos / (f64)screen_height) * 2.0);
 
 	typedef struct Uniform {
 		f32 TransformMatrix[16];
@@ -87,16 +92,16 @@ void ROSE_TextDraw(ROSE_Text* text, i32 px, i32 py, f32 scale, ROSE_Color color)
 
 	Uniform uniform = {
 		.TransformMatrix = {
-			w, 0, 0, 0,
-			0, h, 0, 0,
+			(f32)w, 0, 0, 0,
+			0, (f32)h, 0, 0,
 			0, 0, 1, 0,
-			x, y, 0, 1,
+			(f32)x, (f32)y, 0, 1,
 		},
 		.TintColor = {
-			color.r,
-			color.g,
-			color.b,
-			color.a,
+			text->color[0],
+			text->color[1],
+			text->color[2],
+			text->color[3],
 		}
 	};
 
@@ -104,16 +109,6 @@ void ROSE_TextDraw(ROSE_Text* text, i32 px, i32 py, f32 scale, ROSE_Color color)
 	SDL_PushGPUVertexUniformData(command_buffer, 0, ((void*)&uniform), sizeof(uniform));
 	SDL_BindGPUVertexBuffers(render_pass, 0, &buffer_binding, 1);
 	SDL_BindGPUFragmentSamplers(render_pass, 0, &texture_binding, 1);
-	SDL_DrawGPUPrimitives(render_pass, (u32)text->num_vertices, 1, 0, 0);
-}
-
-u32 ROSE_TextWidth(ROSE_Text* text)
-{
-	return text->full_width;
-}
-
-u32 ROSE_TextHeight(ROSE_Text* text)
-{
-	return text->height;
+	SDL_DrawGPUPrimitives(render_pass, (u32)text->_count, 1, 0, 0);
 }
 

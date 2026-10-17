@@ -51,8 +51,8 @@ void ROSE_WindowToggleVSync(bool vsync)
 
 bool ROSE_WindowIsOpen(void)
 {
-	ROSE_MOUSE_VX = 0.0f;
-	ROSE_MOUSE_VY = 0.0f;
+	mouse_xvel = 0.0f;
+	mouse_yvel = 0.0f;
 	ROSE_MOUSE_SCROLL = 0.0f;
 
 	SDL_Event event;
@@ -70,8 +70,8 @@ bool ROSE_WindowIsOpen(void)
 
 		if (event.type == SDL_EVENT_MOUSE_MOTION)
 		{
-			ROSE_MOUSE_VX += event.motion.xrel;
-			ROSE_MOUSE_VY += event.motion.yrel;
+			mouse_xvel += event.motion.xrel;
+			mouse_yvel += event.motion.yrel;
 		}
 	}
 
@@ -79,11 +79,11 @@ bool ROSE_WindowIsOpen(void)
 	memcpy(curr_keyboard_state, SDL_GetKeyboardState(NULL), sizeof(bool) * SDL_SCANCODE_COUNT);
 
 	prev_mouse_state = curr_mouse_state;
-	curr_mouse_state = SDL_GetMouseState(&ROSE_MOUSE_PX, &ROSE_MOUSE_PY);
+	curr_mouse_state = SDL_GetMouseState(&mouse_xpos, &mouse_ypox);
 	return true;
 }
 
-void ROSE_WindowClear(ROSE_Color color)
+void ROSE_WindowClear(float color[4])
 {
 	command_buffer = SDL_AcquireGPUCommandBuffer(device);
 
@@ -115,9 +115,9 @@ void ROSE_WindowClear(ROSE_Color color)
 		return;
 	}
 
-	const bool resize_depth_texture = (width != ROSE_SCREEN_WIDTH) || (height != ROSE_SCREEN_HEIGHT);
-	ROSE_SCREEN_WIDTH = width;
-	ROSE_SCREEN_HEIGHT = height;
+	const bool resize_depth_texture = (width != screen_width) || (height != screen_height);
+	screen_width = width;
+	screen_height = height;
 
 	if (resize_depth_texture)
 	{
@@ -127,8 +127,8 @@ void ROSE_WindowClear(ROSE_Color color)
 			.type = SDL_GPU_TEXTURETYPE_2D,
 			.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
 			.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
-			.width = ROSE_SCREEN_WIDTH,
-			.height = ROSE_SCREEN_HEIGHT,
+			.width = screen_width,
+			.height = screen_height,
 			.layer_count_or_depth = 1,
 			.num_levels = 1,
 			.sample_count = SDL_GPU_SAMPLECOUNT_1
@@ -146,10 +146,10 @@ void ROSE_WindowClear(ROSE_Color color)
 	SDL_GPUColorTargetInfo color_target_info = {
 		.texture = swapchain_texture,
 		.clear_color = {
-			.r = color.r,
-			.g = color.g,
-			.b = color.b,
-			.a = color.a,
+			.r = color[0],
+			.g = color[1],
+			.b = color[2],
+			.a = color[3],
 		},
 		.load_op = SDL_GPU_LOADOP_CLEAR,
 		.store_op = SDL_GPU_STOREOP_STORE,

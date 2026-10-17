@@ -20,23 +20,27 @@ ROSE_Sprite* ROSE_SpriteCreate(ROSE_Image* image)
 
 	ROSE_Sprite* sprite = malloc(sizeof(ROSE_Sprite));
 	u32 count = sizeof(vertices) / sizeof(vertices[0]);
-	sprite->width = ROSE_ImageWidth(image);
-	sprite->height = ROSE_ImageHeight(image);
-	sprite->buffer = ROSE_SDLCreateVertexBuffer(vertices, count, sizeof(ROSE_Vertex2D));
-	sprite->texture = ROSE_SDLCreateTexture(image);
+	sprite->_width = image->_width;
+	sprite->_height = image->_height;
+	sprite->_vertices = ROSE_SDLCreateVertexBuffer(vertices, count, sizeof(ROSE_Vertex2D));
+	sprite->_texture = ROSE_SDLCreateTexture(image);
 	return sprite;
 }
 
 void ROSE_SpriteDestroy(ROSE_Sprite* sprite)
 {
-	if (!sprite)
+	if (sprite->_texture)
 	{
-		return;
+		SDL_ReleaseGPUTexture(device, sprite->_texture);
 	}
-
-	SDL_ReleaseGPUTexture(device, sprite->texture);
-	SDL_ReleaseGPUBuffer(device, sprite->buffer);
-	free(sprite);
+	
+	if (sprite->_vertices)
+	{
+		SDL_ReleaseGPUBuffer(device, sprite->_vertices);
+	}
+	
+	sprite->_texture = NULL;
+	sprite->_vertices = NULL;
 }
 
 void ROSE_SpriteDraw(ROSE_Sprite* sprite, i32 px, i32 py, f32 scale, ROSE_Color color)
@@ -58,10 +62,10 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite, i32 px, i32 py, f32 scale, ROSE_Color 
 	f32 scaled_width = (f32)sprite->width * scale;
 	f32 scaled_height = (f32)sprite->height * scale;
 
-	f32 w = (scaled_width / (f32)ROSE_SCREEN_WIDTH) * 2.0f;
-	f32 h = (scaled_height / (f32)ROSE_SCREEN_HEIGHT) * 2.0f;
-	f32 x = -1.0f + (((f32)px / (f32)ROSE_SCREEN_WIDTH) * 2.0f);
-	f32 y = 1.0f - (((f32)py / (f32)ROSE_SCREEN_HEIGHT) * 2.0f);
+	f32 w = (scaled_width / (f32)screen_width) * 2.0f;
+	f32 h = (scaled_height / (f32)screen_height) * 2.0f;
+	f32 x = -1.0f + (((f32)px / (f32)screen_width) * 2.0f);
+	f32 y = 1.0f - (((f32)py / (f32)screen_height) * 2.0f);
 
 	typedef struct Uniform {
 		f32 TransformMatrix[16];
@@ -88,15 +92,5 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite, i32 px, i32 py, f32 scale, ROSE_Color 
 	SDL_BindGPUVertexBuffers(render_pass, 0, &buffer_binding, 1);
 	SDL_BindGPUFragmentSamplers(render_pass, 0, &texture_binding, 1);
 	SDL_DrawGPUPrimitives(render_pass, 6, 1, 0, 0);
-}
-
-u32 ROSE_SpriteWidth(ROSE_Sprite* sprite)
-{
-	return sprite->width;
-}
-
-u32 ROSE_SpriteHeight(ROSE_Sprite* sprite)
-{
-	return sprite->height;
 }
 

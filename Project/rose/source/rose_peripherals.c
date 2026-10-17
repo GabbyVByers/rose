@@ -29,8 +29,8 @@ bool ROSE_MouseReleased(u32 button)
 
 void ROSE_MouseHide(void)
 {
-	saved_mouse_px = ROSE_MOUSE_PX;
-	saved_mouse_py = ROSE_MOUSE_PY;
+	saved_mouse_px = mouse_xpos;
+	saved_mouse_py = mouse_ypox;
 
 	if (!SDL_SetWindowRelativeMouseMode(window, true))
 	{
@@ -41,9 +41,9 @@ void ROSE_MouseHide(void)
 
 void ROSE_MouseReveal(void)
 {
-	ROSE_MOUSE_PX = saved_mouse_px;
-	ROSE_MOUSE_PY = saved_mouse_py;
-	SDL_WarpMouseInWindow(window, ROSE_MOUSE_PX, ROSE_MOUSE_PY);
+	mouse_xpos = saved_mouse_px;
+	mouse_ypox = saved_mouse_py;
+	SDL_WarpMouseInWindow(window, mouse_xpos, mouse_ypox);
 
 	if (!SDL_SetWindowRelativeMouseMode(window, false))
 	{

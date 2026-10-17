@@ -161,7 +161,7 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh, ROSE_Camera* camera)
 		mmult(rotation, translation, view);
 	}
 
-	f32 asp = (f32)ROSE_SCREEN_WIDTH / (f32)ROSE_SCREEN_HEIGHT;
+	f32 asp = (f32)screen_width / (f32)screen_height;
 	f32 f = 1.0f / tanf(camera->fov * 0.5f);
 	f32 n = camera->near_plane;
 

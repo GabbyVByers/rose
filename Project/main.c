@@ -4,13 +4,6 @@
  */
 
 #include "rose.h"
-extern u32 ROSE_SCREEN_WIDTH;
-extern u32 ROSE_SCREEN_HEIGHT;
-extern f32 ROSE_MOUSE_PX;
-extern f32 ROSE_MOUSE_PY;
-extern f32 ROSE_MOUSE_VX;
-extern f32 ROSE_MOUSE_VY;
-extern f32 ROSE_MOUSE_SCROLL;
 
 int main(void)
 {
