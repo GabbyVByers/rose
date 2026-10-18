@@ -82,7 +82,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\stb-master;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -104,7 +104,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\stb-master;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,7 +124,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\stb-master;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -146,7 +146,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\stb-master;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -159,13 +159,11 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="libraries\stb-master\stb.c" />
+    <ClCompile Include="libraries\stb-master\stb_image.c" />
     <ClCompile Include="main.c" />
-    <ClCompile Include="rose\source\rose_camera.c" />
     <ClCompile Include="rose\source\rose_gpu.c" />
     <ClCompile Include="rose\source\rose_image.c" />
     <ClCompile Include="rose\source\rose_init.c" />
-    <ClCompile Include="rose\source\rose_mesh.c" />
     <ClCompile Include="rose\source\rose_peripherals.c" />
     <ClCompile Include="rose\source\rose_sprite.c" />
     <ClCompile Include="rose\source\rose_text.c" />

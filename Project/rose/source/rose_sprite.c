@@ -7,9 +7,9 @@
 #include "rose.h"
 #include "rose_state.h"
 
-ROSE_Sprite* ROSE_SpriteCreate(ROSE_Image* image)
+ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 {
-	ROSE_Vertex2D vertices[] = {
+	ROSE_VertexSprite vertices[] = {
 		{ { 0, 0 }, { 0, 1 } },
 		{ { 1, 0 }, { 1, 1 } },
 		{ { 1,-1 }, { 1, 0 } },
@@ -18,40 +18,32 @@ ROSE_Sprite* ROSE_SpriteCreate(ROSE_Image* image)
 		{ { 0,-1 }, { 0, 0 } },
 	};
 
-	ROSE_Sprite* sprite = malloc(sizeof(ROSE_Sprite));
-	u32 count = sizeof(vertices) / sizeof(vertices[0]);
-	sprite->_width = image->_width;
-	sprite->_height = image->_height;
-	sprite->_vertices = ROSE_SDLCreateVertexBuffer(vertices, count, sizeof(ROSE_Vertex2D));
-	sprite->_texture = ROSE_SDLCreateTexture(image);
-	return sprite;
+	return (ROSE_Sprite) {
+		.scale = 1.0,
+		.xpos = 0,
+		.ypos = 0,
+		.width = image->width,
+		.height = image->height,
+		.color = { 1, 1, 1, 1 },
+		.vertex_buffer = ROSE_SDLCreateVertexBuffer(vertices, sizeof(vertices) / sizeof(vertices[0]), sizeof(ROSE_VertexSprite)),
+		.texture = ROSE_SDLCreateTexture(image),
+	};
 }
 
 void ROSE_SpriteDestroy(ROSE_Sprite* sprite)
 {
-	if (sprite->_texture)
-	{
-		SDL_ReleaseGPUTexture(device, sprite->_texture);
-	}
-	
-	if (sprite->_vertices)
-	{
-		SDL_ReleaseGPUBuffer(device, sprite->_vertices);
-	}
-	
-	sprite->_texture = NULL;
-	sprite->_vertices = NULL;
+	if (sprite->texture) SDL_ReleaseGPUTexture(device, sprite->texture);
+	if (sprite->vertex_buffer) SDL_ReleaseGPUBuffer(device, sprite->vertex_buffer);
+	*sprite = (ROSE_Sprite){ 0 };
 }
 
-void ROSE_SpriteDraw(ROSE_Sprite* sprite, i32 px, i32 py, f32 scale, ROSE_Color color)
+void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 {
 	if (minimized)
-	{
 		return;
-	}
 
 	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = sprite->buffer,
+		.buffer = sprite->vertex_buffer,
 	};
 
 	SDL_GPUTextureSamplerBinding texture_binding = {
@@ -59,17 +51,22 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite, i32 px, i32 py, f32 scale, ROSE_Color 
 		.sampler = sampler,
 	};
 
-	f32 scaled_width = (f32)sprite->width * scale;
-	f32 scaled_height = (f32)sprite->height * scale;
+	double scaled_width = (double)sprite->width * sprite->scale;
+	double scaled_height = (double)sprite->height * sprite->scale;
 
-	f32 w = (scaled_width / (f32)screen_width) * 2.0f;
-	f32 h = (scaled_height / (f32)screen_height) * 2.0f;
-	f32 x = -1.0f + (((f32)px / (f32)screen_width) * 2.0f);
-	f32 y = 1.0f - (((f32)py / (f32)screen_height) * 2.0f);
+	double ww = (scaled_width / (double)screen_width) * 2.0f;
+	double hh = (scaled_height / (double)screen_height) * 2.0f;
+	double xx = -1.0f + (((double)sprite->xpos / (double)screen_width) * 2.0f);
+	double yy = 1.0f - (((double)sprite->ypos / (double)screen_height) * 2.0f);
+
+	float w = (float)ww;
+	float h = (float)hh;
+	float x = (float)xx;
+	float y = (float)yy;
 
 	typedef struct Uniform {
-		f32 TransformMatrix[16];
-		f32 TintColor[4];
+		float TransformMatrix[16];
+		float TintColor[4];
 	} Uniform;
 
 	Uniform uniform = {
@@ -80,10 +77,10 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite, i32 px, i32 py, f32 scale, ROSE_Color 
 			x, y, 0, 1,
 		},
 		.TintColor = {
-			color.r,
-			color.g,
-			color.b,
-			color.a,
+			sprite->color.r,
+			sprite->color.g,
+			sprite->color.b,
+			sprite->color.a,
 		}
 	};
 

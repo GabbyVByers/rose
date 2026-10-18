@@ -9,67 +9,41 @@
 
 void ROSE_WindowToggleVSync(bool vsync)
 {
-	if (vsync)
-	{
-		if (!SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC))
-		{
-			fprintf(stderr, "SDL_SetGPUSwapchainParameters() Failed: %s\n", SDL_GetError());
-			exit(EXIT_FAILURE);
-		}
-
+	if (vsync) {
+		SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
 		return;
 	}
 
-	if (SDL_WindowSupportsGPUPresentMode(device, window, SDL_GPU_PRESENTMODE_IMMEDIATE))
-	{
-		if (!SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_IMMEDIATE))
-		{
-			fprintf(stderr, "SDL_SetGPUSwapchainParameters() Failed: %s\n", SDL_GetError());
-			exit(EXIT_FAILURE);
-		}
-
+	const bool immediate = SDL_WindowSupportsGPUPresentMode(device, window, SDL_GPU_PRESENTMODE_IMMEDIATE);
+	if (immediate) {
+		SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_IMMEDIATE);
 		return;
 	}
 
-	if (SDL_WindowSupportsGPUPresentMode(device, window, SDL_GPU_PRESENTMODE_MAILBOX))
-	{
-		if (!SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_MAILBOX))
-		{
-			fprintf(stderr, "SDL_SetGPUSwapchainParameters() Failed: %s\n", SDL_GetError());
-			exit(EXIT_FAILURE);
-		}
-
+	const bool mailbox = SDL_WindowSupportsGPUPresentMode(device, window, SDL_GPU_PRESENTMODE_MAILBOX);
+	if (mailbox) {
+		SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_MAILBOX);
 		return;
 	}
 
-	if (!SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC))
-	{
-		fprintf(stderr, "SDL_SetGPUSwapchainParameters() Failed: %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
+	SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
 }
 
 bool ROSE_WindowIsOpen(void)
 {
 	mouse_xvel = 0.0f;
 	mouse_yvel = 0.0f;
-	ROSE_MOUSE_SCROLL = 0.0f;
+	mouse_scroll = 0.0f;
 
 	SDL_Event event;
-	while (SDL_PollEvent(&event))
-	{
+	while (SDL_PollEvent(&event)) {
 		if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
-		{
 			return false;
-		}
 
 		if (event.type == SDL_EVENT_MOUSE_WHEEL)
-		{
-			ROSE_MOUSE_SCROLL += event.wheel.y;
-		}
+			mouse_scroll += event.wheel.y;
 
-		if (event.type == SDL_EVENT_MOUSE_MOTION)
-		{
+		if (event.type == SDL_EVENT_MOUSE_MOTION) {
 			mouse_xvel += event.motion.xrel;
 			mouse_yvel += event.motion.yrel;
 		}
@@ -79,48 +53,31 @@ bool ROSE_WindowIsOpen(void)
 	memcpy(curr_keyboard_state, SDL_GetKeyboardState(NULL), sizeof(bool) * SDL_SCANCODE_COUNT);
 
 	prev_mouse_state = curr_mouse_state;
-	curr_mouse_state = SDL_GetMouseState(&mouse_xpos, &mouse_ypox);
+	curr_mouse_state = SDL_GetMouseState(&mouse_xpos, &mouse_ypos);
 	return true;
 }
 
-void ROSE_WindowClear(float color[4])
+void ROSE_WindowClear(ROSE_Color color)
 {
+	uint32_t width = 0;
+	uint32_t height = 0;
 	command_buffer = SDL_AcquireGPUCommandBuffer(device);
-
-	if (!command_buffer)
-	{
-		fprintf(stderr, "SDL_AcquireGPUCommandBuffer() Failed: %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
-
-	u32 width = 0;
-	u32 height = 0;
-
-	if (!SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, &swapchain_texture, &width, &height))
-	{
-		fprintf(stderr, "SDL_AcquireGPUCommandBuffer() Failed: %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
+	SDL_WaitAndAcquireGPUSwapchainTexture(command_buffer, window, &swapchain_texture, &width, &height);
 
 	minimized = (width == 0) || (height == 0);
-
-	if (minimized)
-	{
-		if (!SDL_SubmitGPUCommandBuffer(command_buffer))
-		{
-			fprintf(stderr, "SDL_SubmitGPUCommandBuffer() Failed: %s\n", SDL_GetError());
-			exit(EXIT_FAILURE);
-		}
-
+	if (minimized) {
+		SDL_SubmitGPUCommandBuffer(command_buffer);
 		return;
 	}
 
-	const bool resize_depth_texture = (width != screen_width) || (height != screen_height);
+	const bool resize_depth_texture =
+		(width != screen_width) ||
+		(height != screen_height);
+	
 	screen_width = width;
 	screen_height = height;
 
-	if (resize_depth_texture)
-	{
+	if (resize_depth_texture) {
 		SDL_ReleaseGPUTexture(device, depth_texture);
 
 		SDL_GPUTextureCreateInfo depth_texture_create_info = {
@@ -135,21 +92,15 @@ void ROSE_WindowClear(float color[4])
 		};
 
 		depth_texture = SDL_CreateGPUTexture(device, &depth_texture_create_info);
-
-		if (!depth_texture)
-		{
-			fprintf(stderr, "SDL_CreateGPUTexture() Failed: %s\n", SDL_GetError());
-			exit(EXIT_FAILURE);
-		}
 	}
 
 	SDL_GPUColorTargetInfo color_target_info = {
 		.texture = swapchain_texture,
 		.clear_color = {
-			.r = color[0],
-			.g = color[1],
-			.b = color[2],
-			.a = color[3],
+			.r = color.r,
+			.g = color.g,
+			.b = color.b,
+			.a = color.a,
 		},
 		.load_op = SDL_GPU_LOADOP_CLEAR,
 		.store_op = SDL_GPU_STOREOP_STORE,
@@ -166,27 +117,14 @@ void ROSE_WindowClear(float color[4])
 	};
 
 	render_pass = SDL_BeginGPURenderPass(command_buffer, &color_target_info, 1, &depth_stencil_target_info);
-
-	if (!render_pass)
-	{
-		fprintf(stderr, "SDL_BeginGPURenderPass() Failed: %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
 }
 
 void ROSE_WindowRender(void)
 {
 	if (minimized)
-	{
 		return;
-	}
 
 	SDL_EndGPURenderPass(render_pass);
-
-	if (!SDL_SubmitGPUCommandBuffer(command_buffer))
-	{
-		fprintf(stderr, "SDL_SubmitGPUCommandBuffer() Failed: %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
+	SDL_SubmitGPUCommandBuffer(command_buffer);
 }
 

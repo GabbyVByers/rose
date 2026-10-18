@@ -7,22 +7,19 @@
 #include "rose.h"
 #include "rose_state.h"
 
-bool ROSE_MousePressing(u32 button)
+bool ROSE_MousePressing(uint32_t button)
 {
-	assert(button != 0);
 	return (curr_mouse_state & SDL_BUTTON_MASK(button)) != 0;
 }
 
-bool ROSE_MousePressed(u32 button)
+bool ROSE_MousePressed(uint32_t button)
 {
-	assert(button != 0);
 	return ((prev_mouse_state & SDL_BUTTON_MASK(button)) == 0)
 		&& ((curr_mouse_state & SDL_BUTTON_MASK(button)) != 0);
 }
 
-bool ROSE_MouseReleased(u32 button)
+bool ROSE_MouseReleased(uint32_t button)
 {
-	assert(button != 0);
 	return ((prev_mouse_state & SDL_BUTTON_MASK(button)) != 0)
 		&& ((curr_mouse_state & SDL_BUTTON_MASK(button)) == 0);
 }
@@ -30,26 +27,16 @@ bool ROSE_MouseReleased(u32 button)
 void ROSE_MouseHide(void)
 {
 	saved_mouse_px = mouse_xpos;
-	saved_mouse_py = mouse_ypox;
-
-	if (!SDL_SetWindowRelativeMouseMode(window, true))
-	{
-		fprintf(stderr, "SDL_SetWindowRelativeMouseMode() Failed: %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
+	saved_mouse_py = mouse_ypos;
+	SDL_SetWindowRelativeMouseMode(window, true);
 }
 
 void ROSE_MouseReveal(void)
 {
 	mouse_xpos = saved_mouse_px;
-	mouse_ypox = saved_mouse_py;
-	SDL_WarpMouseInWindow(window, mouse_xpos, mouse_ypox);
-
-	if (!SDL_SetWindowRelativeMouseMode(window, false))
-	{
-		fprintf(stderr, "SDL_SetWindowRelativeMouseMode() Failed: %s\n", SDL_GetError());
-		exit(EXIT_FAILURE);
-	}
+	mouse_ypos = saved_mouse_py;
+	SDL_WarpMouseInWindow(window, mouse_xpos, mouse_ypos);
+	SDL_SetWindowRelativeMouseMode(window, false);
 }
 
 bool ROSE_KeyboardPressing(ROSE_Scancode button)

@@ -5,40 +5,29 @@
 
 #include "rose.h"
 
+extern float mouse_xpos;
+extern float mouse_ypos;
+
 int main(void)
 {
-    ROSE_Init("Title", 500, 500, true);
-    ROSE_WindowToggleVSync(true);
+    ROSE_Init("App Title", 1200, 700, true);
 
-    ROSE_Text* text = ROSE_TextCreate("HELLO!");
-    ROSE_Image* image = ROSE_ImageCreate(100, 200);
-    ROSE_Sprite* sprite = ROSE_SpriteCreate(image);
+    ROSE_Text text = ROSE_TextCreate("HELLO!");
+    text.scale = 3.0;
+    text.color = (ROSE_Color){ 1,0,0,1 };
 
-    ROSE_Vertex3D verts[] = {
-        { { 0.0f, 0.0f, 1.0f }, { 1.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
-        { { 1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
-        { { 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f } },
-        { { 1.0f, 1.0f, 1.0f }, { 1.0f, 0.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
-        { { 1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f } },
-        { { 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f, 1.0f, 1.0f }, { 0.0f, 0.0f } },
-    };
+    ROSE_Image image = ROSE_ImageLoadFromFile("textures/art.png");
+    ROSE_Sprite sprite = ROSE_SpriteCreate(&image);
 
-    ROSE_Mesh* mesh = ROSE_MeshCreate();
-    ROSE_MeshUploadVertices(mesh, verts, 6);
-
-    while (ROSE_WindowIsOpen())
-    {
-        i32 mouse_x = ROSE_MousePositionX();
-        i32 mouse_y = ROSE_MousePositionY();
-
-        ROSE_WindowClear(ROSE_ColorROSE_COLOR(80, 80, 80, 255));
-        ROSE_MeshDraw(mesh);
-        ROSE_SpriteDraw(sprite, 100, 100, 1.0f, ROSE_ColorROSE_COLOR_WHITE);
-        ROSE_TextDraw(text, mouse_x, mouse_y, 3.0f, ROSE_ColorROSE_COLOR_PURPLE);
+    while (ROSE_WindowIsOpen()) {
+        sprite.xpos = mouse_xpos;
+        sprite.ypos = mouse_ypos;
+        ROSE_WindowClear((ROSE_Color) { 0, 0, 0, 1 });
+        ROSE_TextDraw(&text);
+        ROSE_SpriteDraw(&sprite);
         ROSE_WindowRender();
     }
 
     ROSE_Quit();
-    return EXIT_SUCCESS;
 }
 

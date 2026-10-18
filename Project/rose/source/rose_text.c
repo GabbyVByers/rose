@@ -7,38 +7,33 @@
 #include "rose.h"
 #include "rose_state.h"
 
-#define ASCII_WIDTH 7
-#define ASCII_HEIGHT 11
-
 ROSE_Text ROSE_TextCreate(const char* string)
 {
-	u32 num_characters = strlen(string);
-	u32 num_vertices = num_characters * 6;
-	ROSE_Vertex2D* vertices = calloc(num_vertices, sizeof(ROSE_Vertex2D));
+	uint32_t num_characters = strlen(string);
+	uint32_t num_vertices = num_characters * 6;
+	ROSE_VertexSprite* vertices = calloc(num_vertices, sizeof(ROSE_VertexSprite));
 
-	for (u32 i = 0; i < num_characters; i++)
-	{
-		u32 index = i * 6;
-		u32 character_index = (string[i] - 32);
+	for (uint32_t i = 0; i < num_characters; i++) {
+		uint32_t index = i * 6;
+		uint32_t character_index = (string[i] - 32);
 		float w = (1.0f / 95.0f);
 		float x = (w * (float)character_index);
-		vertices[index + 0] = (ROSE_Vertex2D){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
-		vertices[index + 1] = (ROSE_Vertex2D){ { (float)(i + 1),  0.0f }, { (float)(x + w), 1.0f } };
-		vertices[index + 2] = (ROSE_Vertex2D){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
-		vertices[index + 3] = (ROSE_Vertex2D){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
-		vertices[index + 4] = (ROSE_Vertex2D){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
-		vertices[index + 5] = (ROSE_Vertex2D){ { (float)(i + 0), -1.0f }, { (float)(x),     0.0f } };
+		vertices[index + 0] = (ROSE_VertexSprite){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
+		vertices[index + 1] = (ROSE_VertexSprite){ { (float)(i + 1),  0.0f }, { (float)(x + w), 1.0f } };
+		vertices[index + 2] = (ROSE_VertexSprite){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
+		vertices[index + 3] = (ROSE_VertexSprite){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
+		vertices[index + 4] = (ROSE_VertexSprite){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
+		vertices[index + 5] = (ROSE_VertexSprite){ { (float)(i + 0), -1.0f }, { (float)(x),     0.0f } };
 	}
 
-	ROSE_Text text = {
+	ROSE_Text text = (ROSE_Text) {
 		.scale = 1.0,
 		.xpos = 0.0,
 		.ypos = 0.0,
-		.color = { 1.0f, 1.0f, 1.0f, 1.0f },
-		._width = ASCII_WIDTH * num_characters,
-		._height = ASCII_HEIGHT,
-		._count = num_vertices,
-		._vertices = ROSE_SDLCreateVertexBuffer(vertices, num_vertices, sizeof(ROSE_Vertex2D)),
+		.color = (ROSE_Color) { 1.0f, 1.0f, 1.0f, 1.0f },
+		.num_characters = num_characters,
+		.num_vertices = num_vertices,
+		.vertex_buffer = ROSE_SDLCreateVertexBuffer(vertices, num_vertices, sizeof(ROSE_VertexSprite)),
 	};
 
 	free(vertices);
@@ -47,29 +42,17 @@ ROSE_Text ROSE_TextCreate(const char* string)
 
 void ROSE_TextDestroy(ROSE_Text* text)
 {
-	if (text->_vertices)
-	{
-		SDL_ReleaseGPUBuffer(device, text->_vertices);
-	}
-	
-	text->_count = 0;
-	text->_vertices = NULL;
-}
-
-void ROSE_TextUpdateString(ROSE_Text* text, const char* string)
-{
-	assert(false && "Not Implemented!");
+	if (text->vertex_buffer) SDL_ReleaseGPUBuffer(device, text->vertex_buffer);
+	*text = (ROSE_Text){ 0 };
 }
 
 void ROSE_TextDraw(ROSE_Text* text)
 {
 	if (minimized)
-	{
 		return;
-	}
 
 	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = text->_vertices,
+		.buffer = text->vertex_buffer,
 	};
 
 	SDL_GPUTextureSamplerBinding texture_binding = {
@@ -77,31 +60,36 @@ void ROSE_TextDraw(ROSE_Text* text)
 		.sampler = sampler,
 	};
 
-	f64 scaled_width = (f64)text->_width * text->scale;
-	f64 scaled_height = (f64)ASCII_HEIGHT * text->scale;
+	double scaled_width = (double)ROSE_ASCII_WIDTH * text->scale;
+	double scaled_height = (double)ROSE_ASCII_HEIGHT * text->scale;
 
-	f64 w = (scaled_width / (f64)screen_width) * 2.0;
-	f64 h = (scaled_height / (f64)screen_height) * 2.0;
-	f64 x = -1.0f + ((text->xpos / (f64)screen_width) * 2.0);
-	f64 y = 1.0f - ((text->ypos / (f64)screen_height) * 2.0);
+	double ww = (scaled_width / (double)screen_width) * 2.0;
+	double hh = (scaled_height / (double)screen_height) * 2.0;
+	double xx = -1.0f + ((text->xpos / (double)screen_width) * 2.0);
+	double yy = 1.0f - ((text->ypos / (double)screen_height) * 2.0);
+
+	float w = (float)ww;
+	float h = (float)hh;
+	float x = (float)xx;
+	float y = (float)yy;
 
 	typedef struct Uniform {
-		f32 TransformMatrix[16];
-		f32 TintColor[4];
+		float TransformMatrix[16];
+		float TintColor[4];
 	} Uniform;
 
 	Uniform uniform = {
 		.TransformMatrix = {
-			(f32)w, 0, 0, 0,
-			0, (f32)h, 0, 0,
+			w, 0, 0, 0,
+			0, h, 0, 0,
 			0, 0, 1, 0,
-			(f32)x, (f32)y, 0, 1,
+			x, y, 0, 1,
 		},
 		.TintColor = {
-			text->color[0],
-			text->color[1],
-			text->color[2],
-			text->color[3],
+			text->color.r,
+			text->color.g,
+			text->color.b,
+			text->color.a,
 		}
 	};
 
@@ -109,6 +97,6 @@ void ROSE_TextDraw(ROSE_Text* text)
 	SDL_PushGPUVertexUniformData(command_buffer, 0, ((void*)&uniform), sizeof(uniform));
 	SDL_BindGPUVertexBuffers(render_pass, 0, &buffer_binding, 1);
 	SDL_BindGPUFragmentSamplers(render_pass, 0, &texture_binding, 1);
-	SDL_DrawGPUPrimitives(render_pass, (u32)text->_count, 1, 0, 0);
+	SDL_DrawGPUPrimitives(render_pass, text->num_vertices, 1, 0, 0);
 }
 

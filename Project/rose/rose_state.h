@@ -17,8 +17,8 @@ type var = { (type)0 };
 extern type var;
 #endif
 
-ROSE_GLOBAL(u32, screen_width)
-ROSE_GLOBAL(u32, screen_height)
+ROSE_GLOBAL(uint32_t, screen_width)
+ROSE_GLOBAL(uint32_t, screen_height)
 ROSE_GLOBAL(SDL_Window*, window)
 ROSE_GLOBAL(SDL_GPUDevice*, device)
 ROSE_GLOBAL(SDL_GPUSampler*, sampler)
@@ -26,7 +26,6 @@ ROSE_GLOBAL(SDL_GPUTexture*, depth_texture)
 ROSE_GLOBAL(SDL_GPUTexture*, ascii_texture)
 ROSE_GLOBAL(SDL_GPUTexture*, dummy_texture)
 ROSE_GLOBAL(SDL_GPUGraphicsPipeline*, sprite_pipeline)
-ROSE_GLOBAL(SDL_GPUGraphicsPipeline*, mesh_pipeline)
 
 ROSE_GLOBAL(bool, minimized)
 ROSE_GLOBAL(SDL_GPURenderPass*, render_pass)
@@ -34,14 +33,14 @@ ROSE_GLOBAL(SDL_GPUTexture*, swapchain_texture)
 ROSE_GLOBAL(SDL_GPUCommandBuffer*, command_buffer)
 
 ROSE_GLOBAL(float, mouse_xpos)
-ROSE_GLOBAL(float, mouse_ypox)
+ROSE_GLOBAL(float, mouse_ypos)
 ROSE_GLOBAL(float, mouse_xvel)
 ROSE_GLOBAL(float, mouse_yvel)
 ROSE_GLOBAL(float, saved_mouse_px)
 ROSE_GLOBAL(float, saved_mouse_py)
-ROSE_GLOBAL(u32, curr_mouse_state)
-ROSE_GLOBAL(u32, prev_mouse_state)
-ROSE_GLOBAL(float, ROSE_MOUSE_SCROLL)
+ROSE_GLOBAL(uint32_t, curr_mouse_state)
+ROSE_GLOBAL(uint32_t, prev_mouse_state)
+ROSE_GLOBAL(float, mouse_scroll)
 
 ROSE_GLOBAL(bool, curr_keyboard_state[SDL_SCANCODE_COUNT])
 ROSE_GLOBAL(bool, prev_keyboard_state[SDL_SCANCODE_COUNT])
