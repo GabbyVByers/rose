@@ -57,14 +57,15 @@ bool ROSE_WindowPollEvents(void)
 	return true;
 }
 
-void ROSE_WindowClear(ROSE_Color clear_color)
+void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 {
 	uint32_t width = 0;
 	uint32_t height = 0;
 	rose__command_buffer = SDL_AcquireGPUCommandBuffer(rose__device);
-	SDL_WaitAndAcquireGPUSwapchainTexture(rose__command_buffer, rose__window, &rose__swapchain_texture, &width, &height);
 
-	rose_screen.minimized = (width == 0) || (height == 0);
+	bool acquired = SDL_WaitAndAcquireGPUSwapchainTexture(rose__command_buffer, rose__window, &rose__swapchain_texture, &width, &height);
+	rose_screen.minimized = (!acquired) || (rose__swapchain_texture == NULL);
+
 	if (rose_screen.minimized) {
 		SDL_SubmitGPUCommandBuffer(rose__command_buffer);
 		return;
@@ -88,7 +89,7 @@ void ROSE_WindowClear(ROSE_Color clear_color)
 	rose__render_pass = SDL_BeginGPURenderPass(rose__command_buffer, &color_target_info, 1, NULL);
 }
 
-void ROSE_WindowRender(void)
+void ROSE_WindowEndFrame(void)
 {
 	if (rose_screen.minimized)
 		return;

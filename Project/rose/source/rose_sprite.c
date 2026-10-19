@@ -49,7 +49,7 @@ void ROSE_SpriteDestroy(ROSE_Sprite* sprite)
 	}
 }
 
-void ROSE_SpriteUploadTexture(ROSE_Sprite* sprite, ROSE_Image* image)
+void ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image)
 {
 	if (sprite->_texture) SDL_ReleaseGPUTexture(rose__device, sprite->_texture);
 	sprite->_texture = ROSE__SDLCreateTexture(image);

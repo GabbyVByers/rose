@@ -109,7 +109,7 @@ SDL_GPUBuffer* ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices
 	return vertex_buffer;
 }
 
-SDL_GPUShader* ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uint32_t num_uniform_buffers, uint32_t num_samplers)
+SDL_GPUShader* ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uint32_t uniforms, uint32_t samplers)
 {
 	size_t code_size = 0;
 	void* code = SDL_LoadFile(path, &code_size);
@@ -121,8 +121,8 @@ SDL_GPUShader* ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, u
 		.entrypoint = "main",
 		.format = SDL_GPU_SHADERFORMAT_SPIRV,
 		.stage = stage,
-		.num_uniform_buffers = num_uniform_buffers,
-		.num_samplers = num_samplers,
+		.num_uniform_buffers = uniforms,
+		.num_samplers = samplers,
 	};
 
 	SDL_GPUShader* shader = SDL_CreateGPUShader(rose__device, &shader_create_info);
@@ -130,10 +130,10 @@ SDL_GPUShader* ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, u
 	return shader;
 }
 
-SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vertex_path, const char* fragment_path, uint32_t num_fragment_samplers, SDL_GPUVertexInputState vertex_input_state, SDL_GPUPrimitiveType primitive_type)
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vert, const char* frag, uint32_t samplers, SDL_GPUVertexInputState input, SDL_GPUPrimitiveType primitive)
 {
-	SDL_GPUShader* vertex_shader_program = ROSE__SDLLoadShader(vertex_path, SDL_GPU_SHADERSTAGE_VERTEX, 1, 0);
-	SDL_GPUShader* fragment_shader_program = ROSE__SDLLoadShader(fragment_path, SDL_GPU_SHADERSTAGE_FRAGMENT, 0, num_fragment_samplers);
+	SDL_GPUShader* vertex_shader_program = ROSE__SDLLoadShader(vert, SDL_GPU_SHADERSTAGE_VERTEX, 1, 0);
+	SDL_GPUShader* fragment_shader_program = ROSE__SDLLoadShader(frag, SDL_GPU_SHADERSTAGE_FRAGMENT, 0, samplers);
 
 	SDL_GPUColorTargetDescription color_target_description = {
 		.format = SDL_GetGPUSwapchainTextureFormat(rose__device, rose__window),
@@ -151,8 +151,8 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vertex_path
 	SDL_GPUGraphicsPipelineCreateInfo graphics_pipeline_create_info = {
 		.vertex_shader = vertex_shader_program,
 		.fragment_shader = fragment_shader_program,
-		.vertex_input_state = vertex_input_state,
-		.primitive_type = primitive_type,
+		.vertex_input_state = input,
+		.primitive_type = primitive,
 		.target_info = {
 			.color_target_descriptions = &color_target_description,
 			.num_color_targets = 1,

@@ -38,9 +38,9 @@ void ROSE_TextDestroy(ROSE_Text* text)
 	}
 }
 
-void ROSE_TextUpdateString(ROSE_Text* text, const char* new_string)
+void ROSE_TextUpdateString(ROSE_Text* text, const char* string)
 {
-	uint32_t num_characters = (uint32_t)strlen(new_string);
+	uint32_t num_characters = (uint32_t)strlen(string);
 	ROSE__TextReserveCharacterCapacity(text, num_characters);
 	text->_num_characters = num_characters;
 	text->_num_vertices = num_characters * 6;
@@ -49,7 +49,7 @@ void ROSE_TextUpdateString(ROSE_Text* text, const char* new_string)
 		return;
 
 	ROSE_VertexSprite* vertices = SDL_MapGPUTransferBuffer(rose__device, text->_transfer_buffer, true);
-	ROSE__TextWriteCharactersToVertices(vertices, new_string, num_characters);
+	ROSE__TextWriteCharactersToVertices(vertices, string, num_characters);
 	SDL_UnmapGPUTransferBuffer(rose__device, text->_transfer_buffer);
 
 	SDL_GPUTransferBufferLocation source_buffer_location = {

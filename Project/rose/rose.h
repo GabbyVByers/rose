@@ -148,13 +148,25 @@ typedef struct ROSE_Lines {
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Lines;
 
+typedef struct ROSE_Button {
+	double scale;
+	double xpos;
+	double ypos;
+	uint32_t _width;
+	bool _curr_pressed;
+	bool _prev_pressed;
+	ROSE_Sprite _sprite_normal;
+	ROSE_Sprite _sprite_pressed;
+	ROSE_Text _text;
+} ROSE_Button;
+
 void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height);
 void ROSE_Quit(void);
 
 void ROSE_WindowToggleVSync(bool vsync);
 bool ROSE_WindowPollEvents(void);
-void ROSE_WindowClear(ROSE_Color clear_color);
-void ROSE_WindowRender(void);
+void ROSE_WindowBeginFrame(ROSE_Color clear_color);
+void ROSE_WindowEndFrame(void);
 
 bool ROSE_MousePressing(uint32_t mouse_button);
 bool ROSE_MousePressed(uint32_t mouse_button);
@@ -179,7 +191,7 @@ void           ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t
 ROSE_Text      ROSE_TextCreate(const char* string);
 ROSE_Text      ROSE_TextCreateEmpty(void);
 void           ROSE_TextDestroy(ROSE_Text* text);
-void           ROSE_TextUpdateString(ROSE_Text* text, const char* new_string);
+void           ROSE_TextUpdateString(ROSE_Text* text, const char* string);
 void           ROSE_TextDraw(ROSE_Text* text);
 void           ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uint32_t num_characters);
 void           ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uint32_t num_characters);
@@ -188,7 +200,7 @@ ROSE_Sprite    ROSE_SpriteCreate(ROSE_Image* image);
 ROSE_Sprite    ROSE_SpriteCreateEmpty(uint32_t width, uint32_t height);
 ROSE_Sprite    ROSE_SpriteLoadFromFile(const char* path);
 void           ROSE_SpriteDestroy(ROSE_Sprite* sprite);
-void           ROSE_SpriteUploadTexture(ROSE_Sprite* sprite, ROSE_Image* image);
+void           ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image);
 void           ROSE_SpriteDraw(ROSE_Sprite* sprite);
 
 ROSE_Triangles ROSE_TrianglesCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
@@ -212,11 +224,23 @@ void           ROSE_LinesDestroy(ROSE_Lines* lines);
 void           ROSE_LinesDraw(ROSE_Lines* lines);
 void           ROSE__LinesReserveVertexCapacity(ROSE_Lines* lines, uint32_t num_vertices);
 
+ROSE_Button    ROSE_ButtonCreate(uint32_t width, const char* label);
+ROSE_Button    ROSE_ButtonCreateEmpty(void);
+void           ROSE_ButtonDestroy(ROSE_Button* button);
+void           ROSE_ButtonUpdateString(ROSE_Button* button, const char* label);
+void           ROSE_ButtonUpdateWidth(ROSE_Button* button, uint32_t width);
+void           ROSE_ButtonDraw(ROSE_Button* button);
+bool           ROSE_ButtonPressed(ROSE_Button* button);
+bool           ROSE_ButtonReleased(ROSE_Button* button);
+bool           ROSE_ButtonPressing(ROSE_Button* button);
+void           ROSE__ButtonSetScale(ROSE_Button* button, double scale);
+void           ROSE__ButtonSetPosition(ROSE_Button* button, double xpos, double ypos);
+
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
 SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size);
-SDL_GPUShader*           ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uint32_t num_uniform_buffers, uint32_t num_samplers);
-SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vertex_path, const char* fragment_path, uint32_t num_fragment_samplers, SDL_GPUVertexInputState vertex_input_state, SDL_GPUPrimitiveType primitive_type);
+SDL_GPUShader*           ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uint32_t uniforms, uint32_t samplers);
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vert, const char* frag, uint32_t samplers, SDL_GPUVertexInputState input, SDL_GPUPrimitiveType primitive);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangles(void);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoints(void);

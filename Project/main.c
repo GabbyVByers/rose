@@ -53,18 +53,32 @@ int main(void)
     ROSE_Lines lines = ROSE_LinesCreate(line_vertices, sizeof(line_vertices) / sizeof(line_vertices[0]));
     lines.color = ROSE_COLOR_RED;
 
+    ROSE_Button button = ROSE_ButtonCreate(200, "BUTTON");
+    button.xpos = 300;
+    button.ypos = 200;
+    button.scale = 3.0;
+    ROSE_ButtonUpdateString(&button, "hfdjskfghdsa");
+    ROSE_ButtonUpdateWidth(&button, 20);
+    ROSE_ButtonUpdateWidth(&button, 200);
+
     while (ROSE_WindowPollEvents()) {
         sprite.xpos = rose_mouse.xpos;
         sprite.ypos = rose_mouse.ypos;
-        ROSE_WindowClear(ROSE_COLOR(50, 50, 50, 255));
+        ROSE_WindowBeginFrame(ROSE_COLOR(50, 50, 50, 255));
         ROSE_TrianglesDraw(&triangle);
         ROSE_PointsDraw(&points);
         ROSE_TextDraw(&text);
         ROSE_SpriteDraw(&sprite);
         ROSE_LinesDraw(&lines);
-        ROSE_WindowRender();
+        ROSE_ButtonDraw(&button);
+        ROSE_WindowEndFrame();
+
+        if (ROSE_ButtonPressed(&button)) printf("button pressed!\n");
+        if (ROSE_ButtonReleased(&button)) printf("button released!\n");
+        //if (ROSE_ButtonPressing(&button)) printf("button pressing!\n");
     }
 
+    ROSE_ButtonDestroy(&button);
     ROSE_ImageDestroy(&image);
     ROSE_TextDestroy(&text);
     ROSE_SpriteDestroy(&sprite);
