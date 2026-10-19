@@ -1,6 +1,6 @@
 
 /*
- *   Fragment Shader [point.frag]
+ *   Fragment Shader [points.frag]
  */
 
 #version 460 core

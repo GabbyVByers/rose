@@ -1,6 +1,6 @@
 
 /*
- *   Vertex Shader [triangle.vert]
+ *   Vertex Shader [triangles.vert]
  */
 
 #version 460 core

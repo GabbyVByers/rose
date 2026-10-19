@@ -1,6 +1,6 @@
 
 /*
- *   Source File [rose_text.c]
+ *   Source File [rose_lines.c]
  */
 
 #define ROSE_EXTERN
@@ -20,7 +20,6 @@ ROSE_Lines ROSE_LinesCreateEmpty(void)
 		.scale = 1.0,
 		.xpos = 0.0,
 		.ypos = 0.0,
-		.thickness = 1.0,
 		.color = ROSE_COLOR_WHITE,
 		._num_vertices = 0,
 		._vertex_capacity = 0,

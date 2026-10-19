@@ -1,6 +1,6 @@
 
 /*
- *   Vertex Shader [point.vert]
+ *   Vertex Shader [points.vert]
  */
 
 #version 460 core

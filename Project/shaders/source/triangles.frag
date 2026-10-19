@@ -1,6 +1,6 @@
 
 /*
- *   Fragment Shader [triangle.frag]
+ *   Fragment Shader [triangles.frag]
  */
 
 #version 460 core

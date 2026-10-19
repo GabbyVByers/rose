@@ -141,7 +141,6 @@ typedef struct ROSE_Lines {
 	double scale;
 	double xpos;
 	double ypos;
-	double thickness;
 	ROSE_Color color;
 	uint32_t _num_vertices;
 	uint32_t _vertex_capacity;
