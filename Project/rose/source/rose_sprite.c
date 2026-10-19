@@ -43,13 +43,13 @@ ROSE_Sprite ROSE_SpriteCreateBlank(uint32_t width, uint32_t height)
 
 	return (ROSE_Sprite) {
 		.scale = 1.0,
-			.xpos = 0,
-			.ypos = 0,
-			._width = width,
-			._height = height,
-			.color = ROSE_COLOR_WHITE,
-			._vertex_buffer = ROSE__SDLCreateVertexBuffer(vertices, sizeof(vertices) / sizeof(vertices[0]), sizeof(ROSE_VertexSprite)),
-			._texture = NULL,
+		.xpos = 0,
+		.ypos = 0,
+		._width = width,
+		._height = height,
+		.color = ROSE_COLOR_WHITE,
+		._vertex_buffer = ROSE__SDLCreateVertexBuffer(vertices, sizeof(vertices) / sizeof(vertices[0]), sizeof(ROSE_VertexSprite)),
+		._texture = NULL,
 	};
 }
 

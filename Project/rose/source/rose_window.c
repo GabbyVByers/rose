@@ -70,17 +70,8 @@ void ROSE_WindowClear(ROSE_Color clear_color)
 		return;
 	}
 
-	//const bool resize_depth_texture =
-	//	(width != rose_screen.width) ||
-	//	(height != rose_screen.height);
-	
 	rose_screen.width = width;
 	rose_screen.height = height;
-
-	//if (resize_depth_texture) {
-	//	SDL_ReleaseGPUTexture(rose__device, rose__depth_texture);
-	//	rose__depth_texture = ROSE__SDLCreateDepthTexture();
-	//}
 
 	SDL_GPUColorTargetInfo color_target_info = {
 		.texture = rose__swapchain_texture,
@@ -94,17 +85,6 @@ void ROSE_WindowClear(ROSE_Color clear_color)
 		.store_op = SDL_GPU_STOREOP_STORE,
 	};
 
-	//SDL_GPUDepthStencilTargetInfo depth_stencil_target_info = {
-	//	.texture = rose__depth_texture,
-	//	.clear_depth = 1,
-	//	.load_op = SDL_GPU_LOADOP_CLEAR,
-	//	.store_op = SDL_GPU_STOREOP_DONT_CARE,
-	//	.stencil_load_op = SDL_GPU_LOADOP_DONT_CARE,
-	//	.stencil_store_op = SDL_GPU_STOREOP_DONT_CARE,
-	//	.cycle = true,
-	//};
-
-	//rose__render_pass = SDL_BeginGPURenderPass(rose__command_buffer, &color_target_info, 1, &depth_stencil_target_info);
 	rose__render_pass = SDL_BeginGPURenderPass(rose__command_buffer, &color_target_info, 1, NULL);
 }
 

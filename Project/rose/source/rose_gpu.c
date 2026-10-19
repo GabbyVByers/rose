@@ -7,23 +7,6 @@
 #include "rose.h"
 #include "rose_state.h"
 
-//SDL_GPUTexture* ROSE__SDLCreateDepthTexture(void)
-//{
-//	SDL_GPUTextureCreateInfo depth_texture_create_info = {
-//		.type = SDL_GPU_TEXTURETYPE_2D,
-//		.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
-//		.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
-//		.width = rose_screen.width,
-//		.height = rose_screen.height,
-//		.layer_count_or_depth = 1,
-//		.num_levels = 1,
-//		.sample_count = SDL_GPU_SAMPLECOUNT_1
-//	};
-//
-//	SDL_GPUTexture* texture = SDL_CreateGPUTexture(rose__device, &depth_texture_create_info);
-//	return texture;
-//}
-
 SDL_GPUSampler* ROSE__SDLCreateSampler(void)
 {
 	SDL_GPUSamplerCreateInfo sampler_create_info = {
@@ -215,16 +198,9 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void)
 			.num_vertex_attributes = sizeof(vertex_attributes) / sizeof(vertex_attributes[0]),
 		},
 		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
-		//.depth_stencil_state = {
-		//	.compare_op = SDL_GPU_COMPAREOP_LESS_OR_EQUAL,
-		//	.enable_depth_test = true,
-		//	.enable_depth_write = true,
-		//},
 		.target_info = {
 			.color_target_descriptions = &color_target_description,
 			.num_color_targets = 1,
-			//.depth_stencil_format = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
-			//.has_depth_stencil_target = true,
 		},
 	};
 

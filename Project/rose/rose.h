@@ -51,19 +51,6 @@ typedef struct { uint8_t r, g, b, a; } ROSE_RGBA;
 #define ROSE_COLOR_YELLOW ROSE_COLOR(255, 255,   0, 255)
 #define ROSE_COLOR_TRANS  ROSE_COLOR(255, 255, 255,   0)
 
-//typedef struct { float     x, y, z; } ROSE_Vec3f;
-//typedef struct { double    x, y, z; } ROSE_Vec3d;
-//typedef struct { int32_t   x, y, z; } ROSE_Vec3i;
-//typedef struct { uint32_t  x, y, z; } ROSE_Vec3u;
-//typedef struct { ptrdiff_t x, y, z; } ROSE_Vec3iz;
-//typedef struct { size_t    x, y, z; } ROSE_Vec3uz;
-
-//typedef struct { float  w, x, y, z; } ROSE_Quaternion4f;
-//typedef struct { double w, x, y, z; } ROSE_Quaternion4d;
-
-//typedef struct { float  _[16]; } ROSE_Matrix4x4f;
-//typedef struct { double _[16]; } ROSE_Matrix4x4d;
-
 typedef struct ROSE_ScreenInfo {
 	uint32_t width;  // global (read only)
 	uint32_t height; // global (read only)
