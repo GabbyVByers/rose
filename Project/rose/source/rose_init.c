@@ -31,7 +31,7 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height,
 	SDL_SetWindowMinimumSize(rose__window, (int)min, (int)min);
 
 	rose__sampler = ROSE__SDLCreateSampler();
-	rose__depth_texture = ROSE__SDLCreateDepthTexture();
+	//rose__depth_texture = ROSE__SDLCreateDepthTexture();
 	rose__sprite_pipeline = ROSE__SDLCreateGraphicsPipelineSprite();
 
 	ROSE_Image ascii_image = ROSE_ImageLoadFromFile("textures/ascii.png");
@@ -45,6 +45,30 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height,
 
 void ROSE_Quit(void)
 {
+	if (rose__device) {
+		SDL_WaitForGPUIdle(rose__device);
+		if (rose__sprite_pipeline) SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__sprite_pipeline);
+		if (rose__dummy_texture) SDL_ReleaseGPUTexture(rose__device, rose__dummy_texture);
+		if (rose__ascii_texture) SDL_ReleaseGPUTexture(rose__device, rose__ascii_texture);
+		//if (rose__depth_texture) SDL_ReleaseGPUTexture(rose__device, rose__depth_texture);
+		if (rose__sampler) SDL_ReleaseGPUSampler(rose__device, rose__sampler);
+		if (rose__window) SDL_ReleaseWindowFromGPUDevice(rose__device, rose__window);
+		SDL_DestroyGPUDevice(rose__device);
+	}
+
+	if (rose__window)
+		SDL_DestroyWindow(rose__window);
+	
 	SDL_Quit();
+	rose__window = NULL;
+	rose__device = NULL;
+	rose__sampler = NULL;
+	//rose__depth_texture = NULL;
+	rose__ascii_texture = NULL;
+	rose__dummy_texture = NULL;
+	rose__sprite_pipeline = NULL;
+	rose__render_pass = NULL;
+	rose__swapchain_texture = NULL;
+	rose__command_buffer = NULL;
 }
 

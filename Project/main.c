@@ -5,9 +5,6 @@
 
 #include "rose.h"
 
-extern ROSE_ScreenInfo rose_screen;
-extern ROSE_MouseInfo  rose_mouse;
-
 int main(void)
 {
     ROSE_Init("App Title", 1200, 700, true);

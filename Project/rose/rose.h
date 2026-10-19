@@ -36,10 +36,10 @@ typedef struct { uint8_t r, g, b, a; } ROSE_RGBA;
 
 #define ROSE_COLOR(r, g, b, a) \
 ((ROSE_Color){                 \
-(float)r / 255.0f,             \
-(float)g / 255.0f,             \
-(float)b / 255.0f,             \
-(float)a / 255.0f })
+(float)(r) / 255.0f,           \
+(float)(g) / 255.0f,           \
+(float)(b) / 255.0f,           \
+(float)(a) / 255.0f })
 
 #define ROSE_COLOR_WHITE  ROSE_COLOR(255, 255, 255, 255)
 #define ROSE_COLOR_BLACK  ROSE_COLOR(  0,   0,   0, 255)
@@ -51,18 +51,18 @@ typedef struct { uint8_t r, g, b, a; } ROSE_RGBA;
 #define ROSE_COLOR_YELLOW ROSE_COLOR(255, 255,   0, 255)
 #define ROSE_COLOR_TRANS  ROSE_COLOR(255, 255, 255,   0)
 
-typedef struct { float     x, y, z; } ROSE_Vec3f;
-typedef struct { double    x, y, z; } ROSE_Vec3d;
-typedef struct { int32_t   x, y, z; } ROSE_Vec3i;
-typedef struct { uint32_t  x, y, z; } ROSE_Vec3u;
-typedef struct { ptrdiff_t x, y, z; } ROSE_Vec3iz;
-typedef struct { size_t    x, y, z; } ROSE_Vec3uz;
+//typedef struct { float     x, y, z; } ROSE_Vec3f;
+//typedef struct { double    x, y, z; } ROSE_Vec3d;
+//typedef struct { int32_t   x, y, z; } ROSE_Vec3i;
+//typedef struct { uint32_t  x, y, z; } ROSE_Vec3u;
+//typedef struct { ptrdiff_t x, y, z; } ROSE_Vec3iz;
+//typedef struct { size_t    x, y, z; } ROSE_Vec3uz;
 
-typedef struct { float  w, x, y, z; } ROSE_Quaternion4f;
-typedef struct { double w, x, y, z; } ROSE_Quaternion4d;
+//typedef struct { float  w, x, y, z; } ROSE_Quaternion4f;
+//typedef struct { double w, x, y, z; } ROSE_Quaternion4d;
 
-typedef struct { float  _[16]; } ROSE_Matrix4x4f;
-typedef struct { double _[16]; } ROSE_Matrix4x4d;
+//typedef struct { float  _[16]; } ROSE_Matrix4x4f;
+//typedef struct { double _[16]; } ROSE_Matrix4x4d;
 
 typedef struct ROSE_ScreenInfo {
 	uint32_t width;  // global (read only)
@@ -77,6 +77,9 @@ typedef struct ROSE_MouseInfo {
 	float yvel;   // global (read only)
 	float scroll; // global (read only)
 } ROSE_MouseInfo;
+
+extern ROSE_ScreenInfo rose_screen;
+extern ROSE_MouseInfo  rose_mouse;
 
 typedef struct ROSE_VertexSprite {
 	float position[2];
@@ -100,8 +103,9 @@ typedef struct ROSE_Text {
 	ROSE_Color color;
 	uint32_t _num_characters;
 	uint32_t _num_vertices;
-	ROSE_VertexSprite* _cpu_vertices;
+	uint32_t _character_capacity;
 	SDL_GPUBuffer* _vertex_buffer;
+	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Text;
 
 typedef struct ROSE_Sprite {
@@ -153,6 +157,8 @@ ROSE_Text   ROSE_TextCreate(const char* text_string);
 void        ROSE_TextDestroy(ROSE_Text* text);
 void        ROSE_TextUpdateString(ROSE_Text* text, const char* new_string);
 void        ROSE_TextDraw(ROSE_Text* text);
+void        ROSE__TextWriteCharactersToCPUVertices(ROSE_VertexSprite* cpu_vertices, const char* string, uint32_t num_characters);
+void        ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uint32_t num_characters);
 
 ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image);
 ROSE_Sprite ROSE_SpriteCreateBlank(uint32_t width, uint32_t height);
@@ -162,7 +168,7 @@ void        ROSE_SpriteUploadTexture(ROSE_Sprite* sprite, ROSE_Image* image);
 void        ROSE_SpriteDraw(ROSE_Sprite* sprite);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
-SDL_GPUTexture*          ROSE__SDLCreateDepthTexture(void);
+//SDL_GPUTexture*          ROSE__SDLCreateDepthTexture(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
 SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void);
