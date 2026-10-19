@@ -137,6 +137,18 @@ typedef struct ROSE_Points {
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Points;
 
+typedef struct ROSE_Lines {
+	double scale;
+	double xpos;
+	double ypos;
+	double thickness;
+	ROSE_Color color;
+	uint32_t _num_vertices;
+	uint32_t _vertex_capacity;
+	SDL_GPUBuffer* _vertex_buffer;
+	SDL_GPUTransferBuffer* _transfer_buffer;
+} ROSE_Lines;
+
 void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height);
 void ROSE_Quit(void);
 
@@ -182,10 +194,10 @@ void           ROSE_SpriteDraw(ROSE_Sprite* sprite);
 
 ROSE_Triangles ROSE_TrianglesCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
 ROSE_Triangles ROSE_TrianglesCreateEmpty(void);
-void           ROSE_TrianglesUpdateVertices(ROSE_Triangles* shape, ROSE_Vertex2D* vertices, uint32_t num_vertices);
-void           ROSE_TrianglesDestroy(ROSE_Triangles* shape);
-void           ROSE_TrianglesDraw(ROSE_Triangles* shape);
-void           ROSE__TrianglesReserveVertexCapacity(ROSE_Triangles* shape, uint32_t num_vertices);
+void           ROSE_TrianglesUpdateVertices(ROSE_Triangles* triangles, ROSE_Vertex2D* vertices, uint32_t num_vertices);
+void           ROSE_TrianglesDestroy(ROSE_Triangles* triangles);
+void           ROSE_TrianglesDraw(ROSE_Triangles* triangles);
+void           ROSE__TrianglesReserveVertexCapacity(ROSE_Triangles* triangles, uint32_t num_vertices);
 
 ROSE_Points    ROSE_PointsCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
 ROSE_Points    ROSE_PointsCreateEmpty(void);
@@ -194,12 +206,22 @@ void           ROSE_PointsDestroy(ROSE_Points* points);
 void           ROSE_PointsDraw(ROSE_Points* points);
 void           ROSE__PointsReserveVertexCapacity(ROSE_Points* points, uint32_t num_vertices);
 
+ROSE_Lines     ROSE_LinesCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
+ROSE_Lines     ROSE_LinesCreateEmpty(void);
+void           ROSE_LinesUpdateVertices(ROSE_Lines* lines, ROSE_Vertex2D* vertices, uint32_t num_vertices);
+void           ROSE_LinesDestroy(ROSE_Lines* lines);
+void           ROSE_LinesDraw(ROSE_Lines* lines);
+void           ROSE__LinesReserveVertexCapacity(ROSE_Lines* lines, uint32_t num_vertices);
+
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
 SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size);
+SDL_GPUShader*           ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uint32_t num_uniform_buffers, uint32_t num_samplers);
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vertex_path, const char* fragment_path, uint32_t num_fragment_samplers, SDL_GPUVertexInputState vertex_input_state, SDL_GPUPrimitiveType primitive_type);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void);
-SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangle(void);
-SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoint(void);
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangles(void);
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoints(void);
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineLines(void);
 
 #endif /* ROSE_ROSE_HEADER_GUARD */
 

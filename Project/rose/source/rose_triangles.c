@@ -28,25 +28,25 @@ ROSE_Triangles ROSE_TrianglesCreateEmpty(void)
 	};
 }
 
-void ROSE_TrianglesUpdateVertices(ROSE_Triangles* shape, ROSE_Vertex2D* vertices, uint32_t num_vertices)
+void ROSE_TrianglesUpdateVertices(ROSE_Triangles* triangles, ROSE_Vertex2D* vertices, uint32_t num_vertices)
 {
-	ROSE__TrianglesReserveVertexCapacity(shape, num_vertices);
-	shape->_num_vertices = num_vertices;
+	ROSE__TrianglesReserveVertexCapacity(triangles, num_vertices);
+	triangles->_num_vertices = num_vertices;
 
 	if (num_vertices == 0)
 		return;
 
 	uint32_t vertex_buffer_size = num_vertices * (uint32_t)sizeof(ROSE_Vertex2D);
-	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, shape->_transfer_buffer, true);
+	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, triangles->_transfer_buffer, true);
 	memcpy(transfer_buffer_beginning, vertices, (size_t)vertex_buffer_size);
-	SDL_UnmapGPUTransferBuffer(rose__device, shape->_transfer_buffer);
+	SDL_UnmapGPUTransferBuffer(rose__device, triangles->_transfer_buffer);
 
 	SDL_GPUTransferBufferLocation source_buffer_location = {
-		.transfer_buffer = shape->_transfer_buffer,
+		.transfer_buffer = triangles->_transfer_buffer,
 	};
 
 	SDL_GPUBufferRegion destination_buffer_region = {
-		.buffer = shape->_vertex_buffer,
+		.buffer = triangles->_vertex_buffer,
 		.size = vertex_buffer_size,
 	};
 
@@ -57,29 +57,29 @@ void ROSE_TrianglesUpdateVertices(ROSE_Triangles* shape, ROSE_Vertex2D* vertices
 	SDL_SubmitGPUCommandBuffer(command_buffer);
 }
 
-void ROSE_TrianglesDestroy(ROSE_Triangles* shape)
+void ROSE_TrianglesDestroy(ROSE_Triangles* triangles)
 {
-	if (shape) {
-		if (shape->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, shape->_vertex_buffer);
-		if (shape->_transfer_buffer) SDL_ReleaseGPUTransferBuffer(rose__device, shape->_transfer_buffer);
-		*shape = (ROSE_Triangles) { 0 };
+	if (triangles) {
+		if (triangles->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, triangles->_vertex_buffer);
+		if (triangles->_transfer_buffer) SDL_ReleaseGPUTransferBuffer(rose__device, triangles->_transfer_buffer);
+		*triangles = (ROSE_Triangles) { 0 };
 	}
 }
 
-void ROSE_TrianglesDraw(ROSE_Triangles* shape)
+void ROSE_TrianglesDraw(ROSE_Triangles* triangles)
 {
-	if (rose_screen.minimized || (shape->_num_vertices == 0))
+	if (rose_screen.minimized || (triangles->_num_vertices == 0))
 		return;
 
 	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = shape->_vertex_buffer,
+		.buffer = triangles->_vertex_buffer,
 	};
 
 	double aspect_ratio = (double)rose_screen.width / (double)rose_screen.height;
-	double ww = shape->scale * (1.0 / aspect_ratio);
-	double hh = shape->scale;
-	double xx = shape->xpos * (1.0 / aspect_ratio);
-	double yy = shape->ypos;
+	double ww = triangles->scale * (1.0 / aspect_ratio);
+	double hh = triangles->scale;
+	double xx = triangles->xpos * (1.0 / aspect_ratio);
+	double yy = triangles->ypos;
 
 	float w = (float)ww;
 	float h = (float)hh;
@@ -99,26 +99,26 @@ void ROSE_TrianglesDraw(ROSE_Triangles* shape)
 			x, y, 0, 1,
 		},
 		.TintColor = {
-			shape->color.r,
-			shape->color.g,
-			shape->color.b,
-			shape->color.a,
+			triangles->color.r,
+			triangles->color.g,
+			triangles->color.b,
+			triangles->color.a,
 		}
 	};
 
-	SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__triangle_pipeline);
+	SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__triangles_pipeline);
 	SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), sizeof(uniform));
 	SDL_BindGPUVertexBuffers(rose__render_pass, 0, &buffer_binding, 1);
-	SDL_DrawGPUPrimitives(rose__render_pass, shape->_num_vertices, 1, 0, 0);
+	SDL_DrawGPUPrimitives(rose__render_pass, triangles->_num_vertices, 1, 0, 0);
 }
 
-void ROSE__TrianglesReserveVertexCapacity(ROSE_Triangles* shape, uint32_t num_vertices)
+void ROSE__TrianglesReserveVertexCapacity(ROSE_Triangles* triangles, uint32_t num_vertices)
 {
-	if (num_vertices <= shape->_vertex_capacity)
+	if (num_vertices <= triangles->_vertex_capacity)
 		return;
 
 	const uint32_t min_capacity = 32;
-	uint32_t capacity = shape->_vertex_capacity;
+	uint32_t capacity = triangles->_vertex_capacity;
 	if (capacity == 0) {
 		capacity = min_capacity;
 	}
@@ -128,8 +128,8 @@ void ROSE__TrianglesReserveVertexCapacity(ROSE_Triangles* shape, uint32_t num_ve
 
 	uint32_t vertex_buffer_size = capacity * (uint32_t)sizeof(ROSE_Vertex2D);
 
-	if (shape->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, shape->_vertex_buffer);
-	if (shape->_transfer_buffer) SDL_ReleaseGPUTransferBuffer(rose__device, shape->_transfer_buffer);
+	if (triangles->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, triangles->_vertex_buffer);
+	if (triangles->_transfer_buffer) SDL_ReleaseGPUTransferBuffer(rose__device, triangles->_transfer_buffer);
 
 	SDL_GPUBufferCreateInfo buffer_create_info = {
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
@@ -141,8 +141,8 @@ void ROSE__TrianglesReserveVertexCapacity(ROSE_Triangles* shape, uint32_t num_ve
 		.size = vertex_buffer_size,
 	};
 
-	shape->_vertex_buffer = SDL_CreateGPUBuffer(rose__device, &buffer_create_info);
-	shape->_transfer_buffer = SDL_CreateGPUTransferBuffer(rose__device, &transfer_buffer_create_info);
-	shape->_vertex_capacity = capacity;
+	triangles->_vertex_buffer = SDL_CreateGPUBuffer(rose__device, &buffer_create_info);
+	triangles->_transfer_buffer = SDL_CreateGPUTransferBuffer(rose__device, &transfer_buffer_create_info);
+	triangles->_vertex_capacity = capacity;
 }
 

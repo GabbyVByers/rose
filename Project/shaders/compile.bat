@@ -18,12 +18,14 @@
 ::
 
 @echo on
-glslc "source/point.vert" -o "point_vertex.spv"
-glslc "source/point.frag" -o "point_fragment.spv"
 glslc "source/sprite.vert" -o "sprite_vertex.spv"
 glslc "source/sprite.frag" -o "sprite_fragment.spv"
-glslc "source/triangle.vert" -o "triangle_vertex.spv"
-glslc "source/triangle.frag" -o "triangle_fragment.spv"
+glslc "source/triangles.vert" -o "triangles_vertex.spv"
+glslc "source/triangles.frag" -o "triangles_fragment.spv"
+glslc "source/points.vert" -o "points_vertex.spv"
+glslc "source/points.frag" -o "points_fragment.spv"
+glslc "source/lines.vert" -o "lines_vertex.spv"
+glslc "source/lines.frag" -o "lines_fragment.spv"
 
 @echo off
 pause

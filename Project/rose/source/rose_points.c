@@ -109,7 +109,7 @@ void ROSE_PointsDraw(ROSE_Points* points)
 		.PixelDiameter = (float)points->diameter,
 	};
 
-	SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__point_pipeline);
+	SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__points_pipeline);
 	SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), sizeof(uniform));
 	SDL_BindGPUVertexBuffers(rose__render_pass, 0, &buffer_binding, 1);
 	SDL_DrawGPUPrimitives(rose__render_pass, points->_num_vertices, 1, 0, 0);

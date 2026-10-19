@@ -48,6 +48,9 @@
     <ClCompile Include="rose\source\rose_points.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rose\source\rose_lines.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rose\rose.h">
@@ -330,10 +333,12 @@
     </None>
     <None Include="shaders\source\sprite.frag" />
     <None Include="shaders\source\sprite.vert" />
-    <None Include="shaders\source\point.frag" />
-    <None Include="shaders\source\point.vert" />
-    <None Include="shaders\source\triangle.frag" />
-    <None Include="shaders\source\triangle.vert" />
+    <None Include="shaders\source\points.frag" />
+    <None Include="shaders\source\points.vert" />
+    <None Include="shaders\source\triangles.frag" />
+    <None Include="shaders\source\triangles.vert" />
+    <None Include="shaders\source\lines.frag" />
+    <None Include="shaders\source\lines.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="textures\art.png">

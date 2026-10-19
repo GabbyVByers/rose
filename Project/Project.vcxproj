@@ -164,6 +164,7 @@
     <ClCompile Include="rose\source\rose_gpu.c" />
     <ClCompile Include="rose\source\rose_image.c" />
     <ClCompile Include="rose\source\rose_init.c" />
+    <ClCompile Include="rose\source\rose_lines.c" />
     <ClCompile Include="rose\source\rose_peripherals.c" />
     <ClCompile Include="rose\source\rose_points.c" />
     <ClCompile Include="rose\source\rose_triangles.c" />
@@ -266,10 +267,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compile.bat" />
-    <None Include="shaders\source\point.frag" />
-    <None Include="shaders\source\point.vert" />
-    <None Include="shaders\source\triangle.frag" />
-    <None Include="shaders\source\triangle.vert" />
+    <None Include="shaders\source\lines.frag" />
+    <None Include="shaders\source\lines.vert" />
+    <None Include="shaders\source\points.frag" />
+    <None Include="shaders\source\points.vert" />
+    <None Include="shaders\source\triangles.frag" />
+    <None Include="shaders\source\triangles.vert" />
     <None Include="shaders\source\sprite.frag" />
     <None Include="shaders\source\sprite.vert" />
   </ItemGroup>

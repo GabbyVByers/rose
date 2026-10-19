@@ -41,6 +41,18 @@ int main(void)
     points.color = ROSE_COLOR_YELLOW;
     points.diameter = 16.0;
 
+    ROSE_Vertex2D line_vertices[] = {
+        { {  0.0f,  0.7f } },
+        { { -0.7f, -0.7f } },
+        { {  0.7f, -0.7f } },
+        { {  0.0f,  0.0f } },
+        { { -0.8f,  0.4f } },
+        { {  0.8f,  0.4f } },
+    };
+
+    ROSE_Lines lines = ROSE_LinesCreate(line_vertices, sizeof(line_vertices) / sizeof(line_vertices[0]));
+    lines.color = ROSE_COLOR_RED;
+
     while (ROSE_WindowPollEvents()) {
         sprite.xpos = rose_mouse.xpos;
         sprite.ypos = rose_mouse.ypos;
@@ -49,6 +61,7 @@ int main(void)
         ROSE_PointsDraw(&points);
         ROSE_TextDraw(&text);
         ROSE_SpriteDraw(&sprite);
+        ROSE_LinesDraw(&lines);
         ROSE_WindowRender();
     }
 
@@ -57,6 +70,7 @@ int main(void)
     ROSE_SpriteDestroy(&sprite);
     ROSE_TrianglesDestroy(&triangle);
     ROSE_PointsDestroy(&points);
+    ROSE_LinesDestroy(&lines);
     ROSE_Quit();
 }
 
