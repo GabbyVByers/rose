@@ -6,7 +6,7 @@
 #include "rose.h"
 #include "rose_state.h"
 
-void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height, bool vkdebug)
+void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 {
 	#ifdef ROSE_CRTDBG
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
@@ -16,6 +16,11 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height,
 	_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
 	_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_DELAY_FREE_MEM_DF);
+	#endif
+
+	bool vkdebug = false;
+	#if defined(ROSE_DEBUG)
+	vkdebug = true;
 	#endif
 
 	const uint32_t min = 256;

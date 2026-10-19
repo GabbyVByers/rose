@@ -7,7 +7,7 @@
 
 int main(void)
 {
-    ROSE_Init("App Title", 1200, 700, true);
+    ROSE_Init("App Title", 1200, 700);
 
     ROSE_Text text = ROSE_TextCreate("HELLO!");
     text.scale = 3.0;
@@ -28,6 +28,9 @@ int main(void)
         ROSE_WindowRender();
     }
 
+    ROSE_ImageDestroy(&image);
+    ROSE_TextDestroy(&text);
+    ROSE_SpriteDestroy(&sprite);
     ROSE_Quit();
 }
 

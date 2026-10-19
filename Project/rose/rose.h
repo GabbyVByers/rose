@@ -12,10 +12,19 @@
 #include "stb_image_write.h"
 #pragma warning (pop)
 
-#ifdef __SANITIZE_ADDRESS__
-#pragma message("ASan: ON")
+#if defined(NDEBUG)
+#define ROSE_RELEASE
 #else
-#pragma message("ASan: OFF")
+#define ROSE_DEBUG
+#endif
+
+#if defined(__SANITIZE_ADDRESS__)
+#pragma message("ASan ENABLED")
+#else
+#pragma message("ASan DISABLED")
+#endif
+
+#if !defined(__SANITIZE_ADDRESS__) && defined(ROSE_DEBUG)
 #define ROSE_CRTDBG
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
@@ -112,7 +121,7 @@ typedef struct ROSE_Shape2D {
 	SDL_GPUBuffer* _vertex_buffer;
 } ROSE_Shape2D;
 
-void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height, bool vkdebug);
+void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height);
 void ROSE_Quit(void);
 
 void ROSE_WindowToggleVSync(bool vsync);
@@ -155,7 +164,6 @@ void        ROSE_SpriteUploadTexture(ROSE_Sprite* sprite, ROSE_Image* image);
 void        ROSE_SpriteDraw(ROSE_Sprite* sprite);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
-//SDL_GPUTexture*          ROSE__SDLCreateDepthTexture(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
 SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void);
