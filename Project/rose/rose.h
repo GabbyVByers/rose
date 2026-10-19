@@ -114,11 +114,11 @@ typedef struct ROSE_Sprite {
 	SDL_GPUTexture* _texture;
 } ROSE_Sprite;
 
-typedef struct ROSE_Shape2D {
+typedef struct ROSE_Shape {
 	ROSE_Color color;
 	uint32_t _num_vertices;
 	SDL_GPUBuffer* _vertex_buffer;
-} ROSE_Shape2D;
+} ROSE_Shape;
 
 void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height);
 void ROSE_Quit(void);
@@ -161,6 +161,14 @@ ROSE_Sprite ROSE_SpriteLoadFromFile(const char* path);
 void        ROSE_SpriteDestroy(ROSE_Sprite* sprite);
 void        ROSE_SpriteUploadTexture(ROSE_Sprite* sprite, ROSE_Image* image);
 void        ROSE_SpriteDraw(ROSE_Sprite* sprite);
+
+ROSE_Shape  ROSE_ShapeCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
+ROSE_Shape  ROSE_ShapeCreateEmpty(void);
+void        ROSE_ShapeUpdateVertices(ROSE_Shape* shape, ROSE_Vertex2D* vertices, uint32_t num_vertices);
+void        ROSE_ShapeDestroy(ROSE_Shape* shape);
+void        ROSE_ShapeDrawTriangles(ROSE_Shape* shape);
+void        ROSE_ShapeDrawLines(ROSE_Shape* shape);
+void        ROSE_ShapeDrawPoints(ROSE_Shape* shape, double radius);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
