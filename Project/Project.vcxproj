@@ -265,8 +265,8 @@
   <ItemGroup>
     <None Include="shaders\compile.bat" />
     <None Include="shaders\fragment.spv" />
-    <None Include="shaders\source\mesh.frag" />
-    <None Include="shaders\source\mesh.vert" />
+    <None Include="shaders\source\shape.frag" />
+    <None Include="shaders\source\shape.vert" />
     <None Include="shaders\source\sprite.frag" />
     <None Include="shaders\source\sprite.vert" />
     <None Include="shaders\vertex.spv" />

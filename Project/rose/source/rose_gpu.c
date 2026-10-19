@@ -7,24 +7,24 @@
 #include "rose.h"
 #include "rose_state.h"
 
-SDL_GPUTexture* ROSE_SDLCreateDepthTexture(void)
+SDL_GPUTexture* ROSE__SDLCreateDepthTexture(void)
 {
 	SDL_GPUTextureCreateInfo depth_texture_create_info = {
 		.type = SDL_GPU_TEXTURETYPE_2D,
 		.format = SDL_GPU_TEXTUREFORMAT_D16_UNORM,
 		.usage = SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET,
-		.width = screen_width,
-		.height = screen_height,
+		.width = rose_screen.width,
+		.height = rose_screen.height,
 		.layer_count_or_depth = 1,
 		.num_levels = 1,
 		.sample_count = SDL_GPU_SAMPLECOUNT_1
 	};
 
-	SDL_GPUTexture* texture = SDL_CreateGPUTexture(device, &depth_texture_create_info);
+	SDL_GPUTexture* texture = SDL_CreateGPUTexture(rose__device, &depth_texture_create_info);
 	return texture;
 }
 
-SDL_GPUSampler* ROSE_SDLCreateSampler(void)
+SDL_GPUSampler* ROSE__SDLCreateSampler(void)
 {
 	SDL_GPUSamplerCreateInfo sampler_create_info = {
 		.min_filter = SDL_GPU_FILTER_NEAREST,
@@ -35,14 +35,14 @@ SDL_GPUSampler* ROSE_SDLCreateSampler(void)
 		.address_mode_w = SDL_GPU_SAMPLERADDRESSMODE_REPEAT,
 	};
 
-	SDL_GPUSampler* sampler = SDL_CreateGPUSampler(device, &sampler_create_info);
+	SDL_GPUSampler* sampler = SDL_CreateGPUSampler(rose__device, &sampler_create_info);
 	return sampler;
 }
 
-SDL_GPUTexture* ROSE_SDLCreateTexture(ROSE_Image* image)
+SDL_GPUTexture* ROSE__SDLCreateTexture(ROSE_Image* image)
 {
-	uint32_t width = image->width;
-	uint32_t height = image->height;
+	uint32_t width = image->_width;
+	uint32_t height = image->_height;
 	uint32_t image_size = (width * height * (uint32_t)sizeof(ROSE_RGBA));
 
 	SDL_GPUTextureCreateInfo texture_create_info = {
@@ -61,11 +61,11 @@ SDL_GPUTexture* ROSE_SDLCreateTexture(ROSE_Image* image)
 		.size = image_size,
 	};
 
-	SDL_GPUTexture* texture = SDL_CreateGPUTexture(device, &texture_create_info);
-	SDL_GPUTransferBuffer* transfer_buffer = SDL_CreateGPUTransferBuffer(device, &transfer_buffer_create_info);
-	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(device, transfer_buffer, false);
-	memcpy(transfer_buffer_beginning, image->pixels, (size_t)image_size);
-	SDL_UnmapGPUTransferBuffer(device, transfer_buffer);
+	SDL_GPUTexture* texture = SDL_CreateGPUTexture(rose__device, &texture_create_info);
+	SDL_GPUTransferBuffer* transfer_buffer = SDL_CreateGPUTransferBuffer(rose__device, &transfer_buffer_create_info);
+	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, transfer_buffer, false);
+	memcpy(transfer_buffer_beginning, image->_pixels, (size_t)image_size);
+	SDL_UnmapGPUTransferBuffer(rose__device, transfer_buffer);
 
 	SDL_GPUTextureTransferInfo texture_transfer_info = {
 		.transfer_buffer = transfer_buffer,
@@ -80,33 +80,33 @@ SDL_GPUTexture* ROSE_SDLCreateTexture(ROSE_Image* image)
 		.d = 1,
 	};
 
-	SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(device);
+	SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(rose__device);
 	SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(command_buffer);
 	SDL_UploadToGPUTexture(copy_pass, &texture_transfer_info, &destination_texture_region, false);
 	SDL_EndGPUCopyPass(copy_pass);
 	SDL_SubmitGPUCommandBuffer(command_buffer);
-	SDL_ReleaseGPUTransferBuffer(device, transfer_buffer);
+	SDL_ReleaseGPUTransferBuffer(rose__device, transfer_buffer);
 	return texture;
 }
 
-SDL_GPUBuffer* ROSE_SDLCreateVertexBuffer(void* vertices, uint32_t count, uint32_t stride)
+SDL_GPUBuffer* ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size)
 {
 	SDL_GPUBufferCreateInfo buffer_create_info = {
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
-		.size = count * stride,
+		.size = num_vertices * vertex_size,
 	};
 
-	SDL_GPUBuffer* vertex_buffer = SDL_CreateGPUBuffer(device, &buffer_create_info);
+	SDL_GPUBuffer* vertex_buffer = SDL_CreateGPUBuffer(rose__device, &buffer_create_info);
 
 	SDL_GPUTransferBufferCreateInfo transfer_buffer_create_info = {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-		.size = count * stride,
+		.size = num_vertices * vertex_size,
 	};
 
-	SDL_GPUTransferBuffer* transfer_buffer = SDL_CreateGPUTransferBuffer(device, &transfer_buffer_create_info);
-	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(device, transfer_buffer, false);
-	memcpy(transfer_buffer_beginning, vertices, (size_t)count * stride);
-	SDL_UnmapGPUTransferBuffer(device, transfer_buffer);
+	SDL_GPUTransferBuffer* transfer_buffer = SDL_CreateGPUTransferBuffer(rose__device, &transfer_buffer_create_info);
+	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, transfer_buffer, false);
+	memcpy(transfer_buffer_beginning, vertices, (size_t)num_vertices * vertex_size);
+	SDL_UnmapGPUTransferBuffer(rose__device, transfer_buffer);
 
 	SDL_GPUTransferBufferLocation source_buffer_location = {
 		.transfer_buffer = transfer_buffer,
@@ -114,19 +114,19 @@ SDL_GPUBuffer* ROSE_SDLCreateVertexBuffer(void* vertices, uint32_t count, uint32
 
 	SDL_GPUBufferRegion destination_buffer_region = {
 		.buffer = vertex_buffer,
-		.size = count * stride,
+		.size = num_vertices * vertex_size,
 	};
 
-	SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(device);
+	SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(rose__device);
 	SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(command_buffer);
 	SDL_UploadToGPUBuffer(copy_pass, &source_buffer_location, &destination_buffer_region, true);
 	SDL_EndGPUCopyPass(copy_pass);
 	SDL_SubmitGPUCommandBuffer(command_buffer);
-	SDL_ReleaseGPUTransferBuffer(device, transfer_buffer);
+	SDL_ReleaseGPUTransferBuffer(rose__device, transfer_buffer);
 	return vertex_buffer;
 }
 
-SDL_GPUGraphicsPipeline* ROSE_SDLCreateGraphicsPipelineSprite(void)
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void)
 {
 	const char* vertex_path = "shaders/sprite_vertex.spv";
 	const char* fragment_path = "shaders/sprite_fragment.spv";
@@ -165,8 +165,8 @@ SDL_GPUGraphicsPipeline* ROSE_SDLCreateGraphicsPipelineSprite(void)
 		.num_samplers = 1,
 	};
 
-	SDL_GPUShader* vertex_shader_program = SDL_CreateGPUShader(device, &vertex_shader_create_info);
-	SDL_GPUShader* fragment_shader_program = SDL_CreateGPUShader(device, &fragment_shader_create_info);
+	SDL_GPUShader* vertex_shader_program = SDL_CreateGPUShader(rose__device, &vertex_shader_create_info);
+	SDL_GPUShader* fragment_shader_program = SDL_CreateGPUShader(rose__device, &fragment_shader_create_info);
 
 	SDL_GPUVertexAttribute position_attribute = {
 		.location = 0,
@@ -193,7 +193,7 @@ SDL_GPUGraphicsPipeline* ROSE_SDLCreateGraphicsPipelineSprite(void)
 	};
 
 	SDL_GPUColorTargetDescription color_target_description = {
-		.format = SDL_GetGPUSwapchainTextureFormat(device, window),
+		.format = SDL_GetGPUSwapchainTextureFormat(rose__device, rose__window),
 		.blend_state = {
 			.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
 			.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
@@ -228,14 +228,14 @@ SDL_GPUGraphicsPipeline* ROSE_SDLCreateGraphicsPipelineSprite(void)
 		},
 	};
 
-	SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(device, &graphics_pipeline_create_info);
+	SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(rose__device, &graphics_pipeline_create_info);
 
 	fclose(vertex_file);
 	fclose(fragment_file);
 	free(vertex_code);
 	free(fragment_code);
-	SDL_ReleaseGPUShader(device, vertex_shader_program);
-	SDL_ReleaseGPUShader(device, fragment_shader_program);
+	SDL_ReleaseGPUShader(rose__device, vertex_shader_program);
+	SDL_ReleaseGPUShader(rose__device, fragment_shader_program);
 	
 	return pipeline;
 }

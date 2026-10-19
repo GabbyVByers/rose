@@ -22,42 +22,83 @@ ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 		.scale = 1.0,
 		.xpos = 0,
 		.ypos = 0,
-		.width = image->width,
-		.height = image->height,
-		.color = { 1, 1, 1, 1 },
-		.vertex_buffer = ROSE_SDLCreateVertexBuffer(vertices, sizeof(vertices) / sizeof(vertices[0]), sizeof(ROSE_VertexSprite)),
-		.texture = ROSE_SDLCreateTexture(image),
+		._width = image->_width,
+		._height = image->_height,
+		.color = ROSE_COLOR_WHITE,
+		._vertex_buffer = ROSE__SDLCreateVertexBuffer(vertices, sizeof(vertices) / sizeof(vertices[0]), sizeof(ROSE_VertexSprite)),
+		._texture = ROSE__SDLCreateTexture(image),
 	};
+}
+
+ROSE_Sprite ROSE_SpriteCreateBlank(uint32_t width, uint32_t height)
+{
+	ROSE_VertexSprite vertices[] = {
+		{ { 0, 0 }, { 0, 1 } },
+		{ { 1, 0 }, { 1, 1 } },
+		{ { 1,-1 }, { 1, 0 } },
+		{ { 0, 0 }, { 0, 1 } },
+		{ { 1,-1 }, { 1, 0 } },
+		{ { 0,-1 }, { 0, 0 } },
+	};
+
+	return (ROSE_Sprite) {
+		.scale = 1.0,
+			.xpos = 0,
+			.ypos = 0,
+			._width = width,
+			._height = height,
+			.color = ROSE_COLOR_WHITE,
+			._vertex_buffer = ROSE__SDLCreateVertexBuffer(vertices, sizeof(vertices) / sizeof(vertices[0]), sizeof(ROSE_VertexSprite)),
+			._texture = NULL,
+	};
+}
+
+ROSE_Sprite ROSE_SpriteLoadFromFile(const char* path)
+{
+	ROSE_Image image = ROSE_ImageLoadFromFile(path);
+	ROSE_Sprite sprite = ROSE_SpriteCreate(&image);
+	ROSE_ImageDestroy(&image);
+	return sprite;
 }
 
 void ROSE_SpriteDestroy(ROSE_Sprite* sprite)
 {
-	if (sprite->texture) SDL_ReleaseGPUTexture(device, sprite->texture);
-	if (sprite->vertex_buffer) SDL_ReleaseGPUBuffer(device, sprite->vertex_buffer);
-	*sprite = (ROSE_Sprite){ 0 };
+	if (sprite) {
+		if (sprite->_texture) SDL_ReleaseGPUTexture(rose__device, sprite->_texture);
+		if (sprite->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, sprite->_vertex_buffer);
+		*sprite = (ROSE_Sprite){ 0 };
+	}
+}
+
+void ROSE_SpriteUploadTexture(ROSE_Sprite* sprite, ROSE_Image* image)
+{
+	if (sprite->_texture) SDL_ReleaseGPUTexture(rose__device, sprite->_texture);
+	sprite->_texture = ROSE__SDLCreateTexture(image);
+	sprite->_width = image->_width;
+	sprite->_height = image->_height;
 }
 
 void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 {
-	if (minimized)
+	if (rose_screen.minimized)
 		return;
 
 	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = sprite->vertex_buffer,
+		.buffer = sprite->_vertex_buffer,
 	};
 
 	SDL_GPUTextureSamplerBinding texture_binding = {
-		.texture = sprite->texture,
-		.sampler = sampler,
+		.texture = (sprite->_texture) ? (sprite->_texture) : (rose__dummy_texture),
+		.sampler = rose__sampler,
 	};
 
-	double scaled_width = (double)sprite->width * sprite->scale;
-	double scaled_height = (double)sprite->height * sprite->scale;
+	double scaled_width = (double)sprite->_width * sprite->scale;
+	double scaled_height = (double)sprite->_height * sprite->scale;
 
-	double ww = (scaled_width / (double)screen_width) * 2.0f;
-	double hh = (scaled_height / (double)screen_height) * 2.0f;
-	double xx = -1.0f + (((double)sprite->xpos / (double)screen_width) * 2.0f);
-	double yy = 1.0f - (((double)sprite->ypos / (double)screen_height) * 2.0f);
+	double ww = (scaled_width / (double)rose_screen.width) * 2.0f;
+	double hh = (scaled_height / (double)rose_screen.height) * 2.0f;
+	double xx = -1.0f + (((double)sprite->xpos / (double)rose_screen.width) * 2.0f);
+	double yy = 1.0f - (((double)sprite->ypos / (double)rose_screen.height) * 2.0f);
 
 	float w = (float)ww;
 	float h = (float)hh;
@@ -84,10 +125,10 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 		}
 	};
 
-	SDL_BindGPUGraphicsPipeline(render_pass, sprite_pipeline);
-	SDL_PushGPUVertexUniformData(command_buffer, 0, ((void*)&uniform), sizeof(uniform));
-	SDL_BindGPUVertexBuffers(render_pass, 0, &buffer_binding, 1);
-	SDL_BindGPUFragmentSamplers(render_pass, 0, &texture_binding, 1);
-	SDL_DrawGPUPrimitives(render_pass, 6, 1, 0, 0);
+	SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__sprite_pipeline);
+	SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), sizeof(uniform));
+	SDL_BindGPUVertexBuffers(rose__render_pass, 0, &buffer_binding, 1);
+	SDL_BindGPUFragmentSamplers(rose__render_pass, 0, &texture_binding, 1);
+	SDL_DrawGPUPrimitives(rose__render_pass, 6, 1, 0, 0);
 }
 

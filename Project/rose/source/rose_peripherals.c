@@ -7,52 +7,52 @@
 #include "rose.h"
 #include "rose_state.h"
 
-bool ROSE_MousePressing(uint32_t button)
+bool ROSE_MousePressing(uint32_t mouse_button)
 {
-	return (curr_mouse_state & SDL_BUTTON_MASK(button)) != 0;
+	return (rose__curr_mouse_state & SDL_BUTTON_MASK(mouse_button)) != 0;
 }
 
-bool ROSE_MousePressed(uint32_t button)
+bool ROSE_MousePressed(uint32_t mouse_button)
 {
-	return ((prev_mouse_state & SDL_BUTTON_MASK(button)) == 0)
-		&& ((curr_mouse_state & SDL_BUTTON_MASK(button)) != 0);
+	return ((rose__prev_mouse_state & SDL_BUTTON_MASK(mouse_button)) == 0)
+		&& ((rose__curr_mouse_state & SDL_BUTTON_MASK(mouse_button)) != 0);
 }
 
-bool ROSE_MouseReleased(uint32_t button)
+bool ROSE_MouseReleased(uint32_t mouse_button)
 {
-	return ((prev_mouse_state & SDL_BUTTON_MASK(button)) != 0)
-		&& ((curr_mouse_state & SDL_BUTTON_MASK(button)) == 0);
+	return ((rose__prev_mouse_state & SDL_BUTTON_MASK(mouse_button)) != 0)
+		&& ((rose__curr_mouse_state & SDL_BUTTON_MASK(mouse_button)) == 0);
 }
 
 void ROSE_MouseHide(void)
 {
-	saved_mouse_px = mouse_xpos;
-	saved_mouse_py = mouse_ypos;
-	SDL_SetWindowRelativeMouseMode(window, true);
+	rose__saved_mouse_px = rose_mouse.xpos;
+	rose__saved_mouse_py = rose_mouse.ypos;
+	SDL_SetWindowRelativeMouseMode(rose__window, true);
 }
 
 void ROSE_MouseReveal(void)
 {
-	mouse_xpos = saved_mouse_px;
-	mouse_ypos = saved_mouse_py;
-	SDL_WarpMouseInWindow(window, mouse_xpos, mouse_ypos);
-	SDL_SetWindowRelativeMouseMode(window, false);
+	rose_mouse.xpos = rose__saved_mouse_px;
+	rose_mouse.ypos = rose__saved_mouse_py;
+	SDL_WarpMouseInWindow(rose__window, rose_mouse.xpos, rose_mouse.ypos);
+	SDL_SetWindowRelativeMouseMode(rose__window, false);
 }
 
-bool ROSE_KeyboardPressing(ROSE_Scancode button)
+bool ROSE_KeyboardPressing(ROSE_Scancode scancode)
 {
-	return curr_keyboard_state[button];
+	return rose__curr_keyboard_state[scancode];
 }
 
-bool ROSE_KeyboardPressed(ROSE_Scancode button)
+bool ROSE_KeyboardPressed(ROSE_Scancode scancode)
 {
-	return (!prev_keyboard_state[button])
-		&& (curr_keyboard_state[button]);
+	return (!rose__prev_keyboard_state[scancode])
+		&& (rose__curr_keyboard_state[scancode]);
 }
 
-bool ROSE_KeyboardReleased(ROSE_Scancode button)
+bool ROSE_KeyboardReleased(ROSE_Scancode scancode)
 {
-	return (prev_keyboard_state[button])
-		&& (!curr_keyboard_state[button]);
+	return (rose__prev_keyboard_state[scancode])
+		&& (!rose__curr_keyboard_state[scancode]);
 }
 

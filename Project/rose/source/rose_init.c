@@ -6,30 +6,40 @@
 #include "rose.h"
 #include "rose_state.h"
 
-void ROSE_Init(const char* title, uint32_t width, uint32_t height, bool vkdebug)
+void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height, bool vkdebug)
 {
+	#ifdef ROSE_CRTDBG
+	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
+	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+	_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
+	_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+	_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_DELAY_FREE_MEM_DF);
+	#endif
+
 	const uint32_t min = 256;
-	screen_width = (width < min) ? min : width;
-	screen_height = (height < min) ? min : height;
-	
+	rose_screen.width = (screen_width < min) ? min : screen_width;
+	rose_screen.height = (screen_height < min) ? min : screen_height;
+
 	SDL_Init(SDL_INIT_VIDEO);
-	window = SDL_CreateWindow(title, (int)screen_width, (int)screen_height, SDL_WINDOW_RESIZABLE);
-	device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, vkdebug, NULL);
+	rose__window = SDL_CreateWindow(title, (int)rose_screen.width, (int)rose_screen.height, SDL_WINDOW_RESIZABLE);
+	rose__device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, vkdebug, NULL);
 
-	SDL_ClaimWindowForGPUDevice(device, window);
-	SDL_SetGPUSwapchainParameters(device, window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
-	SDL_SetWindowMinimumSize(window, (int)min, (int)min);
+	SDL_ClaimWindowForGPUDevice(rose__device, rose__window);
+	SDL_SetGPUSwapchainParameters(rose__device, rose__window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
+	SDL_SetWindowMinimumSize(rose__window, (int)min, (int)min);
 
-	sampler = ROSE_SDLCreateSampler();
-	depth_texture = ROSE_SDLCreateDepthTexture();
-	sprite_pipeline = ROSE_SDLCreateGraphicsPipelineSprite();
+	rose__sampler = ROSE__SDLCreateSampler();
+	rose__depth_texture = ROSE__SDLCreateDepthTexture();
+	rose__sprite_pipeline = ROSE__SDLCreateGraphicsPipelineSprite();
 
 	ROSE_Image ascii_image = ROSE_ImageLoadFromFile("textures/ascii.png");
-	ascii_texture = ROSE_SDLCreateTexture(&ascii_image);
+	rose__ascii_texture = ROSE__SDLCreateTexture(&ascii_image);
 	ROSE_ImageDestroy(&ascii_image);
 
 	ROSE_Image dummy_image = ROSE_ImageCreate(1, 1);
-	dummy_texture = ROSE_SDLCreateTexture(&dummy_image);
+	rose__dummy_texture = ROSE__SDLCreateTexture(&dummy_image);
 	ROSE_ImageDestroy(&dummy_image);
 }
 

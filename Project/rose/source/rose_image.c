@@ -18,16 +18,18 @@ ROSE_Image ROSE_ImageCreate(uint32_t width, uint32_t height)
 	}
 
 	return (ROSE_Image) {
-		.width = width,
-		.height = height,
-		.pixels = pixels,
+		._width = width,
+		._height = height,
+		._pixels = pixels,
 	};
 }
 
 void ROSE_ImageDestroy(ROSE_Image* image)
 {
-	if (image->pixels) free(image->pixels);
-	*image = (ROSE_Image) { 0 };
+	if (image) {
+		if (image->_pixels) free(image->_pixels);
+		*image = (ROSE_Image) { 0 };
+	}
 }
 
 ROSE_Image ROSE_ImageLoadFromFile(const char* path)
@@ -43,26 +45,26 @@ ROSE_Image ROSE_ImageLoadFromFile(const char* path)
 	stbi_image_free(stbi_image);
 
 	return (ROSE_Image) {
-		.width = width,
-		.height = height,
-		.pixels = pixels,
+		._width = width,
+		._height = height,
+		._pixels = pixels,
 	};
 }
 
 void ROSE_ImageSavePNG(ROSE_Image* image, const char* path)
 {
-	int width = (int)image->width;
-	int height = (int)image->height;
-	void* pixels = (void*)image->pixels;
-	int stride = (int)image->width * 4;
+	int width = (int)image->_width;
+	int height = (int)image->_height;
+	void* pixels = (void*)image->_pixels;
+	int stride = (int)image->_width * 4;
 	stbi_flip_vertically_on_write(true);
 	bool success = stbi_write_png(path, width, height, 4, pixels, stride);
 	assert(success && "stbi_write_png() failed!");
 }
 
-void ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height)
+void ROSE_ImageResize(ROSE_Image* image, uint32_t new_width, uint32_t new_height)
 {
-	size_t size = (size_t)width * height * 4;
+	size_t size = (size_t)new_width * new_height * 4;
 	uint8_t* pixels = NULL;
 	
 	if (size != 0) {
@@ -70,43 +72,62 @@ void ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height)
 		memset(pixels, 255, size);
 	}
 
-	if (pixels && image->pixels) {
-		size_t copy_width = (width < image->width) ? width : image->width;
-		size_t copy_height = (height < image->height) ? height : image->height;
-		size_t src_offset = image->height - copy_height;
-		size_t dst_offset = height - copy_height;
+	if (pixels && image->_pixels) {
+		size_t copy_width = (new_width < image->_width) ? new_width : image->_width;
+		size_t copy_height = (new_height < image->_height) ? new_height : image->_height;
+		size_t src_offset = image->_height - copy_height;
+		size_t dst_offset = new_height - copy_height;
 
 		for (size_t y = 0; y < copy_height; y++) {
-			size_t src_index = (src_offset + y) * image->width * 4;
-			size_t dst_index = (dst_offset + y) * width * 4;
-			memcpy(pixels + dst_index, image->pixels + src_index, copy_width * 4);
+			size_t src_index = (src_offset + y) * image->_width * 4;
+			size_t dst_index = (dst_offset + y) * new_width * 4;
+			memcpy(pixels + dst_index, image->_pixels + src_index, copy_width * 4);
 		}
 	}
 
-	if (image->pixels) free(image->pixels);
+	if (image->_pixels) free(image->_pixels);
 	*image = (ROSE_Image) {
-		.width = width,
-		.height = height,
-		.pixels = pixels,
+		._width = new_width,
+		._height = new_height,
+		._pixels = pixels,
 	};
 }
 
 ROSE_Color ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos)
 {
-	size_t index = ((((((size_t)image->height - 1) - ypos) * image->width) + xpos) * 4);
-	float r = ((float)(image->pixels[index + 0]) / 255.0f);
-	float g = ((float)(image->pixels[index + 1]) / 255.0f);
-	float b = ((float)(image->pixels[index + 2]) / 255.0f);
-	float a = ((float)(image->pixels[index + 3]) / 255.0f);
+	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
+	float r = ((float)(image->_pixels[index + 0]) / 255.0f);
+	float g = ((float)(image->_pixels[index + 1]) / 255.0f);
+	float b = ((float)(image->_pixels[index + 2]) / 255.0f);
+	float a = ((float)(image->_pixels[index + 3]) / 255.0f);
 	return (ROSE_Color) { r, g, b, a };
 }
 
-void ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color)
+ROSE_RGBA ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos)
 {
-	size_t index = ((((((size_t)image->height - 1) - ypos) * image->width) + xpos) * 4);
-	image->pixels[index + 0] = (uint8_t)(color.r * 255.0f);
-	image->pixels[index + 1] = (uint8_t)(color.g * 255.0f);
-	image->pixels[index + 2] = (uint8_t)(color.b * 255.0f);
-	image->pixels[index + 3] = (uint8_t)(color.a * 255.0f);
+	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
+	uint8_t r = image->_pixels[index + 0];
+	uint8_t g = image->_pixels[index + 1];
+	uint8_t b = image->_pixels[index + 2];
+	uint8_t a = image->_pixels[index + 3];
+	return (ROSE_RGBA) { r, g, b, a };
+}
+
+void ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color pixel_color)
+{
+	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
+	image->_pixels[index + 0] = (uint8_t)(pixel_color.r * 255.0f);
+	image->_pixels[index + 1] = (uint8_t)(pixel_color.g * 255.0f);
+	image->_pixels[index + 2] = (uint8_t)(pixel_color.b * 255.0f);
+	image->_pixels[index + 3] = (uint8_t)(pixel_color.a * 255.0f);
+}
+
+void ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA pixel_color)
+{
+	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
+	image->_pixels[index + 0] = pixel_color.r;
+	image->_pixels[index + 1] = pixel_color.g;
+	image->_pixels[index + 2] = pixel_color.b;
+	image->_pixels[index + 3] = pixel_color.a;
 }
 
