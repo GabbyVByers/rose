@@ -7,9 +7,16 @@
 #include "rose.h"
 #include "rose_state.h"
 
-ROSE_Text ROSE_TextCreate(const char* text_string)
+ROSE_Text ROSE_TextCreate(const char* string)
 {
-	ROSE_Text text = {
+	ROSE_Text text = ROSE_TextCreateEmpty();
+	ROSE_TextUpdateString(&text, string);
+	return text;
+}
+
+ROSE_Text ROSE_TextCreateEmpty(void)
+{
+	return (ROSE_Text) {
 		.scale = 1.0,
 		.xpos = 0.0,
 		.ypos = 0.0,
@@ -20,9 +27,6 @@ ROSE_Text ROSE_TextCreate(const char* text_string)
 		._vertex_buffer = NULL,
 		._transfer_buffer = NULL,
 	};
-
-	ROSE_TextUpdateString(&text, text_string);
-	return text;
 }
 
 void ROSE_TextDestroy(ROSE_Text* text)
@@ -45,7 +49,7 @@ void ROSE_TextUpdateString(ROSE_Text* text, const char* new_string)
 		return;
 
 	ROSE_VertexSprite* vertices = SDL_MapGPUTransferBuffer(rose__device, text->_transfer_buffer, true);
-	ROSE__TextWriteCharactersToCPUVertices(vertices, new_string, num_characters);
+	ROSE__TextWriteCharactersToVertices(vertices, new_string, num_characters);
 	SDL_UnmapGPUTransferBuffer(rose__device, text->_transfer_buffer);
 
 	SDL_GPUTransferBufferLocation source_buffer_location = {
@@ -118,7 +122,7 @@ void ROSE_TextDraw(ROSE_Text* text)
 	SDL_DrawGPUPrimitives(rose__render_pass, text->_num_vertices, 1, 0, 0);
 }
 
-void ROSE__TextWriteCharactersToCPUVertices(ROSE_VertexSprite* cpu_vertices, const char* string, uint32_t num_characters)
+void ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uint32_t num_characters)
 {
 	const float w = (1.0f / 95.0f);
 	for (uint32_t i = 0; i < num_characters; i++) {
@@ -126,12 +130,12 @@ void ROSE__TextWriteCharactersToCPUVertices(ROSE_VertexSprite* cpu_vertices, con
 		unsigned char c = (unsigned char)string[i];
 		uint32_t character_index = ((c >= 32) && (c <= 126)) ? (c - 32) : ('?' - 32);
 		float x = (w * (float)character_index);
-		cpu_vertices[index + 0] = (ROSE_VertexSprite){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
-		cpu_vertices[index + 1] = (ROSE_VertexSprite){ { (float)(i + 1),  0.0f }, { (float)(x + w), 1.0f } };
-		cpu_vertices[index + 2] = (ROSE_VertexSprite){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
-		cpu_vertices[index + 3] = (ROSE_VertexSprite){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
-		cpu_vertices[index + 4] = (ROSE_VertexSprite){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
-		cpu_vertices[index + 5] = (ROSE_VertexSprite){ { (float)(i + 0), -1.0f }, { (float)(x),     0.0f } };
+		vertices[index + 0] = (ROSE_VertexSprite){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
+		vertices[index + 1] = (ROSE_VertexSprite){ { (float)(i + 1),  0.0f }, { (float)(x + w), 1.0f } };
+		vertices[index + 2] = (ROSE_VertexSprite){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
+		vertices[index + 3] = (ROSE_VertexSprite){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
+		vertices[index + 4] = (ROSE_VertexSprite){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
+		vertices[index + 5] = (ROSE_VertexSprite){ { (float)(i + 0), -1.0f }, { (float)(x),     0.0f } };
 	}
 }
 

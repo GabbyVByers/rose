@@ -42,6 +42,12 @@
     <ClCompile Include="libraries\stb-master\stb_image.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rose\source\rose_triangles.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="rose\source\rose_points.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="rose\rose.h">
@@ -324,7 +330,17 @@
     </None>
     <None Include="shaders\source\sprite.frag" />
     <None Include="shaders\source\sprite.vert" />
-    <None Include="shaders\source\shape.frag" />
-    <None Include="shaders\source\shape.vert" />
+    <None Include="shaders\source\point.frag" />
+    <None Include="shaders\source\point.vert" />
+    <None Include="shaders\source\triangle.frag" />
+    <None Include="shaders\source\triangle.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\art.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="textures\ascii.png">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

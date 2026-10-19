@@ -216,3 +216,191 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void)
 	return pipeline;
 }
 
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangle(void)
+{
+	const char* vertex_path = "shaders/triangle_vertex.spv";
+	const char* fragment_path = "shaders/triangle_fragment.spv";
+	FILE* vertex_file = fopen(vertex_path, "rb");
+	FILE* fragment_file = fopen(fragment_path, "rb");
+	assert(vertex_file && "fopen() failed!");
+	assert(fragment_file && "fopen() failed!");
+
+	fseek(vertex_file, 0, SEEK_END);
+	fseek(fragment_file, 0, SEEK_END);
+	size_t vertex_code_size = ftell(vertex_file);
+	size_t fragment_code_size = ftell(fragment_file);
+	rewind(vertex_file);
+	rewind(fragment_file);
+
+	uint8_t* vertex_code = malloc(vertex_code_size);
+	uint8_t* fragment_code = malloc(fragment_code_size);
+	fread(vertex_code, 1, vertex_code_size, vertex_file);
+	fread(fragment_code, 1, fragment_code_size, fragment_file);
+
+	SDL_GPUShaderCreateInfo vertex_shader_create_info = {
+		.code_size = vertex_code_size,
+		.code = vertex_code,
+		.entrypoint = "main",
+		.format = SDL_GPU_SHADERFORMAT_SPIRV,
+		.stage = SDL_GPU_SHADERSTAGE_VERTEX,
+		.num_uniform_buffers = 1,
+	};
+
+	SDL_GPUShaderCreateInfo fragment_shader_create_info = {
+		.code_size = fragment_code_size,
+		.code = fragment_code,
+		.entrypoint = "main",
+		.format = SDL_GPU_SHADERFORMAT_SPIRV,
+		.stage = SDL_GPU_SHADERSTAGE_FRAGMENT,
+	};
+
+	SDL_GPUShader* vertex_shader_program = SDL_CreateGPUShader(rose__device, &vertex_shader_create_info);
+	SDL_GPUShader* fragment_shader_program = SDL_CreateGPUShader(rose__device, &fragment_shader_create_info);
+
+	SDL_GPUVertexAttribute position_attribute = {
+		.location = 0,
+		.buffer_slot = 0,
+		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
+		.offset = offsetof(ROSE_Vertex2D, position),
+	};
+
+	SDL_GPUVertexBufferDescription vertex_buffer_description = {
+		.pitch = sizeof(ROSE_Vertex2D),
+		.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX,
+	};
+
+	SDL_GPUColorTargetDescription color_target_description = {
+		.format = SDL_GetGPUSwapchainTextureFormat(rose__device, rose__window),
+		.blend_state = {
+			.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
+			.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+			.color_blend_op = SDL_GPU_BLENDOP_ADD,
+			.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
+			.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+			.alpha_blend_op = SDL_GPU_BLENDOP_ADD,
+			.enable_blend = true,
+		},
+	};
+
+	SDL_GPUGraphicsPipelineCreateInfo graphics_pipeline_create_info = {
+		.vertex_shader = vertex_shader_program,
+		.fragment_shader = fragment_shader_program,
+		.vertex_input_state = {
+			.vertex_buffer_descriptions = &vertex_buffer_description,
+			.num_vertex_buffers = 1,
+			.vertex_attributes = &position_attribute,
+			.num_vertex_attributes = 1,
+		},
+		.primitive_type = SDL_GPU_PRIMITIVETYPE_TRIANGLELIST,
+		.target_info = {
+			.color_target_descriptions = &color_target_description,
+			.num_color_targets = 1,
+		},
+	};
+
+	SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(rose__device, &graphics_pipeline_create_info);
+
+	fclose(vertex_file);
+	fclose(fragment_file);
+	free(vertex_code);
+	free(fragment_code);
+	SDL_ReleaseGPUShader(rose__device, vertex_shader_program);
+	SDL_ReleaseGPUShader(rose__device, fragment_shader_program);
+
+	return pipeline;
+}
+
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoint(void)
+{
+	const char* vertex_path = "shaders/point_vertex.spv";
+	const char* fragment_path = "shaders/point_fragment.spv";
+	FILE* vertex_file = fopen(vertex_path, "rb");
+	FILE* fragment_file = fopen(fragment_path, "rb");
+	assert(vertex_file && "fopen() failed!");
+	assert(fragment_file && "fopen() failed!");
+
+	fseek(vertex_file, 0, SEEK_END);
+	fseek(fragment_file, 0, SEEK_END);
+	size_t vertex_code_size = ftell(vertex_file);
+	size_t fragment_code_size = ftell(fragment_file);
+	rewind(vertex_file);
+	rewind(fragment_file);
+
+	uint8_t* vertex_code = malloc(vertex_code_size);
+	uint8_t* fragment_code = malloc(fragment_code_size);
+	fread(vertex_code, 1, vertex_code_size, vertex_file);
+	fread(fragment_code, 1, fragment_code_size, fragment_file);
+
+	SDL_GPUShaderCreateInfo vertex_shader_create_info = {
+		.code_size = vertex_code_size,
+		.code = vertex_code,
+		.entrypoint = "main",
+		.format = SDL_GPU_SHADERFORMAT_SPIRV,
+		.stage = SDL_GPU_SHADERSTAGE_VERTEX,
+		.num_uniform_buffers = 1,
+	};
+
+	SDL_GPUShaderCreateInfo fragment_shader_create_info = {
+		.code_size = fragment_code_size,
+		.code = fragment_code,
+		.entrypoint = "main",
+		.format = SDL_GPU_SHADERFORMAT_SPIRV,
+		.stage = SDL_GPU_SHADERSTAGE_FRAGMENT,
+	};
+
+	SDL_GPUShader* vertex_shader_program = SDL_CreateGPUShader(rose__device, &vertex_shader_create_info);
+	SDL_GPUShader* fragment_shader_program = SDL_CreateGPUShader(rose__device, &fragment_shader_create_info);
+
+	SDL_GPUVertexAttribute position_attribute = {
+		.location = 0,
+		.buffer_slot = 0,
+		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
+		.offset = offsetof(ROSE_Vertex2D, position),
+	};
+
+	SDL_GPUVertexBufferDescription vertex_buffer_description = {
+		.pitch = sizeof(ROSE_Vertex2D),
+		.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX,
+	};
+
+	SDL_GPUColorTargetDescription color_target_description = {
+		.format = SDL_GetGPUSwapchainTextureFormat(rose__device, rose__window),
+		.blend_state = {
+			.src_color_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
+			.dst_color_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+			.color_blend_op = SDL_GPU_BLENDOP_ADD,
+			.src_alpha_blendfactor = SDL_GPU_BLENDFACTOR_SRC_ALPHA,
+			.dst_alpha_blendfactor = SDL_GPU_BLENDFACTOR_ONE_MINUS_SRC_ALPHA,
+			.alpha_blend_op = SDL_GPU_BLENDOP_ADD,
+			.enable_blend = true,
+		},
+	};
+
+	SDL_GPUGraphicsPipelineCreateInfo graphics_pipeline_create_info = {
+		.vertex_shader = vertex_shader_program,
+		.fragment_shader = fragment_shader_program,
+		.vertex_input_state = {
+			.vertex_buffer_descriptions = &vertex_buffer_description,
+			.num_vertex_buffers = 1,
+			.vertex_attributes = &position_attribute,
+			.num_vertex_attributes = 1,
+		},
+		.primitive_type = SDL_GPU_PRIMITIVETYPE_POINTLIST,
+		.target_info = {
+			.color_target_descriptions = &color_target_description,
+			.num_color_targets = 1,
+		},
+	};
+
+	SDL_GPUGraphicsPipeline* pipeline = SDL_CreateGPUGraphicsPipeline(rose__device, &graphics_pipeline_create_info);
+
+	fclose(vertex_file);
+	fclose(fragment_file);
+	free(vertex_code);
+	free(fragment_code);
+	SDL_ReleaseGPUShader(rose__device, vertex_shader_program);
+	SDL_ReleaseGPUShader(rose__device, fragment_shader_program);
+
+	return pipeline;
+}
+

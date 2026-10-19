@@ -13,6 +13,6 @@ layout(set = 2, binding = 0) uniform sampler2D AlbedoTexture;
 layout(location = 0) out vec4 FragColor;
 
 void main() {
-  FragColor = texture(AlbedoTexture, VertexTexCoords) * VertexColor;
+	FragColor = texture(AlbedoTexture, VertexTexCoords) * VertexColor;
 }
 

@@ -20,7 +20,7 @@ ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 	};
 }
 
-ROSE_Sprite ROSE_SpriteCreateBlank(uint32_t width, uint32_t height)
+ROSE_Sprite ROSE_SpriteCreateEmpty(uint32_t width, uint32_t height)
 {
 	return (ROSE_Sprite) {
 		.scale = 1.0,

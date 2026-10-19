@@ -36,7 +36,9 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 	SDL_SetWindowMinimumSize(rose__window, (int)min, (int)min);
 
 	rose__sampler = ROSE__SDLCreateSampler();
+	rose__point_pipeline = ROSE__SDLCreateGraphicsPipelinePoint();
 	rose__sprite_pipeline = ROSE__SDLCreateGraphicsPipelineSprite();
+	rose__triangle_pipeline = ROSE__SDLCreateGraphicsPipelineTriangle();
 
 	ROSE_VertexSprite quad_vertices[] = {
 		{ { 0, 0 }, { 0, 1 } },
@@ -62,7 +64,9 @@ void ROSE_Quit(void)
 {
 	if (rose__device) {
 		SDL_WaitForGPUIdle(rose__device);
+		if (rose__point_pipeline) SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__point_pipeline);
 		if (rose__sprite_pipeline) SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__sprite_pipeline);
+		if (rose__triangle_pipeline) SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__triangle_pipeline);
 		if (rose__sprite_quad_buffer) SDL_ReleaseGPUBuffer(rose__device, rose__sprite_quad_buffer);
 		if (rose__dummy_texture) SDL_ReleaseGPUTexture(rose__device, rose__dummy_texture);
 		if (rose__ascii_texture) SDL_ReleaseGPUTexture(rose__device, rose__ascii_texture);
@@ -80,7 +84,9 @@ void ROSE_Quit(void)
 	rose__sampler = NULL;
 	rose__ascii_texture = NULL;
 	rose__dummy_texture = NULL;
+	rose__point_pipeline = NULL;
 	rose__sprite_pipeline = NULL;
+	rose__triangle_pipeline = NULL;
 	rose__sprite_quad_buffer = NULL;
 	rose__render_pass = NULL;
 	rose__swapchain_texture = NULL;
