@@ -152,6 +152,7 @@ typedef struct ROSE_Button {
 	double scale;
 	double xpos;
 	double ypos;
+	uint32_t width;
 	uint32_t _width;
 	bool _curr_pressed;
 	bool _prev_pressed;
@@ -182,11 +183,11 @@ ROSE_Image     ROSE_ImageCreate(uint32_t width, uint32_t height);
 void           ROSE_ImageDestroy(ROSE_Image* image);
 ROSE_Image     ROSE_ImageLoadFromFile(const char* path);
 void           ROSE_ImageSavePNG(ROSE_Image* image, const char* path);
-void           ROSE_ImageResize(ROSE_Image* image, uint32_t new_width, uint32_t new_height);
+void           ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height);
 ROSE_Color     ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
 ROSE_RGBA      ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
-void           ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color pixel_color);
-void           ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA pixel_color);
+void           ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color);
+void           ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color);
 
 ROSE_Text      ROSE_TextCreate(const char* string);
 ROSE_Text      ROSE_TextCreateEmpty(void);
@@ -224,17 +225,15 @@ void           ROSE_LinesDestroy(ROSE_Lines* lines);
 void           ROSE_LinesDraw(ROSE_Lines* lines);
 void           ROSE__LinesReserveVertexCapacity(ROSE_Lines* lines, uint32_t num_vertices);
 
-ROSE_Button    ROSE_ButtonCreate(uint32_t width, const char* label);
+ROSE_Button    ROSE_ButtonCreate(const char* string);
 ROSE_Button    ROSE_ButtonCreateEmpty(void);
 void           ROSE_ButtonDestroy(ROSE_Button* button);
-void           ROSE_ButtonUpdateString(ROSE_Button* button, const char* label);
-void           ROSE_ButtonUpdateWidth(ROSE_Button* button, uint32_t width);
+void           ROSE_ButtonUpdateString(ROSE_Button* button, const char* string);
 void           ROSE_ButtonDraw(ROSE_Button* button);
 bool           ROSE_ButtonPressed(ROSE_Button* button);
 bool           ROSE_ButtonReleased(ROSE_Button* button);
 bool           ROSE_ButtonPressing(ROSE_Button* button);
-void           ROSE__ButtonSetScale(ROSE_Button* button, double scale);
-void           ROSE__ButtonSetPosition(ROSE_Button* button, double xpos, double ypos);
+void           ROSE__ButtonUpdateInternal(ROSE_Button* button);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);

@@ -45,7 +45,7 @@ void ROSE_SpriteDestroy(ROSE_Sprite* sprite)
 {
 	if (sprite) {
 		if (sprite->_texture) SDL_ReleaseGPUTexture(rose__device, sprite->_texture);
-		*sprite = (ROSE_Sprite){ 0 };
+		*sprite = (ROSE_Sprite) { 0 };
 	}
 }
 

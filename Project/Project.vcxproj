@@ -160,7 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="libraries\stb-master\stb_image.c" />
-    <ClCompile Include="main.c" />
+    <ClCompile Include="demo.c" />
     <ClCompile Include="rose\source\rose_button.c" />
     <ClCompile Include="rose\source\rose_gpu.c" />
     <ClCompile Include="rose\source\rose_image.c" />

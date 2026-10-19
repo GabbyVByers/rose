@@ -23,9 +23,9 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 	vkdebug = true;
 	#endif
 
-	const uint32_t min = 256;
-	rose_screen.width = (screen_width < min) ? min : screen_width;
-	rose_screen.height = (screen_height < min) ? min : screen_height;
+	const uint32_t screen_min = 256;
+	rose_screen.width = (screen_width < screen_min) ? screen_min : screen_width;
+	rose_screen.height = (screen_height < screen_min) ? screen_min : screen_height;
 
 	SDL_Init(SDL_INIT_VIDEO);
 	rose__window = SDL_CreateWindow(title, (int)rose_screen.width, (int)rose_screen.height, SDL_WINDOW_RESIZABLE);
@@ -33,7 +33,7 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 
 	SDL_ClaimWindowForGPUDevice(rose__device, rose__window);
 	SDL_SetGPUSwapchainParameters(rose__device, rose__window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
-	SDL_SetWindowMinimumSize(rose__window, (int)min, (int)min);
+	SDL_SetWindowMinimumSize(rose__window, (int)screen_min, (int)screen_min);
 
 	rose__sampler = ROSE__SDLCreateSampler();
 	rose__sprite_pipeline = ROSE__SDLCreateGraphicsPipelineSprite();
@@ -65,15 +65,15 @@ void ROSE_Quit(void)
 {
 	if (rose__device) {
 		SDL_WaitForGPUIdle(rose__device);
-		if (rose__points_pipeline) SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__points_pipeline);
-		if (rose__sprite_pipeline) SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__sprite_pipeline);
-		if (rose__triangles_pipeline) SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__triangles_pipeline);
-		if (rose__lines_pipeline) SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__lines_pipeline);
 		if (rose__sprite_quad_buffer) SDL_ReleaseGPUBuffer(rose__device, rose__sprite_quad_buffer);
-		if (rose__dummy_texture) SDL_ReleaseGPUTexture(rose__device, rose__dummy_texture);
-		if (rose__ascii_texture) SDL_ReleaseGPUTexture(rose__device, rose__ascii_texture);
-		if (rose__sampler) SDL_ReleaseGPUSampler(rose__device, rose__sampler);
-		if (rose__window) SDL_ReleaseWindowFromGPUDevice(rose__device, rose__window);
+		if (rose__sprite_pipeline)    SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__sprite_pipeline);
+		if (rose__triangles_pipeline) SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__triangles_pipeline);
+		if (rose__points_pipeline)    SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__points_pipeline);
+		if (rose__lines_pipeline)     SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__lines_pipeline);
+		if (rose__dummy_texture)      SDL_ReleaseGPUTexture(rose__device, rose__dummy_texture);
+		if (rose__ascii_texture)      SDL_ReleaseGPUTexture(rose__device, rose__ascii_texture);
+		if (rose__sampler)            SDL_ReleaseGPUSampler(rose__device, rose__sampler);
+		if (rose__window)             SDL_ReleaseWindowFromGPUDevice(rose__device, rose__window);
 		SDL_DestroyGPUDevice(rose__device);
 	}
 
@@ -81,18 +81,30 @@ void ROSE_Quit(void)
 		SDL_DestroyWindow(rose__window);
 	
 	SDL_Quit();
+	rose_screen = (ROSE_ScreenInfo) { 0 };
+	rose_mouse  = (ROSE_MouseInfo) { 0 };
+
 	rose__window = NULL;
 	rose__device = NULL;
 	rose__sampler = NULL;
 	rose__ascii_texture = NULL;
 	rose__dummy_texture = NULL;
-	rose__points_pipeline = NULL;
+
+	rose__sprite_quad_buffer = NULL;
 	rose__sprite_pipeline = NULL;
 	rose__triangles_pipeline = NULL;
+	rose__points_pipeline = NULL;
 	rose__lines_pipeline = NULL;
-	rose__sprite_quad_buffer = NULL;
+
 	rose__render_pass = NULL;
 	rose__swapchain_texture = NULL;
 	rose__command_buffer = NULL;
+
+	rose__saved_mouse_px = 0.0f;
+	rose__saved_mouse_py = 0.0f;
+	rose__curr_mouse_state = 0;
+	rose__prev_mouse_state = 0;
+	memset(rose__curr_keyboard_state, false, sizeof(rose__curr_keyboard_state) / sizeof(rose__curr_keyboard_state[0]));
+	memset(rose__prev_keyboard_state, false, sizeof(rose__prev_keyboard_state) / sizeof(rose__prev_keyboard_state[0]));
 }
 

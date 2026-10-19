@@ -53,13 +53,11 @@ int main(void)
     ROSE_Lines lines = ROSE_LinesCreate(line_vertices, sizeof(line_vertices) / sizeof(line_vertices[0]));
     lines.color = ROSE_COLOR_RED;
 
-    ROSE_Button button = ROSE_ButtonCreate(200, "BUTTON");
+    ROSE_Button button = ROSE_ButtonCreate("BUTTON");
     button.xpos = 300;
     button.ypos = 200;
     button.scale = 3.0;
     ROSE_ButtonUpdateString(&button, "hfdjskfghdsa");
-    ROSE_ButtonUpdateWidth(&button, 20);
-    ROSE_ButtonUpdateWidth(&button, 200);
 
     while (ROSE_WindowPollEvents()) {
         sprite.xpos = rose_mouse.xpos;
