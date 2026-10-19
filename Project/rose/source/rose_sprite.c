@@ -9,15 +9,6 @@
 
 ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 {
-	ROSE_VertexSprite vertices[] = {
-		{ { 0, 0 }, { 0, 1 } },
-		{ { 1, 0 }, { 1, 1 } },
-		{ { 1,-1 }, { 1, 0 } },
-		{ { 0, 0 }, { 0, 1 } },
-		{ { 1,-1 }, { 1, 0 } },
-		{ { 0,-1 }, { 0, 0 } },
-	};
-
 	return (ROSE_Sprite) {
 		.scale = 1.0,
 		.xpos = 0,
@@ -25,22 +16,12 @@ ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 		._width = image->_width,
 		._height = image->_height,
 		.color = ROSE_COLOR_WHITE,
-		._vertex_buffer = ROSE__SDLCreateVertexBuffer(vertices, sizeof(vertices) / sizeof(vertices[0]), sizeof(ROSE_VertexSprite)),
 		._texture = ROSE__SDLCreateTexture(image),
 	};
 }
 
 ROSE_Sprite ROSE_SpriteCreateBlank(uint32_t width, uint32_t height)
 {
-	ROSE_VertexSprite vertices[] = {
-		{ { 0, 0 }, { 0, 1 } },
-		{ { 1, 0 }, { 1, 1 } },
-		{ { 1,-1 }, { 1, 0 } },
-		{ { 0, 0 }, { 0, 1 } },
-		{ { 1,-1 }, { 1, 0 } },
-		{ { 0,-1 }, { 0, 0 } },
-	};
-
 	return (ROSE_Sprite) {
 		.scale = 1.0,
 		.xpos = 0,
@@ -48,7 +29,6 @@ ROSE_Sprite ROSE_SpriteCreateBlank(uint32_t width, uint32_t height)
 		._width = width,
 		._height = height,
 		.color = ROSE_COLOR_WHITE,
-		._vertex_buffer = ROSE__SDLCreateVertexBuffer(vertices, sizeof(vertices) / sizeof(vertices[0]), sizeof(ROSE_VertexSprite)),
 		._texture = NULL,
 	};
 }
@@ -65,7 +45,6 @@ void ROSE_SpriteDestroy(ROSE_Sprite* sprite)
 {
 	if (sprite) {
 		if (sprite->_texture) SDL_ReleaseGPUTexture(rose__device, sprite->_texture);
-		if (sprite->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, sprite->_vertex_buffer);
 		*sprite = (ROSE_Sprite){ 0 };
 	}
 }
@@ -84,7 +63,7 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 		return;
 
 	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = sprite->_vertex_buffer,
+		.buffer = rose__sprite_quad_buffer,
 	};
 
 	SDL_GPUTextureSamplerBinding texture_binding = {

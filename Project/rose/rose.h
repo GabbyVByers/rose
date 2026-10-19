@@ -111,7 +111,6 @@ typedef struct ROSE_Sprite {
 	double _width;
 	double _height;
 	ROSE_Color color;
-	SDL_GPUBuffer* _vertex_buffer;
 	SDL_GPUTexture* _texture;
 } ROSE_Sprite;
 
