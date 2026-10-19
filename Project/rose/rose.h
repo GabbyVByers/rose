@@ -92,7 +92,7 @@ typedef struct ROSE_Image {
 	uint8_t* _pixels;
 } ROSE_Image;
 
-typedef struct ROSE_Text {
+typedef struct ROSE_Text { // integer xpos / ypos (integer scale?)
 	double scale;
 	double xpos;
 	double ypos;
@@ -104,7 +104,7 @@ typedef struct ROSE_Text {
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Text;
 
-typedef struct ROSE_Sprite {
+typedef struct ROSE_Sprite { // integer xpos / ypos / width / height (integer scale?)
 	double scale;
 	double xpos;
 	double ypos;
@@ -114,7 +114,7 @@ typedef struct ROSE_Sprite {
 	SDL_GPUTexture* _texture;
 } ROSE_Sprite;
 
-typedef struct ROSE_Triangles {
+typedef struct ROSE_Triangles { // use float > double? for (scale, upos, vpos)?
 	double scale;
 	double xpos;
 	double ypos;
@@ -125,7 +125,7 @@ typedef struct ROSE_Triangles {
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Triangles;
 
-typedef struct ROSE_Points {
+typedef struct ROSE_Points { // use float > double? for (scale, upos, vpos)?
 	double scale;
 	double xpos;
 	double ypos;
@@ -137,7 +137,7 @@ typedef struct ROSE_Points {
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Points;
 
-typedef struct ROSE_Lines {
+typedef struct ROSE_Lines { // use float > double? for (scale, upos, vpos)?
 	double scale;
 	double xpos;
 	double ypos;
@@ -148,7 +148,8 @@ typedef struct ROSE_Lines {
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Lines;
 
-typedef struct ROSE_Button {
+// move to below ROSE_Sprite
+typedef struct ROSE_Button { // integer xpos / ypos (integer scale?)
 	double scale;
 	double xpos;
 	double ypos;

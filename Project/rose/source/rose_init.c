@@ -50,14 +50,17 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 		{ { 0,-1 }, { 0, 0 } },
 	};
 
-	rose__sprite_quad_buffer = ROSE__SDLCreateVertexBuffer(quad_vertices, sizeof(quad_vertices) / sizeof(quad_vertices[0]), sizeof(ROSE_VertexSprite));
+	rose__sprite_quad_buffer = ROSE__SDLCreateVertexBuffer(
+		quad_vertices,
+		sizeof(quad_vertices) / sizeof(quad_vertices[0]),
+		sizeof(ROSE_VertexSprite)
+	);
 
 	ROSE_Image ascii_image = ROSE_ImageLoadFromFile("textures/ascii.png");
-	rose__ascii_texture = ROSE__SDLCreateTexture(&ascii_image);
-	ROSE_ImageDestroy(&ascii_image);
-
 	ROSE_Image dummy_image = ROSE_ImageCreate(1, 1);
+	rose__ascii_texture = ROSE__SDLCreateTexture(&ascii_image);
 	rose__dummy_texture = ROSE__SDLCreateTexture(&dummy_image);
+	ROSE_ImageDestroy(&ascii_image);
 	ROSE_ImageDestroy(&dummy_image);
 }
 
