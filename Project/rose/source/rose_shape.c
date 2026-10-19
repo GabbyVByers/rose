@@ -14,7 +14,11 @@ ROSE_Shape ROSE_ShapeCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices)
 
 ROSE_Shape ROSE_ShapeCreateEmpty(void)
 {
-
+	return (ROSE_Shape) {
+		.color = ROSE_COLOR_WHITE,
+		._num_vertices = 0,
+		._vertex_buffer = NULL,
+	};
 }
 
 void ROSE_ShapeUpdateVertices(ROSE_Shape* shape, ROSE_Vertex2D* vertices, uint32_t num_vertices)

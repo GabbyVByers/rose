@@ -165,6 +165,7 @@
     <ClCompile Include="rose\source\rose_image.c" />
     <ClCompile Include="rose\source\rose_init.c" />
     <ClCompile Include="rose\source\rose_peripherals.c" />
+    <ClCompile Include="rose\source\rose_shape.c" />
     <ClCompile Include="rose\source\rose_sprite.c" />
     <ClCompile Include="rose\source\rose_text.c" />
     <ClCompile Include="rose\source\rose_window.c" />
@@ -268,6 +269,10 @@
     <None Include="shaders\source\shape.vert" />
     <None Include="shaders\source\sprite.frag" />
     <None Include="shaders\source\sprite.vert" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="textures\art.png" />
+    <Image Include="textures\ascii.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
