@@ -99,6 +99,8 @@ void ROSE_Quit(void)
 	rose__render_pass = NULL;
 	rose__swapchain_texture = NULL;
 	rose__command_buffer = NULL;
+	rose__present_mode = SDL_GPU_PRESENTMODE_VSYNC;
+	rose__present_mode_dirty = false;
 
 	rose__saved_mouse_px = 0.0f;
 	rose__saved_mouse_py = 0.0f;

@@ -35,6 +35,8 @@ ROSE_GLOBAL(SDL_GPUGraphicsPipeline*, rose__lines_pipeline)
 ROSE_GLOBAL(SDL_GPURenderPass*, rose__render_pass)
 ROSE_GLOBAL(SDL_GPUTexture*, rose__swapchain_texture)
 ROSE_GLOBAL(SDL_GPUCommandBuffer*, rose__command_buffer)
+ROSE_GLOBAL(SDL_GPUPresentMode, rose__present_mode)
+ROSE_GLOBAL(bool, rose__present_mode_dirty)
 
 ROSE_GLOBAL(float, rose__saved_mouse_px)
 ROSE_GLOBAL(float, rose__saved_mouse_py)

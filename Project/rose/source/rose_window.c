@@ -9,24 +9,25 @@
 
 void ROSE_WindowToggleVSync(bool vsync)
 {
-	if (vsync) {
-		SDL_SetGPUSwapchainParameters(rose__device, rose__window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
+	rose__present_mode_dirty = true;
+	rose__present_mode = SDL_GPU_PRESENTMODE_VSYNC;
+	if (vsync) return;
+
+	if (SDL_WindowSupportsGPUPresentMode(
+		rose__device,
+		rose__window,
+		SDL_GPU_PRESENTMODE_IMMEDIATE)) {
+		rose__present_mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
 		return;
 	}
 
-	const bool immediate = SDL_WindowSupportsGPUPresentMode(rose__device, rose__window, SDL_GPU_PRESENTMODE_IMMEDIATE);
-	if (immediate) {
-		SDL_SetGPUSwapchainParameters(rose__device, rose__window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_IMMEDIATE);
+	if (SDL_WindowSupportsGPUPresentMode(
+		rose__device,
+		rose__window,
+		SDL_GPU_PRESENTMODE_MAILBOX)) {
+		rose__present_mode = SDL_GPU_PRESENTMODE_MAILBOX;
 		return;
 	}
-
-	const bool mailbox = SDL_WindowSupportsGPUPresentMode(rose__device, rose__window, SDL_GPU_PRESENTMODE_MAILBOX);
-	if (mailbox) {
-		SDL_SetGPUSwapchainParameters(rose__device, rose__window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_MAILBOX);
-		return;
-	}
-
-	SDL_SetGPUSwapchainParameters(rose__device, rose__window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
 }
 
 bool ROSE_WindowPollEvents(void)
@@ -59,13 +60,29 @@ bool ROSE_WindowPollEvents(void)
 
 void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 {
-	uint32_t width = 0;
-	uint32_t height = 0;
+	if (rose__present_mode_dirty) {
+		SDL_SetGPUSwapchainParameters(
+			rose__device,
+			rose__window,
+			SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
+			rose__present_mode
+		);
+	}
+
+	rose__present_mode_dirty = false;
 	rose__command_buffer = SDL_AcquireGPUCommandBuffer(rose__device);
 
-	bool acquired = SDL_WaitAndAcquireGPUSwapchainTexture(rose__command_buffer, rose__window, &rose__swapchain_texture, &width, &height);
+	uint32_t width = 0;
+	uint32_t height = 0;
+	bool acquired =
+	SDL_WaitAndAcquireGPUSwapchainTexture(
+		rose__command_buffer,
+		rose__window,
+		&rose__swapchain_texture,
+		&width, &height
+	);
+	
 	rose_screen.minimized = (!acquired) || (rose__swapchain_texture == NULL);
-
 	if (rose_screen.minimized) {
 		SDL_SubmitGPUCommandBuffer(rose__command_buffer);
 		return;
