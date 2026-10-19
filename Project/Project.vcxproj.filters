@@ -324,8 +324,6 @@
     </None>
     <None Include="shaders\source\sprite.frag" />
     <None Include="shaders\source\sprite.vert" />
-    <None Include="shaders\fragment.spv" />
-    <None Include="shaders\vertex.spv" />
     <None Include="shaders\source\shape.frag" />
     <None Include="shaders\source\shape.vert" />
   </ItemGroup>

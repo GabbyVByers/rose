@@ -264,12 +264,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compile.bat" />
-    <None Include="shaders\fragment.spv" />
     <None Include="shaders\source\shape.frag" />
     <None Include="shaders\source\shape.vert" />
     <None Include="shaders\source\sprite.frag" />
     <None Include="shaders\source\sprite.vert" />
-    <None Include="shaders\vertex.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
