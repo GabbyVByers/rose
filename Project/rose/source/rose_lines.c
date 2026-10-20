@@ -17,9 +17,9 @@ ROSE_Lines ROSE_LinesCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices)
 ROSE_Lines ROSE_LinesCreateEmpty(void)
 {
 	return (ROSE_Lines) {
-		.scale = 1.0,
-		.xpos = 0.0,
-		.ypos = 0.0,
+		.scale = 1.0f,
+		.xpos = 0.0f,
+		.ypos = 0.0f,
 		.color = ROSE_COLOR_WHITE,
 		._num_vertices = 0,
 		._vertex_capacity = 0,
@@ -75,16 +75,11 @@ void ROSE_LinesDraw(ROSE_Lines* lines)
 		.buffer = lines->_vertex_buffer,
 	};
 
-	double aspect_ratio = (double)rose_screen.width / (double)rose_screen.height;
-	double ww = lines->scale * (1.0 / aspect_ratio);
-	double hh = lines->scale;
-	double xx = lines->xpos * (1.0 / aspect_ratio);
-	double yy = lines->ypos;
-
-	float w = (float)ww;
-	float h = (float)hh;
-	float x = (float)xx;
-	float y = (float)yy;
+	float ratio = (float)rose_screen.height / (float)rose_screen.width;
+	float w = lines->scale * ratio;
+	float h = lines->scale;
+	float x = lines->xpos * ratio;
+	float y = lines->ypos;
 
 	typedef struct Uniform {
 		float TransformMatrix[16];

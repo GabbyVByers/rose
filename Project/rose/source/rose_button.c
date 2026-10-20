@@ -11,7 +11,7 @@ ROSE_Button ROSE_ButtonCreate(const char* string)
 {
 	ROSE_Button button = ROSE_ButtonCreateEmpty();
 	ROSE_ButtonUpdateString(&button, string);
-	ROSE__ButtonUpdateInternal(&button);
+	ROSE__ButtonUpdate(&button);
 	return button;
 }
 
@@ -48,17 +48,17 @@ void ROSE_ButtonUpdateString(ROSE_Button* button, const char* string)
 
 void ROSE_ButtonDraw(ROSE_Button* button)
 {
-	ROSE__ButtonUpdateInternal(button);
+	ROSE__ButtonUpdate(button);
 	const uint32_t width = button->_width;
 	const uint32_t height = (ROSE_ASCII_HEIGHT + 4);
 
 	const bool horizontal = 
-		((button->xpos <= (double)rose_mouse.xpos) &&
-		((double)rose_mouse.xpos <= (button->xpos + ((double)width * button->scale))));
+		(((float)button->xpos <= rose_mouse.xpos) &&
+		(rose_mouse.xpos <= ((float)button->xpos + ((float)width * button->scale))));
 	
 	const bool vertical =
-		((button->ypos <= (double)rose_mouse.ypos) &&
-		((double)rose_mouse.ypos <= (button->ypos + ((double)height * button->scale))));
+		(((float)button->ypos <= rose_mouse.ypos) &&
+		(rose_mouse.ypos <= ((float)button->ypos + ((float)height * button->scale))));
 	
 	const bool mouse_over = horizontal && vertical;
 	button->_prev_pressed = button->_curr_pressed;
@@ -95,7 +95,7 @@ bool ROSE_ButtonPressing(ROSE_Button* button)
 	return (button->_curr_pressed);
 }
 
-void ROSE__ButtonUpdateInternal(ROSE_Button* button)
+void ROSE__ButtonUpdate(ROSE_Button* button)
 {
 	button->_sprite_normal.scale = button->scale;
 	button->_sprite_pressed.scale = button->scale;
@@ -148,9 +148,10 @@ void ROSE__ButtonUpdateInternal(ROSE_Button* button)
 	button->_sprite_normal.ypos = button->ypos;
 	button->_sprite_pressed.xpos = button->xpos;
 	button->_sprite_pressed.ypos = button->ypos;
-	button->_text.xpos = button->xpos
-		+ (0.5 * ((double)button->_width * button->scale))
-		- (0.5 * ((double)button->_text._num_characters * (double)ROSE_ASCII_WIDTH * button->scale));
+	uint32_t button_width = button->_width * button->scale;
+	uint32_t text_width = button->_text._num_characters * ROSE_ASCII_WIDTH * button->scale;
+	uint32_t stride = (button_width > text_width) ? (button_width - text_width) : 0;
+	button->_text.xpos = button->xpos + (stride / 2);
 	button->_text.ypos = button->ypos + (2.0 * button->scale);
 }
 

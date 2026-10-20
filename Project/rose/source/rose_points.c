@@ -17,10 +17,10 @@ ROSE_Points ROSE_PointsCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices)
 ROSE_Points ROSE_PointsCreateEmpty(void)
 {
 	return (ROSE_Points) {
-		.scale = 1.0,
-		.xpos = 0.0,
-		.ypos = 0.0,
-		.diameter = 1.0,
+		.scale = 1.0f,
+		.xpos = 0.0f,
+		.ypos = 0.0f,
+		.diameter = 1,
 		.color = ROSE_COLOR_WHITE,
 		._num_vertices = 0,
 		._vertex_capacity = 0,
@@ -76,16 +76,11 @@ void ROSE_PointsDraw(ROSE_Points* points)
 		.buffer = points->_vertex_buffer,
 	};
 
-	double aspect_ratio = (double)rose_screen.width / (double)rose_screen.height;
-	double ww = points->scale * (1.0 / aspect_ratio);
-	double hh = points->scale;
-	double xx = points->xpos * (1.0 / aspect_ratio);
-	double yy = points->ypos;
-
-	float w = (float)ww;
-	float h = (float)hh;
-	float x = (float)xx;
-	float y = (float)yy;
+	float ratio = (float)rose_screen.height / (float)rose_screen.width;
+	float w = points->scale * ratio;
+	float h = points->scale;
+	float x = points->xpos * ratio;
+	float y = points->ypos;
 
 	typedef struct Uniform {
 		float TransformMatrix[16];

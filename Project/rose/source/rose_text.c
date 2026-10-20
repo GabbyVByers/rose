@@ -17,9 +17,9 @@ ROSE_Text ROSE_TextCreate(const char* string)
 ROSE_Text ROSE_TextCreateEmpty(void)
 {
 	return (ROSE_Text) {
-		.scale = 1.0,
-		.xpos = 0.0,
-		.ypos = 0.0,
+		.scale = 1,
+		.xpos = 0,
+		.ypos = 0,
 		.color = ROSE_COLOR_WHITE,
 		._num_characters = 0,
 		._num_vertices = 0,
@@ -82,18 +82,13 @@ void ROSE_TextDraw(ROSE_Text* text)
 		.sampler = rose__sampler,
 	};
 
-	double scaled_width = (double)ROSE_ASCII_WIDTH * text->scale;
-	double scaled_height = (double)ROSE_ASCII_HEIGHT * text->scale;
+	float scaled_width = (float)ROSE_ASCII_WIDTH * (float)text->scale;
+	float scaled_height = (float)ROSE_ASCII_HEIGHT * (float)text->scale;
 
-	double ww = (scaled_width / (double)rose_screen.width) * 2.0;
-	double hh = (scaled_height / (double)rose_screen.height) * 2.0;
-	double xx = -1.0f + ((text->xpos / (double)rose_screen.width) * 2.0);
-	double yy = 1.0f - ((text->ypos / (double)rose_screen.height) * 2.0);
-
-	float w = (float)ww;
-	float h = (float)hh;
-	float x = (float)xx;
-	float y = (float)yy;
+	float w = (scaled_width / (float)rose_screen.width) * 2.0f;
+	float h = (scaled_height / (float)rose_screen.height) * 2.0f;
+	float x = -1.0f + (((float)text->xpos / (float)rose_screen.width) * 2.0f);
+	float y = 1.0f - (((float)text->ypos / (float)rose_screen.height) * 2.0f);
 
 	typedef struct Uniform {
 		float TransformMatrix[16];

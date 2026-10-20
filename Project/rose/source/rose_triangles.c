@@ -17,9 +17,9 @@ ROSE_Triangles ROSE_TrianglesCreate(ROSE_Vertex2D* vertices, uint32_t num_vertic
 ROSE_Triangles ROSE_TrianglesCreateEmpty(void)
 {
 	return (ROSE_Triangles) {
-		.scale = 1.0,
-		.xpos = 0.0,
-		.ypos = 0.0,
+		.scale = 1.0f,
+		.xpos = 0.0f,
+		.ypos = 0.0f,
 		.color = ROSE_COLOR_WHITE,
 		._num_vertices = 0,
 		._vertex_capacity = 0,
@@ -75,16 +75,11 @@ void ROSE_TrianglesDraw(ROSE_Triangles* triangles)
 		.buffer = triangles->_vertex_buffer,
 	};
 
-	double aspect_ratio = (double)rose_screen.width / (double)rose_screen.height;
-	double ww = triangles->scale * (1.0 / aspect_ratio);
-	double hh = triangles->scale;
-	double xx = triangles->xpos * (1.0 / aspect_ratio);
-	double yy = triangles->ypos;
-
-	float w = (float)ww;
-	float h = (float)hh;
-	float x = (float)xx;
-	float y = (float)yy;
+	float ratio = (float)rose_screen.height / (float)rose_screen.width;
+	float w = triangles->scale * ratio;
+	float h = triangles->scale;
+	float x = triangles->xpos * ratio;
+	float y = triangles->ypos;
 
 	typedef struct Uniform {
 		float TransformMatrix[16];

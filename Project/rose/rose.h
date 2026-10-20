@@ -92,10 +92,10 @@ typedef struct ROSE_Image {
 	uint8_t* _pixels;
 } ROSE_Image;
 
-typedef struct ROSE_Text { // integer xpos / ypos (integer scale?)
-	double scale;
-	double xpos;
-	double ypos;
+typedef struct ROSE_Text {
+	uint32_t scale;
+	uint32_t xpos;
+	uint32_t ypos;
 	ROSE_Color color;
 	uint32_t _num_characters;
 	uint32_t _num_vertices;
@@ -104,55 +104,20 @@ typedef struct ROSE_Text { // integer xpos / ypos (integer scale?)
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Text;
 
-typedef struct ROSE_Sprite { // integer xpos / ypos / width / height (integer scale?)
-	double scale;
-	double xpos;
-	double ypos;
-	double _width;
-	double _height;
+typedef struct ROSE_Sprite {
+	uint32_t scale;
+	uint32_t xpos;
+	uint32_t ypos;
+	uint32_t _width;
+	uint32_t _height;
 	ROSE_Color color;
 	SDL_GPUTexture* _texture;
 } ROSE_Sprite;
 
-typedef struct ROSE_Triangles { // use float > double? for (scale, upos, vpos)?
-	double scale;
-	double xpos;
-	double ypos;
-	ROSE_Color color;
-	uint32_t _num_vertices;
-	uint32_t _vertex_capacity;
-	SDL_GPUBuffer* _vertex_buffer;
-	SDL_GPUTransferBuffer* _transfer_buffer;
-} ROSE_Triangles;
-
-typedef struct ROSE_Points { // use float > double? for (scale, upos, vpos)?
-	double scale;
-	double xpos;
-	double ypos;
-	double diameter;
-	ROSE_Color color;
-	uint32_t _num_vertices;
-	uint32_t _vertex_capacity;
-	SDL_GPUBuffer* _vertex_buffer;
-	SDL_GPUTransferBuffer* _transfer_buffer;
-} ROSE_Points;
-
-typedef struct ROSE_Lines { // use float > double? for (scale, upos, vpos)?
-	double scale;
-	double xpos;
-	double ypos;
-	ROSE_Color color;
-	uint32_t _num_vertices;
-	uint32_t _vertex_capacity;
-	SDL_GPUBuffer* _vertex_buffer;
-	SDL_GPUTransferBuffer* _transfer_buffer;
-} ROSE_Lines;
-
-// move to below ROSE_Sprite
-typedef struct ROSE_Button { // integer xpos / ypos (integer scale?)
-	double scale;
-	double xpos;
-	double ypos;
+typedef struct ROSE_Button {
+	uint32_t scale;
+	uint32_t xpos;
+	uint32_t ypos;
 	uint32_t width;
 	uint32_t _width;
 	bool _curr_pressed;
@@ -161,6 +126,40 @@ typedef struct ROSE_Button { // integer xpos / ypos (integer scale?)
 	ROSE_Sprite _sprite_pressed;
 	ROSE_Text _text;
 } ROSE_Button;
+
+typedef struct ROSE_Triangles {
+	float scale;
+	float xpos;
+	float ypos;
+	ROSE_Color color;
+	uint32_t _num_vertices;
+	uint32_t _vertex_capacity;
+	SDL_GPUBuffer* _vertex_buffer;
+	SDL_GPUTransferBuffer* _transfer_buffer;
+} ROSE_Triangles;
+
+typedef struct ROSE_Points {
+	float scale;
+	float xpos;
+	float ypos;
+	uint32_t diameter;
+	ROSE_Color color;
+	uint32_t _num_vertices;
+	uint32_t _vertex_capacity;
+	SDL_GPUBuffer* _vertex_buffer;
+	SDL_GPUTransferBuffer* _transfer_buffer;
+} ROSE_Points;
+
+typedef struct ROSE_Lines {
+	float scale;
+	float xpos;
+	float ypos;
+	ROSE_Color color;
+	uint32_t _num_vertices;
+	uint32_t _vertex_capacity;
+	SDL_GPUBuffer* _vertex_buffer;
+	SDL_GPUTransferBuffer* _transfer_buffer;
+} ROSE_Lines;
 
 void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height);
 void ROSE_Quit(void);
@@ -234,7 +233,7 @@ void           ROSE_ButtonDraw(ROSE_Button* button);
 bool           ROSE_ButtonPressed(ROSE_Button* button);
 bool           ROSE_ButtonReleased(ROSE_Button* button);
 bool           ROSE_ButtonPressing(ROSE_Button* button);
-void           ROSE__ButtonUpdateInternal(ROSE_Button* button);
+void           ROSE__ButtonUpdate(ROSE_Button* button);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);

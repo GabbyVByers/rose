@@ -10,7 +10,7 @@
 ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 {
 	return (ROSE_Sprite) {
-		.scale = 1.0,
+		.scale = 1,
 		.xpos = 0,
 		.ypos = 0,
 		._width = image->_width,
@@ -23,7 +23,7 @@ ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 ROSE_Sprite ROSE_SpriteCreateEmpty(uint32_t width, uint32_t height)
 {
 	return (ROSE_Sprite) {
-		.scale = 1.0,
+		.scale = 1,
 		.xpos = 0,
 		.ypos = 0,
 		._width = width,
@@ -71,18 +71,13 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 		.sampler = rose__sampler,
 	};
 
-	double scaled_width = (double)sprite->_width * sprite->scale;
-	double scaled_height = (double)sprite->_height * sprite->scale;
+	float scaled_width = (float)sprite->_width * sprite->scale;
+	float scaled_height = (float)sprite->_height * sprite->scale;
 
-	double ww = (scaled_width / (double)rose_screen.width) * 2.0f;
-	double hh = (scaled_height / (double)rose_screen.height) * 2.0f;
-	double xx = -1.0f + (((double)sprite->xpos / (double)rose_screen.width) * 2.0f);
-	double yy = 1.0f - (((double)sprite->ypos / (double)rose_screen.height) * 2.0f);
-
-	float w = (float)ww;
-	float h = (float)hh;
-	float x = (float)xx;
-	float y = (float)yy;
+	float w = (scaled_width / (float)rose_screen.width) * 2.0f;
+	float h = (scaled_height / (float)rose_screen.height) * 2.0f;
+	float x = -1.0f + (((float)sprite->xpos / (float)rose_screen.width) * 2.0f);
+	float y = 1.0f - (((float)sprite->ypos / (float)rose_screen.height) * 2.0f);
 
 	typedef struct Uniform {
 		float TransformMatrix[16];
