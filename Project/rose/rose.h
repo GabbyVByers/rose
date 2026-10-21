@@ -6,12 +6,6 @@
 #ifndef ROSE_ROSE_HEADER_GUARD
 #define ROSE_ROSE_HEADER_GUARD
 
-#pragma warning (push, 0)
-#include "SDL3/SDL.h"
-#include "stb_image.h"
-#include "stb_image_write.h"
-#pragma warning (pop)
-
 #if defined(NDEBUG)
 #define ROSE_RELEASE
 #else
@@ -29,6 +23,12 @@
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #endif
+
+#pragma warning (push, 0)
+#include "SDL3/SDL.h"
+#include "stb_image.h"
+#include "stb_image_write.h"
+#pragma warning (pop)
 
 #include "rose_scancodes.h"
 #include <stdio.h>
@@ -127,47 +127,33 @@ typedef struct ROSE_Button {
 	ROSE_Text _text;
 } ROSE_Button;
 
-typedef struct ROSE_Triangles {
-	float scale;
-	float xpos;
-	float ypos;
-	ROSE_Color color;
-	uint32_t _num_vertices;
-	uint32_t _vertex_capacity;
-	SDL_GPUBuffer* _vertex_buffer;
-	SDL_GPUTransferBuffer* _transfer_buffer;
-} ROSE_Triangles;
+typedef enum ROSE_SHAPE {
+	ROSE_TRIANGLES,
+	ROSE_LINES,
+	ROSE_POINTS,
+} ROSE_SHAPE;
 
-typedef struct ROSE_Points {
+typedef struct ROSE_Mesh {
+	ROSE_SHAPE shape;
 	float scale;
 	float xpos;
 	float ypos;
-	uint32_t diameter;
+	float diameter;
 	ROSE_Color color;
 	uint32_t _num_vertices;
 	uint32_t _vertex_capacity;
 	SDL_GPUBuffer* _vertex_buffer;
 	SDL_GPUTransferBuffer* _transfer_buffer;
-} ROSE_Points;
-
-typedef struct ROSE_Lines {
-	float scale;
-	float xpos;
-	float ypos;
-	ROSE_Color color;
-	uint32_t _num_vertices;
-	uint32_t _vertex_capacity;
-	SDL_GPUBuffer* _vertex_buffer;
-	SDL_GPUTransferBuffer* _transfer_buffer;
-} ROSE_Lines;
+} ROSE_Mesh;
 
 void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height);
 void ROSE_Quit(void);
 
-void ROSE_WindowToggleVSync(bool vsync);
+void ROSE_WindowVSync(bool vsync);
 bool ROSE_WindowPollEvents(void);
 void ROSE_WindowBeginFrame(ROSE_Color clear_color);
 void ROSE_WindowEndFrame(void);
+double ROSE_WindowFPS(void);
 
 bool ROSE_MousePressing(uint32_t mouse_button);
 bool ROSE_MousePressed(uint32_t mouse_button);
@@ -179,61 +165,47 @@ bool ROSE_KeyboardPressing(ROSE_Scancode scancode);
 bool ROSE_KeyboardPressed(ROSE_Scancode scancode);
 bool ROSE_KeyboardReleased(ROSE_Scancode scancode);
 
-ROSE_Image     ROSE_ImageCreate(uint32_t width, uint32_t height);
-void           ROSE_ImageDestroy(ROSE_Image* image);
-ROSE_Image     ROSE_ImageLoadFromFile(const char* path);
-void           ROSE_ImageSavePNG(ROSE_Image* image, const char* path);
-void           ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height);
-ROSE_Color     ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
-ROSE_RGBA      ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
-void           ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color);
-void           ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color);
+ROSE_Image  ROSE_ImageCreate(uint32_t width, uint32_t height);
+void        ROSE_ImageDestroy(ROSE_Image* image);
+ROSE_Image  ROSE_ImageLoadFromFile(const char* path);
+void        ROSE_ImageSavePNG(ROSE_Image* image, const char* path);
+void        ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height);
+ROSE_Color  ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
+ROSE_RGBA   ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
+void        ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color);
+void        ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color);
 
-ROSE_Text      ROSE_TextCreate(const char* string);
-ROSE_Text      ROSE_TextCreateEmpty(void);
-void           ROSE_TextDestroy(ROSE_Text* text);
-void           ROSE_TextUpdateString(ROSE_Text* text, const char* string);
-void           ROSE_TextDraw(ROSE_Text* text);
-void           ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uint32_t num_characters);
-void           ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uint32_t num_characters);
+ROSE_Text   ROSE_TextCreate(const char* string);
+ROSE_Text   ROSE_TextCreateEmpty(void);
+void        ROSE_TextDestroy(ROSE_Text* text);
+void        ROSE_TextUpdateString(ROSE_Text* text, const char* string);
+void        ROSE_TextDraw(ROSE_Text* text);
+void        ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uint32_t num_characters);
+void        ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uint32_t num_characters);
 
-ROSE_Sprite    ROSE_SpriteCreate(ROSE_Image* image);
-ROSE_Sprite    ROSE_SpriteCreateEmpty(uint32_t width, uint32_t height);
-ROSE_Sprite    ROSE_SpriteLoadFromFile(const char* path);
-void           ROSE_SpriteDestroy(ROSE_Sprite* sprite);
-void           ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image);
-void           ROSE_SpriteDraw(ROSE_Sprite* sprite);
+ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image);
+ROSE_Sprite ROSE_SpriteCreateEmpty(uint32_t width, uint32_t height);
+ROSE_Sprite ROSE_SpriteLoadFromFile(const char* path);
+void        ROSE_SpriteDestroy(ROSE_Sprite* sprite);
+void        ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image);
+void        ROSE_SpriteDraw(ROSE_Sprite* sprite);
 
-ROSE_Triangles ROSE_TrianglesCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
-ROSE_Triangles ROSE_TrianglesCreateEmpty(void);
-void           ROSE_TrianglesUpdateVertices(ROSE_Triangles* triangles, ROSE_Vertex2D* vertices, uint32_t num_vertices);
-void           ROSE_TrianglesDestroy(ROSE_Triangles* triangles);
-void           ROSE_TrianglesDraw(ROSE_Triangles* triangles);
-void           ROSE__TrianglesReserveVertexCapacity(ROSE_Triangles* triangles, uint32_t num_vertices);
+ROSE_Button ROSE_ButtonCreate(const char* string);
+ROSE_Button ROSE_ButtonCreateEmpty(void);
+void        ROSE_ButtonDestroy(ROSE_Button* button);
+void        ROSE_ButtonUpdateString(ROSE_Button* button, const char* string);
+void        ROSE_ButtonDraw(ROSE_Button* button);
+bool        ROSE_ButtonPressed(ROSE_Button* button);
+bool        ROSE_ButtonReleased(ROSE_Button* button);
+bool        ROSE_ButtonPressing(ROSE_Button* button);
+void        ROSE__ButtonUpdate(ROSE_Button* button);
 
-ROSE_Points    ROSE_PointsCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
-ROSE_Points    ROSE_PointsCreateEmpty(void);
-void           ROSE_PointsUpdateVertices(ROSE_Points* points, ROSE_Vertex2D* vertices, uint32_t num_vertices);
-void           ROSE_PointsDestroy(ROSE_Points* points);
-void           ROSE_PointsDraw(ROSE_Points* points);
-void           ROSE__PointsReserveVertexCapacity(ROSE_Points* points, uint32_t num_vertices);
-
-ROSE_Lines     ROSE_LinesCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
-ROSE_Lines     ROSE_LinesCreateEmpty(void);
-void           ROSE_LinesUpdateVertices(ROSE_Lines* lines, ROSE_Vertex2D* vertices, uint32_t num_vertices);
-void           ROSE_LinesDestroy(ROSE_Lines* lines);
-void           ROSE_LinesDraw(ROSE_Lines* lines);
-void           ROSE__LinesReserveVertexCapacity(ROSE_Lines* lines, uint32_t num_vertices);
-
-ROSE_Button    ROSE_ButtonCreate(const char* string);
-ROSE_Button    ROSE_ButtonCreateEmpty(void);
-void           ROSE_ButtonDestroy(ROSE_Button* button);
-void           ROSE_ButtonUpdateString(ROSE_Button* button, const char* string);
-void           ROSE_ButtonDraw(ROSE_Button* button);
-bool           ROSE_ButtonPressed(ROSE_Button* button);
-bool           ROSE_ButtonReleased(ROSE_Button* button);
-bool           ROSE_ButtonPressing(ROSE_Button* button);
-void           ROSE__ButtonUpdate(ROSE_Button* button);
+ROSE_Mesh   ROSE_MeshCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
+ROSE_Mesh   ROSE_MeshCreateEmpty(void);
+void        ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uint32_t num_vertices);
+void        ROSE_MeshDestroy(ROSE_Mesh* mesh);
+void        ROSE_MeshDraw(ROSE_Mesh* mesh);
+void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertices);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);

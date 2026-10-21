@@ -18,9 +18,9 @@ ROSE_Button ROSE_ButtonCreate(const char* string)
 ROSE_Button ROSE_ButtonCreateEmpty(void)
 {
 	return (ROSE_Button) {
-		.scale = 1.0,
-		.xpos = 0.0,
-		.ypos = 0.0,
+		.scale = 1,
+		.xpos = 0,
+		.ypos = 0,
 		.width = 100,
 		._width = 0,
 		._curr_pressed = false,
@@ -152,6 +152,6 @@ void ROSE__ButtonUpdate(ROSE_Button* button)
 	uint32_t text_width = button->_text._num_characters * ROSE_ASCII_WIDTH * button->scale;
 	uint32_t stride = (button_width > text_width) ? (button_width - text_width) : 0;
 	button->_text.xpos = button->xpos + (stride / 2);
-	button->_text.ypos = button->ypos + (2.0 * button->scale);
+	button->_text.ypos = button->ypos + (2 * button->scale);
 }
 

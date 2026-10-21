@@ -109,7 +109,7 @@ void ROSE_Quit(void)
 	rose__saved_mouse_py = 0.0f;
 	rose__curr_mouse_state = 0;
 	rose__prev_mouse_state = 0;
-	memset(rose__curr_keyboard_state, false, sizeof(rose__curr_keyboard_state) / sizeof(rose__curr_keyboard_state[0]));
-	memset(rose__prev_keyboard_state, false, sizeof(rose__prev_keyboard_state) / sizeof(rose__prev_keyboard_state[0]));
+	memset(rose__curr_keyboard_state, false, sizeof(rose__curr_keyboard_state));
+	memset(rose__prev_keyboard_state, false, sizeof(rose__prev_keyboard_state));
 }
 

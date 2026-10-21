@@ -24,8 +24,6 @@ glslc "source/triangles.vert" -o "triangles_vertex.spv"
 glslc "source/triangles.frag" -o "triangles_fragment.spv"
 glslc "source/points.vert" -o "points_vertex.spv"
 glslc "source/points.frag" -o "points_fragment.spv"
-glslc "source/lines.vert" -o "lines_vertex.spv"
-glslc "source/lines.frag" -o "lines_fragment.spv"
 
 @echo off
 pause

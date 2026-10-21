@@ -286,8 +286,8 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineLines(void)
 	};
 
 	return ROSE__SDLCreateGraphicsPipeline(
-		"shaders/lines_vertex.spv",
-		"shaders/lines_fragment.spv",
+		"shaders/triangles_vertex.spv",
+		"shaders/triangles_fragment.spv",
 		0, vertex_input_state,
 		SDL_GPU_PRIMITIVETYPE_LINELIST
 	);

@@ -7,7 +7,7 @@
 #include "rose.h"
 #include "rose_state.h"
 
-void ROSE_WindowToggleVSync(bool vsync)
+void ROSE_WindowVSync(bool vsync)
 {
 	rose__present_mode_dirty = true;
 	rose__present_mode = SDL_GPU_PRESENTMODE_VSYNC;
@@ -113,5 +113,17 @@ void ROSE_WindowEndFrame(void)
 
 	SDL_EndGPURenderPass(rose__render_pass);
 	SDL_SubmitGPUCommandBuffer(rose__command_buffer);
+}
+
+double ROSE_WindowFPS(void)
+{
+	static uint64_t curr_timestamp = 0;
+	static uint64_t prev_timestamp = 0;
+	prev_timestamp = curr_timestamp;
+	curr_timestamp = SDL_GetTicksNS();
+	uint64_t nanoseconds =
+		(curr_timestamp > prev_timestamp) ?
+		(curr_timestamp - prev_timestamp) : 1.0;
+	return (1e9 / nanoseconds);
 }
 
