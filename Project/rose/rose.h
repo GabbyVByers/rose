@@ -385,8 +385,8 @@ typedef struct ROSE_Image {
 
 typedef struct ROSE_Text {
 	uint32_t scale;
-	uint32_t xpos;
-	uint32_t ypos;
+	int32_t xpos;
+	int32_t ypos;
 	ROSE_Color color;
 	uint32_t _num_characters;
 	uint32_t _num_vertices;
@@ -397,8 +397,8 @@ typedef struct ROSE_Text {
 
 typedef struct ROSE_Sprite {
 	uint32_t scale;
-	uint32_t xpos;
-	uint32_t ypos;
+	int32_t xpos;
+	int32_t ypos;
 	uint32_t _width;
 	uint32_t _height;
 	ROSE_Color color;
@@ -407,8 +407,8 @@ typedef struct ROSE_Sprite {
 
 typedef struct ROSE_Button {
 	uint32_t scale;
-	uint32_t xpos;
-	uint32_t ypos;
+	int32_t xpos;
+	int32_t ypos;
 	uint32_t width;
 	uint32_t _width;
 	bool _curr_pressed;
@@ -496,6 +496,8 @@ ROSE_Mesh   ROSE_MeshCreateEmpty(void);
 void        ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uint32_t num_vertices);
 void        ROSE_MeshDestroy(ROSE_Mesh* mesh);
 void        ROSE_MeshDraw(ROSE_Mesh* mesh);
+void        ROSE_MeshCoordinateTransformPixelsToScreen(int32_t px, int32_t py, float* xpos, float* ypos);
+void        ROSE_MeshCoordinateTransformScreenToPixels(float xpos, float ypos, int32_t* px, int32_t* py);
 void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertices);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);

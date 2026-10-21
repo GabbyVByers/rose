@@ -100,6 +100,8 @@ void ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height)
 
 ROSE_Color ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos)
 {
+	assert(xpos < image->_width);
+	assert(ypos < image->_height);
 	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
 	float r = ((float)(image->_pixels[index + 0]) / 255.0f);
 	float g = ((float)(image->_pixels[index + 1]) / 255.0f);
@@ -110,6 +112,8 @@ ROSE_Color ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t yp
 
 ROSE_RGBA ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos)
 {
+	assert(xpos < image->_width);
+	assert(ypos < image->_height);
 	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
 	uint8_t r = image->_pixels[index + 0];
 	uint8_t g = image->_pixels[index + 1];
@@ -120,15 +124,19 @@ ROSE_RGBA ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos
 
 void ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color)
 {
+	assert(xpos < image->_width);
+	assert(ypos < image->_height);
 	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
-	image->_pixels[index + 0] = (uint8_t)(color.r * 255.0f);
-	image->_pixels[index + 1] = (uint8_t)(color.g * 255.0f);
-	image->_pixels[index + 2] = (uint8_t)(color.b * 255.0f);
-	image->_pixels[index + 3] = (uint8_t)(color.a * 255.0f);
+	image->_pixels[index + 0] = (uint8_t)((color.r * 255.0f) + 0.5f);
+	image->_pixels[index + 1] = (uint8_t)((color.g * 255.0f) + 0.5f);
+	image->_pixels[index + 2] = (uint8_t)((color.b * 255.0f) + 0.5f);
+	image->_pixels[index + 3] = (uint8_t)((color.a * 255.0f) + 0.5f);
 }
 
 void ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color)
 {
+	assert(xpos < image->_width);
+	assert(ypos < image->_height);
 	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
 	image->_pixels[index + 0] = color.r;
 	image->_pixels[index + 1] = color.g;

@@ -150,7 +150,7 @@ void ROSE__ButtonUpdate(ROSE_Button* button)
 	uint32_t button_width = button->_width * button->scale;
 	uint32_t text_width = button->_text._num_characters * ROSE_ASCII_WIDTH * button->scale;
 	uint32_t stride = (button_width > text_width) ? (button_width - text_width) : 0;
-	button->_text.xpos = button->xpos + (stride / 2);
-	button->_text.ypos = button->ypos + (2 * button->scale);
+	button->_text.xpos = button->xpos + (int32_t)(stride / 2);
+	button->_text.ypos = button->ypos + (int32_t)(2 * button->scale);
 }
 

@@ -92,7 +92,9 @@ void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 		&width, &height
 	);
 	
-	rose_screen.minimized = (!acquired) || (rose__swapchain_texture == NULL);
+	if (!acquired) abort();
+	rose_screen.minimized =
+		(rose__swapchain_texture == NULL);
 	if (rose_screen.minimized) {
 		SDL_SubmitGPUCommandBuffer(rose__command_buffer);
 		return;
