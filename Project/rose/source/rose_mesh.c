@@ -155,8 +155,8 @@ void ROSE_MeshCoordinateTransformScreenToPixels(float xpos, float ypos, int32_t*
 	float screen_height = (float)rose_screen.height;
 	float float_px = ((xpos * screen_height) + screen_width) / 2.0f;
 	float float_py = ((1.0f - ypos) * screen_height) / 2.0f;
-	*px = (int32_t)float_px;
-	*py = (int32_t)float_py;
+	*px = (int32_t)SDL_floorf(float_px);
+	*py = (int32_t)SDL_floorf(float_py);
 }
 
 void ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertices)

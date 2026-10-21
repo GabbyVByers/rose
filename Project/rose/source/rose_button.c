@@ -47,20 +47,23 @@ void ROSE_ButtonUpdateString(ROSE_Button* button, const char* string)
 
 void ROSE_ButtonDraw(ROSE_Button* button)
 {
+	button->_prev_pressed = button->_curr_pressed;
+	if (rose_screen.minimized) return;
+	if (!rose__render_pass) abort();
+
 	ROSE__ButtonUpdate(button);
 	const uint32_t width = button->_width;
 	const uint32_t height = (ROSE_ASCII_HEIGHT + 4);
 
 	const bool horizontal = 
 		(((float)button->xpos <= rose_mouse.xpos) &&
-		(rose_mouse.xpos <= ((float)button->xpos + ((float)width * button->scale))));
+		(rose_mouse.xpos < ((float)button->xpos + ((float)width * button->scale))));
 	
 	const bool vertical =
 		(((float)button->ypos <= rose_mouse.ypos) &&
-		(rose_mouse.ypos <= ((float)button->ypos + ((float)height * button->scale))));
+		(rose_mouse.ypos < ((float)button->ypos + ((float)height * button->scale))));
 	
 	const bool mouse_over = horizontal && vertical;
-	button->_prev_pressed = button->_curr_pressed;
 	
 	if (ROSE_MousePressed(ROSE_BUTTON_LEFT) && (mouse_over))
 		button->_curr_pressed = true;
