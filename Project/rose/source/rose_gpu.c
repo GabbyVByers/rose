@@ -112,7 +112,10 @@ SDL_GPUShader* ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, u
 {
 	size_t code_size = 0;
 	void* code = SDL_LoadFile(path, &code_size);
-	assert(code && "SDL_LoadFile() failed!");
+	if (!code) {
+		fprintf(stderr, "SDL_LoadFile() failed!\n");
+		abort();
+	}
 
 	SDL_GPUShaderCreateInfo shader_create_info = {
 		.code_size = code_size,

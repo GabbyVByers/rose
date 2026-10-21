@@ -106,8 +106,8 @@ void ROSE__ButtonUpdate(ROSE_Button* button)
 		const uint32_t width = button->_width;
 		const uint32_t height = (ROSE_ASCII_HEIGHT + 4);
 
-		ROSE_Image image_normal  = ROSE_ImageCreate(width, 15);
-		ROSE_Image image_pressed = ROSE_ImageCreate(width, 15);
+		ROSE_Image image_normal  = ROSE_ImageCreate(width, height);
+		ROSE_Image image_pressed = ROSE_ImageCreate(width, height);
 
 		const ROSE_RGBA color_normal =             (ROSE_RGBA) { 100, 100, 100, 255 };
 		const ROSE_RGBA color_pressed =            (ROSE_RGBA) {  80,  80,  80, 255 };

@@ -69,8 +69,8 @@ void ROSE_MeshDestroy(ROSE_Mesh* mesh)
 
 void ROSE_MeshDraw(ROSE_Mesh* mesh)
 {
-	if (rose_screen.minimized)
-		return;
+	if (rose_screen.minimized) return;
+	if (!rose__render_pass) abort();
 
 	SDL_GPUBufferBinding buffer_binding = {
 		.buffer = mesh->_vertex_buffer,
@@ -93,7 +93,6 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 		float TransformMatrix[16];
 		float TintColor[4];
 		float PixelDiameter;
-		uint8_t _padding[4];
 	});
 
 	typedef struct Uniform {
@@ -119,22 +118,18 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 		.PixelDiameter = mesh->diameter,
 	};
 
-	switch (mesh->shape)
-	{
-		case (ROSE_TRIANGLES):
-		{
+	switch (mesh->shape) {
+		case (ROSE_TRIANGLES): {
 			SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__triangles_pipeline);
 			SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
 		}
 		break;
-		case (ROSE_LINES):
-		{
+		case (ROSE_LINES): {
 			SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__lines_pipeline);
 			SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
 		}
 		break;
-		case (ROSE_POINTS):
-		{
+		case (ROSE_POINTS): {
 			SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__points_pipeline);
 			SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size_points);
 		}

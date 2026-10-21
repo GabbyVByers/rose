@@ -58,8 +58,8 @@ void ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image)
 
 void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 {
-	if (rose_screen.minimized)
-		return;
+	if (rose_screen.minimized) return;
+	if (!rose__render_pass) abort();
 
 	SDL_GPUBufferBinding buffer_binding = {
 		.buffer = rose__sprite_quad_buffer,

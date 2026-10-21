@@ -69,8 +69,8 @@ void ROSE_TextUpdateString(ROSE_Text* text, const char* string)
 
 void ROSE_TextDraw(ROSE_Text* text)
 {
-	if (rose_screen.minimized || (text->_num_vertices == 0))
-		return;
+	if (rose_screen.minimized) return;
+	if (!rose__render_pass) abort();
 
 	SDL_GPUBufferBinding buffer_binding = {
 		.buffer = text->_vertex_buffer,

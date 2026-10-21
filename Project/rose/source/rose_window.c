@@ -37,15 +37,25 @@ bool ROSE_WindowPollEvents(void)
 
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
-		if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
-			return false;
-
-		if (event.type == SDL_EVENT_MOUSE_WHEEL)
-			rose_mouse.scroll += event.wheel.y;
-
-		if (event.type == SDL_EVENT_MOUSE_MOTION) {
-			rose_mouse.xvel += event.motion.xrel;
-			rose_mouse.yvel += event.motion.yrel;
+		switch (event.type) {
+			case (SDL_EVENT_WINDOW_CLOSE_REQUESTED): {
+				return false;
+			}
+			break;
+			case (SDL_EVENT_QUIT): {
+				return false;
+			}
+			break;
+			case (SDL_EVENT_MOUSE_WHEEL): {
+				rose_mouse.scroll += event.wheel.y;
+			}
+			break;
+			case (SDL_EVENT_MOUSE_MOTION): {
+				rose_mouse.xvel += event.motion.xrel;
+				rose_mouse.yvel += event.motion.yrel;
+			}
+			break;
+			default: break;
 		}
 	}
 
@@ -59,6 +69,7 @@ bool ROSE_WindowPollEvents(void)
 
 void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 {
+	if (rose__render_pass) abort();
 	if (rose__present_mode_dirty) {
 		SDL_SetGPUSwapchainParameters(
 			rose__device,
@@ -107,22 +118,23 @@ void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 
 void ROSE_WindowEndFrame(void)
 {
-	if (rose_screen.minimized)
-		return;
-
+	if (rose_screen.minimized) return;
+	if (!rose__render_pass) abort();
 	SDL_EndGPURenderPass(rose__render_pass);
 	SDL_SubmitGPUCommandBuffer(rose__command_buffer);
+	rose__render_pass = NULL;
 }
 
-double ROSE_WindowFPS(void)
+double ROSE_WindowDeltaTime(void)
 {
 	static uint64_t curr_timestamp = 0;
 	static uint64_t prev_timestamp = 0;
 	prev_timestamp = curr_timestamp;
 	curr_timestamp = SDL_GetTicksNS();
-	uint64_t nanoseconds =
+	double nanoseconds =
 		(curr_timestamp > prev_timestamp) ?
-		(curr_timestamp - prev_timestamp) : 1.0;
-	return (1e9 / nanoseconds);
+		(curr_timestamp - prev_timestamp) : 0.0;
+	return nanoseconds;
+	// FPS = 1e9 / nanoseconds;
 }
 

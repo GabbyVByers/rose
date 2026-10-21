@@ -36,7 +36,10 @@ ROSE_Image ROSE_ImageLoadFromFile(const char* path)
 	int width, height, num;
 	stbi_set_flip_vertically_on_load(true);
 	uint8_t* stbi_image = stbi_load(path, &width, &height, &num, 4);
-	assert(stbi_image && "stbi_load() failed!");
+	if (!stbi_image) {
+		fprintf(stderr, "stbi_load() failed!\n");
+		abort();
+	}
 
 	size_t size = (size_t)width * height * 4;
 	uint8_t* pixels = malloc(size);
@@ -58,7 +61,10 @@ void ROSE_ImageSavePNG(ROSE_Image* image, const char* path)
 	int stride = (int)image->_width * 4;
 	stbi_flip_vertically_on_write(true);
 	bool success = stbi_write_png(path, width, height, 4, pixels, stride);
-	assert(success && "stbi_write_png() failed!");
+	if (!success) {
+		fprintf(stderr, "stbi_write_png() failed!\n");
+		abort();
+	}
 }
 
 void ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height)

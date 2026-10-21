@@ -444,7 +444,7 @@ void ROSE_WindowVSync(bool vsync);
 bool ROSE_WindowPollEvents(void);
 void ROSE_WindowBeginFrame(ROSE_Color clear_color);
 void ROSE_WindowEndFrame(void);
-double ROSE_WindowFPS(void);
+double ROSE_WindowDeltaTime(void);
 
 bool ROSE_MousePressing(uint32_t mouse_button);
 bool ROSE_MousePressed(uint32_t mouse_button);
