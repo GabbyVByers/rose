@@ -365,3 +365,19 @@ FodyWeavers.xsd
 # Claude Code
 /.claude/
 /CLAUDE.md
+
+# SDL3-3.4.18/lib/...
+!/Project/libraries/SDL3-3.4.18/lib/arm64/
+!/Project/libraries/SDL3-3.4.18/lib/x64/
+!/Project/libraries/SDL3-3.4.18/lib/x86/
+
+# Debug / Release Contain 'SDL3.dll'
+!/x64/
+/x64/*
+!/x64/Debug/
+!/x64/Release/
+/x64/Debug/*
+/x64/Release/*
+!/x64/Debug/SDL3.dll
+!/x64/Release/SDL3.dll
+
