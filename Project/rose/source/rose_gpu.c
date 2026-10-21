@@ -5,7 +5,6 @@
 
 #define ROSE_EXTERN
 #include "rose.h"
-#include "rose_state.h"
 
 SDL_GPUSampler* ROSE__SDLCreateSampler(void)
 {

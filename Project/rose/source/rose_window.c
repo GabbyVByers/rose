@@ -5,7 +5,6 @@
 
 #define ROSE_EXTERN
 #include "rose.h"
-#include "rose_state.h"
 
 void ROSE_WindowVSync(bool vsync)
 {

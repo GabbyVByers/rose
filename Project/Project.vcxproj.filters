@@ -53,9 +53,6 @@
     <ClInclude Include="rose\rose.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="rose\rose_scancodes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="libraries\stb-master\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -318,9 +315,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="libraries\SDL3-3.4.18\include\SDL3\SDL_vulkan.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rose\rose_state.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

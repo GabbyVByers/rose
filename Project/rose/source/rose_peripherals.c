@@ -5,7 +5,6 @@
 
 #define ROSE_EXTERN
 #include "rose.h"
-#include "rose_state.h"
 
 bool ROSE_MousePressing(uint32_t mouse_button)
 {

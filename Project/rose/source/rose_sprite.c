@@ -5,7 +5,6 @@
 
 #define ROSE_EXTERN
 #include "rose.h"
-#include "rose_state.h"
 
 ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 {

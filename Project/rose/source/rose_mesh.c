@@ -5,7 +5,6 @@
 
 #define ROSE_EXTERN
 #include "rose.h"
-#include "rose_state.h"
 
 ROSE_Mesh ROSE_MeshCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices)
 {

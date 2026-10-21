@@ -261,8 +261,6 @@
     <ClInclude Include="libraries\stb-master\stb_image.h" />
     <ClInclude Include="libraries\stb-master\stb_image_write.h" />
     <ClInclude Include="rose\rose.h" />
-    <ClInclude Include="rose\rose_scancodes.h" />
-    <ClInclude Include="rose\rose_state.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\compile.bat" />

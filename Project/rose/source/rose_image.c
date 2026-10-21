@@ -5,7 +5,6 @@
 
 #define ROSE_EXTERN
 #include "rose.h"
-#include "rose_state.h"
 
 ROSE_Image ROSE_ImageCreate(uint32_t width, uint32_t height)
 {

@@ -3,8 +3,8 @@
  *   Source File [rose_init.c]
  */
 
+#define ROSE_EXTERN
 #include "rose.h"
-#include "rose_state.h"
 
 void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 {
