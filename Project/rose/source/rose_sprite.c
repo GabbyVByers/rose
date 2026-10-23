@@ -50,7 +50,18 @@ void ROSE_SpriteDestroy(ROSE_Sprite* sprite)
 
 void ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image)
 {
-	if (sprite->_texture) SDL_ReleaseGPUTexture(rose__device, sprite->_texture);
+	bool reuse_texture = (sprite->_texture)
+		&& (sprite->_width == image->_width)
+		&& (sprite->_height == image->_height);
+	
+	if (reuse_texture) {
+		ROSE__SDLUploadImageToTexture(sprite->_texture, image);
+		return;
+	}
+
+	if (sprite->_texture)
+		SDL_ReleaseGPUTexture(rose__device, sprite->_texture);
+	
 	sprite->_texture = ROSE__SDLCreateTexture(image);
 	sprite->_width = image->_width;
 	sprite->_height = image->_height;

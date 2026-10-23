@@ -23,27 +23,33 @@ SDL_GPUSampler* ROSE__SDLCreateSampler(void)
 
 SDL_GPUTexture* ROSE__SDLCreateTexture(ROSE_Image* image)
 {
-	uint32_t width = image->_width;
-	uint32_t height = image->_height;
-	uint32_t image_size = (width * height * (uint32_t)sizeof(ROSE_RGBA));
-
 	SDL_GPUTextureCreateInfo texture_create_info = {
 		.type = SDL_GPU_TEXTURETYPE_2D,
 		.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
 		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER,
-		.width = width,
-		.height = height,
+		.width = image->_width,
+		.height = image->_height,
 		.layer_count_or_depth = 1,
 		.num_levels = 1,
 		.sample_count = SDL_GPU_SAMPLECOUNT_1,
 	};
+
+	SDL_GPUTexture* texture = SDL_CreateGPUTexture(rose__device, &texture_create_info);
+	ROSE__SDLUploadImageToTexture(texture, image);
+	return texture;
+}
+
+void ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, ROSE_Image* image)
+{
+	uint32_t width = image->_width;
+	uint32_t height = image->_height;
+	uint32_t image_size = (width * height * (uint32_t)sizeof(ROSE_RGBA));
 
 	SDL_GPUTransferBufferCreateInfo transfer_buffer_create_info = {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
 		.size = image_size,
 	};
 
-	SDL_GPUTexture* texture = SDL_CreateGPUTexture(rose__device, &texture_create_info);
 	SDL_GPUTransferBuffer* transfer_buffer = SDL_CreateGPUTransferBuffer(rose__device, &transfer_buffer_create_info);
 	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, transfer_buffer, false);
 	memcpy(transfer_buffer_beginning, image->_pixels, (size_t)image_size);
@@ -64,11 +70,10 @@ SDL_GPUTexture* ROSE__SDLCreateTexture(ROSE_Image* image)
 
 	SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(rose__device);
 	SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(command_buffer);
-	SDL_UploadToGPUTexture(copy_pass, &texture_transfer_info, &destination_texture_region, false);
+	SDL_UploadToGPUTexture(copy_pass, &texture_transfer_info, &destination_texture_region, true);
 	SDL_EndGPUCopyPass(copy_pass);
 	SDL_SubmitGPUCommandBuffer(command_buffer);
 	SDL_ReleaseGPUTransferBuffer(rose__device, transfer_buffer);
-	return texture;
 }
 
 SDL_GPUBuffer* ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size)

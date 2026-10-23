@@ -502,6 +502,7 @@ void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertic
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
+void                     ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, ROSE_Image* image);
 SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size);
 SDL_GPUShader*           ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uint32_t uniforms, uint32_t samplers);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vert, const char* frag, uint32_t samplers, SDL_GPUVertexInputState input, SDL_GPUPrimitiveType primitive);

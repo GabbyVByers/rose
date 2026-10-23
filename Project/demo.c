@@ -33,7 +33,7 @@ static float randf32(void)
 int main(void)
 {
     ROSE_Init("App Title", 1200, 700);
-    ROSE_WindowVSync(true);
+    ROSE_WindowVSync(false);
 
     ROSE_Button button = ROSE_ButtonCreate("HELLO");
     button.xpos = 300;
@@ -68,17 +68,39 @@ int main(void)
     points.color = ROSE_COLOR_RED;
     points.diameter = 5.0f;
 
-    while (ROSE_WindowPollEvents()) {
+    ROSE_Image image = ROSE_ImageCreate(300, 300);
+    ROSE_Sprite sprite = ROSE_SpriteCreate(&image);
+    sprite.xpos = 200;
+    sprite.ypos = 200;
+
+    uint32_t x = 0;
+    uint32_t y = 0;
+
+    while (ROSE_WindowPollEvents())
+    {
+        ROSE_ImageSetPixelRGBA(&image, x, y, (ROSE_RGBA) { rand() % 255, rand() % 255, rand() % 255, 255 });
+        ROSE_SpriteUpdateTexture(&sprite, &image);
+        
+        x++;
+        if (x >= image._width) {
+            x = 0;
+            y++;
+            y %= image._height;
+        }
+        
         ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
         ROSE_MeshDraw(&triangles);
         ROSE_MeshDraw(&lines);
         ROSE_MeshDraw(&points);
         ROSE_ButtonDraw(&button);
+        ROSE_SpriteDraw(&sprite);
+        ROSE_WindowEndFrame();
+
         if (ROSE_ButtonPressed(&button))
             fprintf(stdout, "HELLO!\n");
-        ROSE_WindowEndFrame();
     }
 
+    ROSE_SpriteDestroy(&sprite);
     ROSE_ButtonDestroy(&button);
     ROSE_MeshDestroy(&triangles);
     ROSE_MeshDestroy(&lines);
