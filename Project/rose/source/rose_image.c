@@ -191,7 +191,6 @@ void ROSE__PerlinNoiseLayer(float* intensities, uint32_t width, uint32_t height,
 		float dx, dy;
 	} Arrow;
 
-	// divisions span the width, cells are square so the height gets as many as fit
 	float cell_size = (float)width / divisions;
 	size_t arrow_columns = (size_t)SDL_ceilf(divisions) + 1;
 	size_t arrow_rows = (size_t)SDL_ceilf((float)height / cell_size) + 1;

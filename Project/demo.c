@@ -71,7 +71,7 @@ int main(void)
     ROSE_PerlinInfo info = {
         .seed = 0,
         .divisions = 1,
-        .layers = 10,
+        .layers = 5,
         .attenuation = 0.5f,
         .division_scale = 2.0f,
     };
