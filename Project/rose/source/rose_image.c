@@ -23,6 +23,47 @@ ROSE_Image ROSE_ImageCreate(uint32_t width, uint32_t height)
 	};
 }
 
+ROSE_Image ROSE_ImageCreatePerlin(uint32_t width, uint32_t height, ROSE_PerlinInfo* info)
+{
+	assert(info->divisions > 0);
+	assert(info->layers > 0);
+	assert(info->division_scale > 0.0f);
+	srand(info->seed);
+	ROSE_Image image = ROSE_ImageCreate(width, height);
+
+	size_t num_pixels = (size_t)width * height;
+	if (num_pixels == 0) return image;
+	float* intensities = calloc(num_pixels, sizeof(float));
+
+	float amplitude = 1.0f;
+	float layer_divisions = (float)info->divisions;
+	for (uint32_t layer = 0; layer < info->layers; layer++) {
+		ROSE__PerlinNoiseLayer(intensities, width, height, layer_divisions, amplitude);
+		amplitude *= info->attenuation;
+		layer_divisions *= info->division_scale;
+	}
+
+	float min = FLT_MAX;
+	float max = -FLT_MAX;
+	for (size_t i = 0; i < num_pixels; i++) {
+		if (intensities[i] < min) min = intensities[i];
+		if (intensities[i] > max) max = intensities[i];
+	}
+
+	float difference = max - min;
+	for (uint32_t y = 0; y < height; y++) {
+		for (uint32_t x = 0; x < width; x++) {
+			float intensity = intensities[((size_t)y * width) + x];
+			float value = (difference > 0.0f) ? ((intensity - min) / difference) : 0.0f;
+			uint8_t c = (uint8_t)((value * 255.0f) + 0.5f);
+			ROSE_ImageSetPixelRGBA(&image, x, y, (ROSE_RGBA) { c, c, c, 255 });
+		}
+	}
+
+	free(intensities);
+	return image;
+}
+
 void ROSE_ImageDestroy(ROSE_Image* image)
 {
 	if (image) {
@@ -142,5 +183,56 @@ void ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROS
 	image->_pixels[index + 1] = color.g;
 	image->_pixels[index + 2] = color.b;
 	image->_pixels[index + 3] = color.a;
+}
+
+void ROSE__PerlinNoiseLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude)
+{
+	typedef struct {
+		float dx, dy;
+	} Arrow;
+
+	// divisions span the width, cells are square so the height gets as many as fit
+	float cell_size = (float)width / divisions;
+	size_t arrow_columns = (size_t)SDL_ceilf(divisions) + 1;
+	size_t arrow_rows = (size_t)SDL_ceilf((float)height / cell_size) + 1;
+	Arrow* arrows = malloc(arrow_columns * arrow_rows * sizeof(Arrow));
+
+	for (size_t i = 0; i < arrow_columns * arrow_rows; i++) {
+		static const float tau = 6.28318535f;
+		float angle = ((float)rand() / (float)RAND_MAX) * tau;
+		arrows[i] = (Arrow) { cos(angle), sin(angle) };
+	}
+
+	for (uint32_t y = 0; y < height; y++) {
+		for (uint32_t x = 0; x < width; x++) {
+			float gx = ((float)x + 0.5f) / cell_size;
+			float gy = ((float)y + 0.5f) / cell_size;
+			size_t i = (size_t)gx;
+			size_t j = (size_t)gy;
+			if (i > arrow_columns - 2) i = arrow_columns - 2;
+			if (j > arrow_rows - 2) j = arrow_rows - 2;
+
+			Arrow* tl = &arrows[((j + 0) * arrow_columns) + (i + 0)];
+			Arrow* tr = &arrows[((j + 0) * arrow_columns) + (i + 1)];
+			Arrow* bl = &arrows[((j + 1) * arrow_columns) + (i + 0)];
+			Arrow* br = &arrows[((j + 1) * arrow_columns) + (i + 1)];
+			float px = gx - (float)i;
+			float py = gy - (float)j;
+			float dot_a = ((px - 0.0f) * tl->dx) + ((py - 0.0f) * tl->dy);
+			float dot_b = ((px - 1.0f) * tr->dx) + ((py - 0.0f) * tr->dy);
+			float dot_c = ((px - 0.0f) * bl->dx) + ((py - 1.0f) * bl->dy);
+			float dot_d = ((px - 1.0f) * br->dx) + ((py - 1.0f) * br->dy);
+
+			static const float pi = 3.1415927f;
+			float smooth_px = 0.5f + (sin((px * pi) - (pi * 0.5f)) * 0.5f);
+			float smooth_py = 0.5f + (sin((py * pi) - (pi * 0.5f)) * 0.5f);
+			float lerp_ab = (dot_a * (1.0f - smooth_px)) + (dot_b * smooth_px);
+			float lerp_cd = (dot_c * (1.0f - smooth_px)) + (dot_d * smooth_px);
+			float lerp_abcd = (lerp_ab * (1.0f - smooth_py)) + (lerp_cd * smooth_py);
+			intensities[((size_t)y * width) + x] += amplitude * lerp_abcd;
+		}
+	}
+
+	free(arrows);
 }
 

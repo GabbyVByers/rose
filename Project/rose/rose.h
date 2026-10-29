@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <float.h>
 #include <assert.h>
 
 #define ROSE_BUTTON_LEFT   SDL_BUTTON_LEFT
@@ -456,7 +457,16 @@ bool ROSE_KeyboardPressing(ROSE_Scancode scancode);
 bool ROSE_KeyboardPressed(ROSE_Scancode scancode);
 bool ROSE_KeyboardReleased(ROSE_Scancode scancode);
 
+typedef struct ROSE_PerlinInfo {
+    uint32_t seed;
+    uint32_t divisions;
+    uint32_t layers;
+    float attenuation;
+    float division_scale;
+} ROSE_PerlinInfo;
+
 ROSE_Image  ROSE_ImageCreate(uint32_t width, uint32_t height);
+ROSE_Image  ROSE_ImageCreatePerlin(uint32_t width, uint32_t height, ROSE_PerlinInfo* info);
 void        ROSE_ImageDestroy(ROSE_Image* image);
 ROSE_Image  ROSE_ImageLoadFromFile(const char* path);
 void        ROSE_ImageSavePNG(ROSE_Image* image, const char* path);
@@ -465,6 +475,7 @@ ROSE_Color  ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t y
 ROSE_RGBA   ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
 void        ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color);
 void        ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color);
+void        ROSE__PerlinNoiseLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude);
 
 ROSE_Text   ROSE_TextCreate(const char* string);
 ROSE_Text   ROSE_TextCreateEmpty(void);

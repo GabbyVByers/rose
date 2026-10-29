@@ -68,7 +68,15 @@ int main(void)
     points.color = ROSE_COLOR_RED;
     points.diameter = 5.0f;
 
-    ROSE_Image image = ROSE_ImageCreate(300, 300);
+    ROSE_PerlinInfo info = {
+        .seed = 0,
+        .divisions = 1,
+        .layers = 10,
+        .attenuation = 0.5f,
+        .division_scale = 2.0f,
+    };
+
+    ROSE_Image image = ROSE_ImageCreatePerlin(300, 300, &info);
     ROSE_Sprite sprite = ROSE_SpriteCreate(&image);
     sprite.xpos = 200;
     sprite.ypos = 200;
@@ -78,15 +86,15 @@ int main(void)
 
     while (ROSE_WindowPollEvents())
     {
-        ROSE_ImageSetPixelRGBA(&image, x, y, (ROSE_RGBA) { rand() % 255, rand() % 255, rand() % 255, 255 });
-        ROSE_SpriteUpdateTexture(&sprite, &image);
-        
-        x++;
-        if (x >= image._width) {
-            x = 0;
-            y++;
-            y %= image._height;
-        }
+        //ROSE_ImageSetPixelRGBA(&image, x, y, (ROSE_RGBA) { rand() % 255, rand() % 255, rand() % 255, 255 });
+        //ROSE_SpriteUpdateTexture(&sprite, &image);
+        //
+        //x++;
+        //if (x >= image._width) {
+        //    x = 0;
+        //    y++;
+        //    y %= image._height;
+        //}
         
         ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
         ROSE_MeshDraw(&triangles);
