@@ -477,10 +477,10 @@ void        ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t y
 void        ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color);
 void        ROSE__PerlinNoiseLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude);
 
-ROSE_Text   ROSE_TextCreate(const char* string);
+ROSE_Text   ROSE_TextCreate(const char* format, ...);
 ROSE_Text   ROSE_TextCreateEmpty(void);
 void        ROSE_TextDestroy(ROSE_Text* text);
-void        ROSE_TextUpdateString(ROSE_Text* text, const char* string);
+void        ROSE_TextUpdateString(ROSE_Text* text, const char* format, ...);
 void        ROSE_TextDraw(ROSE_Text* text);
 void        ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uint32_t num_characters);
 void        ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uint32_t num_characters);

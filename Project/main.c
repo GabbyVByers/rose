@@ -1,29 +1,41 @@
 
 /*
- *   Source File [demo.c]
+ *   Source File [main.c]
  */
 
 #include "rose.h"
 
-//static void ROSE__Uint32ToString(uint32_t number, char* string)
-//{
-//    uint32_t length = strlen(string);
-//    for (uint32_t i = (length - 1); i > 0; i--) {
-//        char character = (char)((number % 10) + 48);
-//        string[i] = character;
-//        number /= 10;
-//        if (number == 0)
-//            break;
-//    }
-//}
+#define PEARL_GAME
+#if defined(PEARL_GAME)
 
-//static float ROSE__RandomFloat32(float min, float max)
-//{
-//    float random = (float)rand() / (float)RAND_MAX;
-//    random *= (max - min);
-//    random += min;
-//    return random;
-//}
+int main(void)
+{
+    ROSE_Init("Pearl", 1200, 700);
+
+    int x = 67;
+    ROSE_Text text = ROSE_TextCreate("Hello: %d", x);
+    text.scale = 3;
+    text.xpos = 200;
+    text.ypos = 200;
+
+    while (ROSE_WindowPollEvents())
+    {
+        x++;
+        ROSE_TextUpdateString(&text, "Hello: %d", x);
+
+        ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
+        ROSE_TextDraw(&text);
+        ROSE_WindowEndFrame();
+    }
+
+    ROSE_Quit();
+    return EXIT_SUCCESS;
+}
+
+#endif /* PEARL_GAME */
+
+//#define DEMO_APPLICATION
+#if defined(DEMO_APPLICATION)
 
 static float randf32(void)
 {
@@ -115,4 +127,6 @@ int main(void)
     ROSE_MeshDestroy(&points);
     ROSE_Quit();
 }
+
+#endif /* DEMO_APPLICATION */
 

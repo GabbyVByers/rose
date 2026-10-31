@@ -6,8 +6,16 @@
 #define ROSE_EXTERN
 #include "rose.h"
 
-ROSE_Text ROSE_TextCreate(const char* string)
+#define MAX_STRING_LENGTH 512
+
+ROSE_Text ROSE_TextCreate(const char* format, ...)
 {
+	char string[MAX_STRING_LENGTH] = { '\0' };
+	va_list arguments = { 0 };
+	va_start(arguments, format);
+	vsnprintf(string, sizeof(string), format, arguments);
+	va_end(arguments);
+
 	ROSE_Text text = ROSE_TextCreateEmpty();
 	ROSE_TextUpdateString(&text, string);
 	return text;
@@ -37,8 +45,14 @@ void ROSE_TextDestroy(ROSE_Text* text)
 	}
 }
 
-void ROSE_TextUpdateString(ROSE_Text* text, const char* string)
+void ROSE_TextUpdateString(ROSE_Text* text, const char* format, ...)
 {
+	char string[MAX_STRING_LENGTH] = { '\0' };
+	va_list arguments = { 0 };
+	va_start(arguments, format);
+	vsnprintf(string, sizeof(string), format, arguments);
+	va_end(arguments);
+
 	uint32_t num_characters = (uint32_t)strlen(string);
 	ROSE__TextReserveCharacterCapacity(text, num_characters);
 	text->_num_characters = num_characters;
