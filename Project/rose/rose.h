@@ -43,17 +43,17 @@
 #else
 #define rose_panic_abort abort()
 #endif
-#define ROSE_PANIC(...)                          \
-do {                                             \
-	const char *file = strrchr(__FILE__, '\\');  \
-	file = file ? file + 1 : __FILE__;           \
-	fprintf(stderr, "> PANIC!!!\n");             \
-	fprintf(stderr, "> FILE: [%s]\n", file);     \
-	fprintf(stderr, "> LINE: [%d]\n", __LINE__); \
-	fprintf(stderr, "> ERROR: '");               \
-	fprintf(stderr, __VA_ARGS__);                \
-	fprintf(stderr, "'\n");                      \
-	rose_panic_abort;                            \
+#define ROSE_PANIC(...)                                     \
+do {                                                        \
+	const char *rose___file = strrchr(__FILE__, '\\');      \
+	rose___file = rose___file ? rose___file + 1 : __FILE__; \
+	fprintf(stderr, "> PANIC!!!\n");                        \
+	fprintf(stderr, "> FILE: [%s]\n", rose___file);         \
+	fprintf(stderr, "> LINE: [%d]\n", __LINE__);            \
+	fprintf(stderr, "> ERROR: '");                          \
+	fprintf(stderr, __VA_ARGS__);                           \
+	fprintf(stderr, "'\n");                                 \
+	rose_panic_abort;                                       \
 } while (0)
 #endif
 
