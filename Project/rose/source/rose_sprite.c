@@ -116,3 +116,33 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 	SDL_DrawGPUPrimitives(rose__render_pass, 6, 1, 0, 0);
 }
 
+ROSE_Sprite ROSE_SpriteCreateGUIBox(uint32_t width, uint32_t height, bool normal)
+{
+	ROSE_Image image = ROSE_ImageCreate(width, height);
+
+	const ROSE_RGBA color        = ((ROSE_RGBA) { 100, 100, 100, 255 });
+	const ROSE_RGBA color_top    = (normal) ? ((ROSE_RGBA) { 135, 135, 135, 255 }) : ((ROSE_RGBA) {  60,  60,  60, 255 });
+	const ROSE_RGBA color_bottom = (normal) ? ((ROSE_RGBA) {  70,  70,  70, 255 }) : ((ROSE_RGBA) { 135, 135, 135, 255 });
+
+	for (uint32_t y = 0; y < height; y++) {
+		for (uint32_t x = 0; x < width; x++) {
+			ROSE_ImageSetPixelRGBA(&image, x, y, color);
+		}
+	}
+
+	for (uint32_t y = 0; y < height; y++) {
+		ROSE_ImageSetPixelRGBA(&image, (width - 1), y, color_bottom);
+		ROSE_ImageSetPixelRGBA(&image, 0, y, color_top);
+	}
+
+	for (uint32_t x = 0; x < width; x++) {
+		ROSE_ImageSetPixelRGBA(&image, x, (height - 1), color_bottom);
+		ROSE_ImageSetPixelRGBA(&image, x, 0, color_top);
+	}
+
+	ROSE_Sprite sprite = ROSE_SpriteCreate(&image);
+	ROSE_ImageDestroy(&image);
+	return sprite;
+}
+
+

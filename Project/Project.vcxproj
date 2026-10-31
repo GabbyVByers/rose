@@ -31,7 +31,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <EnableASAN>false</EnableASAN>
+    <EnableASAN>true</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -46,7 +46,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <EnableASAN>false</EnableASAN>
+    <EnableASAN>true</EnableASAN>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -163,6 +163,7 @@
     <ClCompile Include="main.c" />
     <ClCompile Include="rose\source\rose_button.c" />
     <ClCompile Include="rose\source\rose_gpu.c" />
+    <ClCompile Include="rose\source\rose_slider.c" />
     <ClCompile Include="rose\source\rose_image.c" />
     <ClCompile Include="rose\source\rose_init.c" />
     <ClCompile Include="rose\source\rose_peripherals.c" />

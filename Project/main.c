@@ -5,128 +5,171 @@
 
 #include "rose.h"
 
-#define PEARL_GAME
-#if defined(PEARL_GAME)
+#define BUTTON_SCALE 3
+#define BUTTON_WIDTH (ROSE_ASCII_WIDTH * 3)
+#define BUTTON_HEIGHT ((ROSE_ASCII_HEIGHT + 4) * BUTTON_SCALE)
 
-int main(void)
+#define BUTTON_PADDING 20
+#define BUTTON_XPOS(x) (BUTTON_PADDING + (((BUTTON_WIDTH * BUTTON_SCALE) + BUTTON_PADDING) * x))
+#define BUTTON_YPOS(x) (BUTTON_PADDING + ((BUTTON_HEIGHT + BUTTON_PADDING) * x))
+#define TEXT_YPOS(x) ((BUTTON_PADDING + ((BUTTON_HEIGHT + BUTTON_PADDING) * x)) + (2 * BUTTON_SCALE))
+
+typedef struct Map {
+	uint32_t width;
+	ROSE_PerlinInfo info;
+	ROSE_Image image;
+	ROSE_Sprite sprite;
+} Map;
+
+void MapUpdate(Map* map)
 {
-    ROSE_Init("Pearl", 1200, 700);
-
-    int x = 67;
-    ROSE_Text text = ROSE_TextCreate("Hello: %d", x);
-    text.scale = 3;
-    text.xpos = 200;
-    text.ypos = 200;
-
-    while (ROSE_WindowPollEvents())
-    {
-        x++;
-        ROSE_TextUpdateString(&text, "Hello: %d", x);
-
-        ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
-        ROSE_TextDraw(&text);
-        ROSE_WindowEndFrame();
-    }
-
-    ROSE_Quit();
-    return EXIT_SUCCESS;
-}
-
-#endif /* PEARL_GAME */
-
-//#define DEMO_APPLICATION
-#if defined(DEMO_APPLICATION)
-
-static float randf32(void)
-{
-    return (((float)rand() / (float)RAND_MAX) * 2.0f) - 1.0f;
+	ROSE_ImageDestroy(&map->image);
+	map->image = ROSE_ImageCreatePerlin(map->width, map->width, &map->info);
+	ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
 }
 
 int main(void)
 {
-    ROSE_Init("App Title", 1200, 700);
-    ROSE_WindowVSync(false);
+	ROSE_Init("Pearl", 1600, 800);
+	ROSE_WindowVSync(false);
 
-    ROSE_Button button = ROSE_ButtonCreate("HELLO");
-    button.xpos = 300;
-    button.ypos = 20;
-    button.scale = 3;
+	Map map = { 0 };
+	map.info = (ROSE_PerlinInfo) {
+		.seed = 0,
+		.divisions = 5,
+		.layers = 1,
+		.attenuation = 0.7f,
+		.division_growth = 2.0f,
+	};
 
-    ROSE_Vertex2D triangle_verts[128] = { 0 };
-    for (uint32_t i = 0; i < 128; i++) {
-        triangle_verts[i] = (ROSE_Vertex2D){ randf32(), randf32() };
-    }
-    
-    ROSE_Vertex2D line_verts[128] = { 0 };
-    for (uint32_t i = 0; i < 128; i++) {
-        line_verts[i] = (ROSE_Vertex2D) { randf32(), randf32() };
-    }
-    
-    ROSE_Vertex2D point_verts[128] = { 0 };
-    for (uint32_t i = 0; i < 128; i++) {
-        point_verts[i] = (ROSE_Vertex2D){ randf32(), randf32() };
-    }
+	map.width = 700;
+	map.image = ROSE_ImageCreatePerlin(map.width, map.width, &map.info);
+	map.sprite = ROSE_SpriteCreate(&map.image);
+	map.sprite.xpos = 500;
+	map.sprite.ypos = 100;
 
-    ROSE_Mesh triangles = ROSE_MeshCreate(triangle_verts, sizeof(triangle_verts) / sizeof(triangle_verts[0]));
-    triangles.shape = ROSE_TRIANGLES;
-    triangles.color = ROSE_COLOR_CYAN;
+	// [  RANDOM SEED  ]
 
-    ROSE_Mesh lines = ROSE_MeshCreate(line_verts, sizeof(line_verts) / sizeof(line_verts[0]));
-    lines.shape = ROSE_LINES;
-    lines.color = ROSE_COLOR_PURPLE;
+	ROSE_Button random_seed_button = ROSE_ButtonCreate("RANDOM SEED");
+	random_seed_button.scale = BUTTON_SCALE;
+	random_seed_button.xpos = BUTTON_XPOS(0);
+	random_seed_button.ypos = BUTTON_YPOS(0);
+	
+	// [ - ] [ + ] DIVISIONS [#]
 
-    ROSE_Mesh points = ROSE_MeshCreate(point_verts, sizeof(point_verts) / sizeof(point_verts[0]));
-    points.shape = ROSE_POINTS;
-    points.color = ROSE_COLOR_RED;
-    points.diameter = 5.0f;
+	ROSE_Button init_divs_dec_button = ROSE_ButtonCreate("-");
+	init_divs_dec_button.scale = BUTTON_SCALE;
+	init_divs_dec_button.width = BUTTON_WIDTH;
+	init_divs_dec_button.xpos = BUTTON_XPOS(0);
+	init_divs_dec_button.ypos = BUTTON_YPOS(1);
 
-    ROSE_PerlinInfo info = {
-        .seed = 0,
-        .divisions = 1,
-        .layers = 5,
-        .attenuation = 0.5f,
-        .division_scale = 2.0f,
-    };
+	ROSE_Button init_divs_inc_button = ROSE_ButtonCreate("+");
+	init_divs_inc_button.scale = BUTTON_SCALE;
+	init_divs_inc_button.width = BUTTON_WIDTH;
+	init_divs_inc_button.xpos = BUTTON_XPOS(1);
+	init_divs_inc_button.ypos = BUTTON_YPOS(1);
 
-    ROSE_Image image = ROSE_ImageCreatePerlin(300, 300, &info);
-    ROSE_Sprite sprite = ROSE_SpriteCreate(&image);
-    sprite.xpos = 200;
-    sprite.ypos = 200;
+	ROSE_Text init_divs_text = ROSE_TextCreate("DIVISIONS [%d]", map.info.divisions);
+	init_divs_text.scale = BUTTON_SCALE;
+	init_divs_text.xpos = BUTTON_XPOS(2);
+	init_divs_text.ypos = TEXT_YPOS(1);
 
-    uint32_t x = 0;
-    uint32_t y = 0;
+	// [ - ] [ + ] LAYERS [#]
 
-    while (ROSE_WindowPollEvents())
-    {
-        //ROSE_ImageSetPixelRGBA(&image, x, y, (ROSE_RGBA) { rand() % 255, rand() % 255, rand() % 255, 255 });
-        //ROSE_SpriteUpdateTexture(&sprite, &image);
-        //
-        //x++;
-        //if (x >= image._width) {
-        //    x = 0;
-        //    y++;
-        //    y %= image._height;
-        //}
-        
-        ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
-        ROSE_MeshDraw(&triangles);
-        ROSE_MeshDraw(&lines);
-        ROSE_MeshDraw(&points);
-        ROSE_ButtonDraw(&button);
-        ROSE_SpriteDraw(&sprite);
-        ROSE_WindowEndFrame();
+	ROSE_Button layers_dec_button = ROSE_ButtonCreate("-");
+	layers_dec_button.scale = BUTTON_SCALE;
+	layers_dec_button.width = BUTTON_WIDTH;
+	layers_dec_button.xpos = BUTTON_XPOS(0);
+	layers_dec_button.ypos = BUTTON_YPOS(2);
 
-        if (ROSE_ButtonPressed(&button))
-            fprintf(stdout, "HELLO!\n");
-    }
+	ROSE_Button layers_inc_button = ROSE_ButtonCreate("+");
+	layers_inc_button.scale = BUTTON_SCALE;
+	layers_inc_button.width = BUTTON_WIDTH;
+	layers_inc_button.xpos = BUTTON_XPOS(1);
+	layers_inc_button.ypos = BUTTON_YPOS(2);
 
-    ROSE_SpriteDestroy(&sprite);
-    ROSE_ButtonDestroy(&button);
-    ROSE_MeshDestroy(&triangles);
-    ROSE_MeshDestroy(&lines);
-    ROSE_MeshDestroy(&points);
-    ROSE_Quit();
+	ROSE_Text layers_text = ROSE_TextCreate("LAYERS [%d]", map.info.layers);
+	layers_text.scale = BUTTON_SCALE;
+	layers_text.xpos = BUTTON_XPOS(2);
+	layers_text.ypos = TEXT_YPOS(2);
+
+	// --- [SLIDER] ------------------------------------------------------------------------------
+	float subject = 0.5f;
+	ROSE_Slider slider = ROSE_SliderCreate();
+	slider.subject = &subject;
+	slider.scale = 3;
+	slider.xpos = 350;
+	slider.ypos = 400;
+	slider.min = -10.0f;
+	slider.max = 30.0f;
+	slider.width = 190;
+
+	while (ROSE_WindowPollEvents())
+	{
+		if (ROSE_ButtonPressed(&random_seed_button)) {
+			map.info.seed = rand();
+			MapUpdate(&map);
+		}
+
+		if (ROSE_ButtonPressed(&init_divs_inc_button)) {
+			if (map.info.divisions < 20) {
+				map.info.divisions++;
+				ROSE_TextUpdateString(&init_divs_text, "DIVISIONS [%d]", map.info.divisions);
+				MapUpdate(&map);
+			}
+		}
+
+		if (ROSE_ButtonPressed(&init_divs_dec_button)) {
+			if (map.info.divisions > 1) {
+				map.info.divisions--;
+				ROSE_TextUpdateString(&init_divs_text, "DIVISIONS [%d]", map.info.divisions);
+				MapUpdate(&map);
+			}
+		}
+
+		if (ROSE_ButtonPressed(&layers_inc_button)) {
+			if (map.info.layers < 8) {
+				map.info.layers++;
+				ROSE_TextUpdateString(&layers_text, "LAYERS [%d]", map.info.layers);
+				MapUpdate(&map);
+			}
+		}
+
+		if (ROSE_ButtonPressed(&layers_dec_button)) {
+			if (map.info.layers > 1) {
+				map.info.layers--;
+				ROSE_TextUpdateString(&layers_text, "LAYERS [%d]", map.info.layers);
+				MapUpdate(&map);
+			}
+		}
+
+		ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
+		{
+			const uint32_t MAP_PADDING = 50;
+			map.sprite.xpos = rose_screen.width - (MAP_PADDING + map.width);
+			map.sprite.ypos = MAP_PADDING;
+
+			ROSE_SpriteDraw(&map.sprite);
+			ROSE_ButtonDraw(&random_seed_button);
+
+			ROSE_ButtonDraw(&init_divs_dec_button);
+			ROSE_ButtonDraw(&init_divs_inc_button);
+			ROSE_TextDraw(&init_divs_text);
+
+			ROSE_ButtonDraw(&layers_dec_button);
+			ROSE_ButtonDraw(&layers_inc_button);
+			ROSE_TextDraw(&layers_text);
+
+			// --- [SLIDER] ------------------------------------------------------------------------------
+			ROSE_SliderDraw(&slider);
+			if (ROSE_SliderReleased(&slider)) {
+				fprintf(stdout, "Slider Released!\n");
+			}
+		}
+		ROSE_WindowEndFrame();
+	}
+
+	ROSE_Quit();
+	return EXIT_SUCCESS;
 }
-
-#endif /* DEMO_APPLICATION */
 

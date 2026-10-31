@@ -419,6 +419,22 @@ typedef struct ROSE_Button {
 	ROSE_Text _text;
 } ROSE_Button;
 
+typedef struct ROSE_Slider {
+    uint32_t    scale;
+    int32_t     xpos;
+    int32_t     ypos;
+    uint32_t    width;
+    float*      subject;
+    float       min;
+    float       max;
+    uint32_t    _width;
+    bool        _curr_aquired;
+    bool        _prev_aquired;
+    ROSE_Sprite _sprite_handle_normal;
+    ROSE_Sprite _sprite_handle_pressed;
+    ROSE_Sprite _sprite_bar;
+} ROSE_Slider;
+
 typedef enum ROSE_SHAPE {
 	ROSE_TRIANGLES,
 	ROSE_LINES,
@@ -462,7 +478,7 @@ typedef struct ROSE_PerlinInfo {
     uint32_t divisions;
     uint32_t layers;
     float attenuation;
-    float division_scale;
+    float division_growth;
 } ROSE_PerlinInfo;
 
 ROSE_Image  ROSE_ImageCreate(uint32_t width, uint32_t height);
@@ -491,6 +507,7 @@ ROSE_Sprite ROSE_SpriteLoadFromFile(const char* path);
 void        ROSE_SpriteDestroy(ROSE_Sprite* sprite);
 void        ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image);
 void        ROSE_SpriteDraw(ROSE_Sprite* sprite);
+ROSE_Sprite ROSE_SpriteCreateGUIBox(uint32_t width, uint32_t height, bool normal);
 
 ROSE_Button ROSE_ButtonCreate(const char* string);
 ROSE_Button ROSE_ButtonCreateEmpty(void);
@@ -501,6 +518,13 @@ bool        ROSE_ButtonPressed(ROSE_Button* button);
 bool        ROSE_ButtonReleased(ROSE_Button* button);
 bool        ROSE_ButtonPressing(ROSE_Button* button);
 void        ROSE__ButtonUpdate(ROSE_Button* button);
+
+ROSE_Slider ROSE_SliderCreate(void);
+void        ROSE_SliderDestroy(ROSE_Slider* slider);
+bool        ROSE_SliderPressed(ROSE_Slider* slider);
+bool        ROSE_SliderReleased(ROSE_Slider* slider);
+bool        ROSE_SliderPressing(ROSE_Slider* slider);
+void        ROSE_SliderDraw(ROSE_Slider* slider);
 
 ROSE_Mesh   ROSE_MeshCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
 ROSE_Mesh   ROSE_MeshCreateEmpty(void);

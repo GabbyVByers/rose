@@ -36,7 +36,7 @@ void ROSE_ButtonDestroy(ROSE_Button* button)
 		ROSE_SpriteDestroy(&button->_sprite_normal);
 		ROSE_SpriteDestroy(&button->_sprite_pressed);
 		ROSE_TextDestroy(&button->_text);
-		*button = (ROSE_Button) { 0 };
+		*button = (ROSE_Button){ 0 };
 	}
 }
 
@@ -55,22 +55,22 @@ void ROSE_ButtonDraw(ROSE_Button* button)
 	const uint32_t width = button->_width;
 	const uint32_t height = (ROSE_ASCII_HEIGHT + 4);
 
-	const bool horizontal = 
+	const bool horizontal =
 		(((float)button->xpos <= rose_mouse.xpos) &&
 		(rose_mouse.xpos < ((float)button->xpos + ((float)width * button->scale))));
-	
+
 	const bool vertical =
 		(((float)button->ypos <= rose_mouse.ypos) &&
 		(rose_mouse.ypos < ((float)button->ypos + ((float)height * button->scale))));
-	
+
 	const bool mouse_over = horizontal && vertical;
-	
+
 	if (ROSE_MousePressed(ROSE_BUTTON_LEFT) && (mouse_over))
 		button->_curr_pressed = true;
-	
+
 	if (ROSE_MouseReleased(ROSE_BUTTON_LEFT) || (!mouse_over))
 		button->_curr_pressed = false;
-	
+
 	if (button->_curr_pressed) {
 		ROSE_SpriteDraw(&button->_sprite_pressed);
 		button->_text.color.a = 0.5f;
@@ -109,41 +109,10 @@ void ROSE__ButtonUpdate(ROSE_Button* button)
 		const uint32_t width = button->_width;
 		const uint32_t height = (ROSE_ASCII_HEIGHT + 4);
 
-		ROSE_Image image_normal  = ROSE_ImageCreate(width, height);
-		ROSE_Image image_pressed = ROSE_ImageCreate(width, height);
-
-		const ROSE_RGBA color_normal =             (ROSE_RGBA) { 100, 100, 100, 255 };
-		const ROSE_RGBA color_pressed =            (ROSE_RGBA) {  80,  80,  80, 255 };
-		const ROSE_RGBA color_dark_edge =          (ROSE_RGBA) {  70,  70,  70, 255 };
-		const ROSE_RGBA color_light_edge_normal =  (ROSE_RGBA) { 135, 135, 135, 255 };
-		const ROSE_RGBA color_light_edge_pressed = (ROSE_RGBA) { 120, 120, 120, 255 };
-
-		for (uint32_t x = 0; x < width; x++) {
-			for (uint32_t y = 0; y < height; y++) {
-				ROSE_ImageSetPixelRGBA(&image_normal, x, y, color_normal);
-				ROSE_ImageSetPixelRGBA(&image_pressed, x, y, color_pressed);
-			}
-		}
-
-		for (uint32_t y = 0; y < height; y++) {
-			ROSE_ImageSetPixelRGBA(&image_normal, (width - 1), y, color_dark_edge);
-			ROSE_ImageSetPixelRGBA(&image_normal, 0, y, color_light_edge_normal);
-			ROSE_ImageSetPixelRGBA(&image_pressed, (width - 1), y, color_light_edge_pressed);
-			ROSE_ImageSetPixelRGBA(&image_pressed, 0, y, color_dark_edge);
-		}
-
-		for (uint32_t x = 0; x < width; x++) {
-			ROSE_ImageSetPixelRGBA(&image_normal, x, (height - 1), color_dark_edge);
-			ROSE_ImageSetPixelRGBA(&image_normal, x, 0, color_light_edge_normal);
-			ROSE_ImageSetPixelRGBA(&image_pressed, x, (height - 1), color_light_edge_pressed);
-			ROSE_ImageSetPixelRGBA(&image_pressed, x, 0, color_dark_edge);
-		}
-
-		ROSE_SpriteUpdateTexture(&button->_sprite_normal, &image_normal);
-		ROSE_SpriteUpdateTexture(&button->_sprite_pressed, &image_pressed);
-
-		ROSE_ImageDestroy(&image_normal);
-		ROSE_ImageDestroy(&image_pressed);
+		ROSE_SpriteDestroy(&button->_sprite_normal);
+		ROSE_SpriteDestroy(&button->_sprite_pressed);
+		button->_sprite_normal = ROSE_SpriteCreateGUIBox(width, height, true);
+		button->_sprite_pressed = ROSE_SpriteCreateGUIBox(width, height, false);
 	}
 
 	button->_sprite_normal.xpos = button->xpos;

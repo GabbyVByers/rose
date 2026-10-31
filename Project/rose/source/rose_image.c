@@ -27,7 +27,7 @@ ROSE_Image ROSE_ImageCreatePerlin(uint32_t width, uint32_t height, ROSE_PerlinIn
 {
 	assert(info->divisions > 0);
 	assert(info->layers > 0);
-	assert(info->division_scale > 0.0f);
+	assert(info->division_growth > 0.0f);
 	srand(info->seed);
 	ROSE_Image image = ROSE_ImageCreate(width, height);
 
@@ -40,7 +40,9 @@ ROSE_Image ROSE_ImageCreatePerlin(uint32_t width, uint32_t height, ROSE_PerlinIn
 	for (uint32_t layer = 0; layer < info->layers; layer++) {
 		ROSE__PerlinNoiseLayer(intensities, width, height, layer_divisions, amplitude);
 		amplitude *= info->attenuation;
-		layer_divisions *= info->division_scale;
+		layer_divisions *= info->division_growth;
+		if ((layer_divisions >= width) || (layer_divisions >= height)) break;
+		if (amplitude < 0.001f) break;
 	}
 
 	float min = FLT_MAX;
