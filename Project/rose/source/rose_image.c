@@ -193,46 +193,66 @@ void ROSE__ImagePerlinLayer(float* intensities, uint32_t width, uint32_t height,
 		float dx, dy;
 	} Arrow;
 
+	const float tau = 6.2831855f;
+	const uint32_t NUM_PRECOMPUTED_DIRECTIONS = 32;
+	static Arrow* precomputed_directions = NULL;
+	if (!precomputed_directions) {
+		precomputed_directions = calloc(NUM_PRECOMPUTED_DIRECTIONS, sizeof(Arrow));
+		for (uint32_t i = 0; i < NUM_PRECOMPUTED_DIRECTIONS; i++) {
+			float angle = ((float)i / (float)NUM_PRECOMPUTED_DIRECTIONS) * tau;
+			precomputed_directions[i] = (Arrow){ cos(angle), sin(angle) };
+		}
+	}
+
 	float cell_size = (float)width / divisions;
 	size_t arrow_columns = (size_t)SDL_ceilf(divisions) + 1;
 	size_t arrow_rows = (size_t)SDL_ceilf((float)height / cell_size) + 1;
 	Arrow* arrows = malloc(arrow_columns * arrow_rows * sizeof(Arrow));
 
 	for (size_t i = 0; i < arrow_columns * arrow_rows; i++) {
-		static const float tau = 6.28318535f;
-		float angle = ((float)rand() / (float)RAND_MAX) * tau;
-		arrows[i] = (Arrow) { cos(angle), sin(angle) };
+		arrows[i] = precomputed_directions[rand() % NUM_PRECOMPUTED_DIRECTIONS];
 	}
 
+	const float inv_cell = 1.0f / cell_size;
+
 	for (uint32_t y = 0; y < height; y++) {
-		for (uint32_t x = 0; x < width; x++) {
-			float gx = ((float)x + 0.5f) / cell_size;
-			float gy = ((float)y + 0.5f) / cell_size;
-			size_t i = (size_t)gx;
-			size_t j = (size_t)gy;
-			if (i > arrow_columns - 2) i = arrow_columns - 2;
-			if (j > arrow_rows - 2) j = arrow_rows - 2;
+		float gy = ((float)y + 0.5f) * inv_cell;
+		size_t j = (size_t)gy;
+		if (j > arrow_rows - 2) j = arrow_rows - 2;
+		float py = gy - (float)j;
+		float sy = (3.0f * py * py) - (2.0f * py * py * py);
 
-			Arrow* tl = &arrows[((j + 0) * arrow_columns) + (i + 0)];
-			Arrow* tr = &arrows[((j + 0) * arrow_columns) + (i + 1)];
-			Arrow* bl = &arrows[((j + 1) * arrow_columns) + (i + 0)];
-			Arrow* br = &arrows[((j + 1) * arrow_columns) + (i + 1)];
-			float px = gx - (float)i;
-			float py = gy - (float)j;
-			float dot_a = ((px - 0.0f) * tl->dx) + ((py - 0.0f) * tl->dy);
-			float dot_b = ((px - 1.0f) * tr->dx) + ((py - 0.0f) * tr->dy);
-			float dot_c = ((px - 0.0f) * bl->dx) + ((py - 1.0f) * bl->dy);
-			float dot_d = ((px - 1.0f) * br->dx) + ((py - 1.0f) * br->dy);
+		const Arrow* top = &arrows[j * arrow_columns];
+		const Arrow* bot = top + arrow_columns;
+		float* row = &intensities[(size_t)y * width];
 
-			//float smooth_px = (3.0f * px * px) - (2.0f * px * px * px);
-			//float smooth_py = (3.0f * py * py) - (2.0f * py * py * py);
-			float smooth_px = px;
-			float smooth_py = py;
-			
-			float lerp_ab = (dot_a * (1.0f - smooth_px)) + (dot_b * smooth_px);
-			float lerp_cd = (dot_c * (1.0f - smooth_px)) + (dot_d * smooth_px);
-			float lerp_abcd = (lerp_ab * (1.0f - smooth_py)) + (lerp_cd * smooth_py);
-			intensities[((size_t)y * width) + x] += amplitude * lerp_abcd;
+		uint32_t x = 0;
+		for (size_t i = 0; (i < arrow_columns - 1) && (x < width); i++) {
+			uint32_t x_end = width;
+			if (i < arrow_columns - 2) {
+				x_end = (uint32_t)SDL_ceilf(((float)(i + 1) * cell_size) - 0.5f);
+				if (x_end > width) x_end = width;
+			}
+
+			Arrow tl = top[i], tr = top[i + 1], bl = bot[i], br = bot[i + 1];
+			float a1 = tl.dx, a0 = py * tl.dy;
+			float b1 = tr.dx, b0 = (py * tr.dy) - tr.dx;
+			float c1 = bl.dx, c0 = (py - 1.0f) * bl.dy;
+			float d1 = br.dx, d0 = ((py - 1.0f) * br.dy) - br.dx;
+
+			float l1 = amplitude * (a1 + ((c1 - a1) * sy));
+			float l0 = amplitude * (a0 + ((c0 - a0) * sy));
+			float r1 = amplitude * (b1 + ((d1 - b1) * sy));
+			float r0 = amplitude * (b0 + ((d0 - b0) * sy));
+
+			float origin = (float)i;
+			for (; x < x_end; x++) {
+				float px = (((float)x + 0.5f) * inv_cell) - origin;
+				float sx = (3.0f * px * px) - (2.0f * px * px * px);
+				float l = (l1 * px) + l0;
+				float r = (r1 * px) + r0;
+				row[x] += l + (sx * (r - l));
+			}
 		}
 	}
 
