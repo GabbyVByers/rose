@@ -38,7 +38,7 @@ ROSE_Image ROSE_ImageCreatePerlin(uint32_t width, uint32_t height, ROSE_PerlinIn
 	float amplitude = 1.0f;
 	float layer_divisions = (float)info->divisions;
 	for (uint32_t layer = 0; layer < info->layers; layer++) {
-		ROSE__PerlinNoiseLayer(intensities, width, height, layer_divisions, amplitude);
+		ROSE__ImagePerlinLayer(intensities, width, height, layer_divisions, amplitude);
 		amplitude *= info->attenuation;
 		layer_divisions *= info->division_growth;
 		if ((layer_divisions >= width) || (layer_divisions >= height)) break;
@@ -187,7 +187,7 @@ void ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROS
 	image->_pixels[index + 3] = color.a;
 }
 
-void ROSE__PerlinNoiseLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude)
+void ROSE__ImagePerlinLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude)
 {
 	typedef struct {
 		float dx, dy;
@@ -224,9 +224,11 @@ void ROSE__PerlinNoiseLayer(float* intensities, uint32_t width, uint32_t height,
 			float dot_c = ((px - 0.0f) * bl->dx) + ((py - 1.0f) * bl->dy);
 			float dot_d = ((px - 1.0f) * br->dx) + ((py - 1.0f) * br->dy);
 
-			static const float pi = 3.1415927f;
-			float smooth_px = 0.5f + (sin((px * pi) - (pi * 0.5f)) * 0.5f);
-			float smooth_py = 0.5f + (sin((py * pi) - (pi * 0.5f)) * 0.5f);
+			//float smooth_px = (3.0f * px * px) - (2.0f * px * px * px);
+			//float smooth_py = (3.0f * py * py) - (2.0f * py * py * py);
+			float smooth_px = px;
+			float smooth_py = py;
+			
 			float lerp_ab = (dot_a * (1.0f - smooth_px)) + (dot_b * smooth_px);
 			float lerp_cd = (dot_c * (1.0f - smooth_px)) + (dot_d * smooth_px);
 			float lerp_abcd = (lerp_ab * (1.0f - smooth_py)) + (lerp_cd * smooth_py);

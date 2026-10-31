@@ -378,6 +378,14 @@ typedef struct ROSE_Vertex2D {
 	float position[2];
 } ROSE_Vertex2D;
 
+typedef struct ROSE_PerlinInfo {
+    uint32_t seed;
+    uint32_t divisions;
+    uint32_t layers;
+    float attenuation;
+    float division_growth;
+} ROSE_PerlinInfo;
+
 typedef struct ROSE_Image {
 	uint32_t _width;
 	uint32_t _height;
@@ -420,16 +428,16 @@ typedef struct ROSE_Button {
 } ROSE_Button;
 
 typedef struct ROSE_Slider {
-    uint32_t    scale;
-    int32_t     xpos;
-    int32_t     ypos;
-    uint32_t    width;
-    float*      subject;
-    float       min;
-    float       max;
-    uint32_t    _width;
-    bool        _curr_aquired;
-    bool        _prev_aquired;
+    uint32_t scale;
+    int32_t xpos;
+    int32_t ypos;
+    uint32_t width;
+    float* subject;
+    float min;
+    float max;
+    uint32_t _width;
+    bool _curr_aquired;
+    bool _prev_aquired;
     ROSE_Sprite _sprite_handle_normal;
     ROSE_Sprite _sprite_handle_pressed;
     ROSE_Sprite _sprite_bar;
@@ -473,14 +481,6 @@ bool ROSE_KeyboardPressing(ROSE_Scancode scancode);
 bool ROSE_KeyboardPressed(ROSE_Scancode scancode);
 bool ROSE_KeyboardReleased(ROSE_Scancode scancode);
 
-typedef struct ROSE_PerlinInfo {
-    uint32_t seed;
-    uint32_t divisions;
-    uint32_t layers;
-    float attenuation;
-    float division_growth;
-} ROSE_PerlinInfo;
-
 ROSE_Image  ROSE_ImageCreate(uint32_t width, uint32_t height);
 ROSE_Image  ROSE_ImageCreatePerlin(uint32_t width, uint32_t height, ROSE_PerlinInfo* info);
 void        ROSE_ImageDestroy(ROSE_Image* image);
@@ -491,7 +491,7 @@ ROSE_Color  ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t y
 ROSE_RGBA   ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
 void        ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color);
 void        ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color);
-void        ROSE__PerlinNoiseLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude);
+void        ROSE__ImagePerlinLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude);
 
 ROSE_Text   ROSE_TextCreate(const char* format, ...);
 ROSE_Text   ROSE_TextCreateEmpty(void);

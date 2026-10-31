@@ -8,8 +8,8 @@
 
 ROSE_Slider ROSE_SliderCreate(void)
 {
-	uint32_t width = ROSE_ASCII_WIDTH + 2;
-	uint32_t height = ROSE_ASCII_HEIGHT + 2;
+	uint32_t width = (ROSE_ASCII_WIDTH + 2);
+	uint32_t height = (ROSE_ASCII_HEIGHT + 4);
 	ROSE_Sprite sprite_handle_normal = ROSE_SpriteCreateGUIBox(width, height, true);
 	ROSE_Sprite sprite_handle_pressed = ROSE_SpriteCreateGUIBox(width, height, false);
 
@@ -72,7 +72,7 @@ void ROSE_SliderDraw(ROSE_Slider* slider)
 
 	slider->_sprite_bar.scale = slider->scale;
 	slider->_sprite_bar.xpos = slider->xpos;
-	slider->_sprite_bar.ypos = slider->ypos + (4 * slider->scale);
+	slider->_sprite_bar.ypos = slider->ypos + (5 * slider->scale);
 
 	const bool horizontal =
 		(((float)slider->_sprite_handle_normal.xpos <= rose_mouse.xpos) &&

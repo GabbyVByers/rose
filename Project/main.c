@@ -37,8 +37,8 @@ int main(void)
 	map.info = (ROSE_PerlinInfo) {
 		.seed = 0,
 		.divisions = 5,
-		.layers = 1,
-		.attenuation = 0.7f,
+		.layers = 8,
+		.attenuation = 1.0f,
 		.division_growth = 2.0f,
 	};
 
@@ -69,7 +69,7 @@ int main(void)
 	init_divs_inc_button.xpos = BUTTON_XPOS(1);
 	init_divs_inc_button.ypos = BUTTON_YPOS(1);
 
-	ROSE_Text init_divs_text = ROSE_TextCreate("DIVISIONS [%d]", map.info.divisions);
+	ROSE_Text init_divs_text = ROSE_TextCreate("SCALE: %d", map.info.divisions);
 	init_divs_text.scale = BUTTON_SCALE;
 	init_divs_text.xpos = BUTTON_XPOS(2);
 	init_divs_text.ypos = TEXT_YPOS(1);
@@ -88,61 +88,70 @@ int main(void)
 	layers_inc_button.xpos = BUTTON_XPOS(1);
 	layers_inc_button.ypos = BUTTON_YPOS(2);
 
-	ROSE_Text layers_text = ROSE_TextCreate("LAYERS [%d]", map.info.layers);
+	ROSE_Text layers_text = ROSE_TextCreate("LAYERS: %d", map.info.layers);
 	layers_text.scale = BUTTON_SCALE;
 	layers_text.xpos = BUTTON_XPOS(2);
 	layers_text.ypos = TEXT_YPOS(2);
 
-	// --- [SLIDER] ------------------------------------------------------------------------------
-	float subject = 0.5f;
-	ROSE_Slider slider = ROSE_SliderCreate();
-	slider.subject = &subject;
-	slider.scale = 3;
-	slider.xpos = 350;
-	slider.ypos = 400;
-	slider.min = -10.0f;
-	slider.max = 30.0f;
-	slider.width = 190;
+	// --[]------ ATTENUATION
+
+	ROSE_Slider attenuation_slider = ROSE_SliderCreate();
+	attenuation_slider.subject = &map.info.attenuation;
+	attenuation_slider.width = BUTTON_XPOS(1);
+	attenuation_slider.scale = BUTTON_SCALE;
+	attenuation_slider.xpos = BUTTON_XPOS(0);
+	attenuation_slider.ypos = BUTTON_YPOS(3);
+
+	ROSE_Text attenuation_text = ROSE_TextCreate("DETAIL: %.2f", map.info.attenuation);
+	attenuation_text.scale = BUTTON_SCALE;
+	attenuation_text.xpos = BUTTON_XPOS(3);
+	attenuation_text.ypos = TEXT_YPOS(3);
 
 	while (ROSE_WindowPollEvents())
 	{
 		if (ROSE_ButtonPressed(&random_seed_button)) {
 			map.info.seed = rand();
-			MapUpdate(&map);
+			//MapUpdate(&map);
 		}
 
 		if (ROSE_ButtonPressed(&init_divs_inc_button)) {
 			if (map.info.divisions < 20) {
 				map.info.divisions++;
-				ROSE_TextUpdateString(&init_divs_text, "DIVISIONS [%d]", map.info.divisions);
-				MapUpdate(&map);
+				ROSE_TextUpdateString(&init_divs_text, "SCALE: %d", map.info.divisions);
+				//MapUpdate(&map);
 			}
 		}
 
 		if (ROSE_ButtonPressed(&init_divs_dec_button)) {
 			if (map.info.divisions > 1) {
 				map.info.divisions--;
-				ROSE_TextUpdateString(&init_divs_text, "DIVISIONS [%d]", map.info.divisions);
-				MapUpdate(&map);
+				ROSE_TextUpdateString(&init_divs_text, "SCALE: %d", map.info.divisions);
+				//MapUpdate(&map);
 			}
 		}
 
 		if (ROSE_ButtonPressed(&layers_inc_button)) {
 			if (map.info.layers < 8) {
 				map.info.layers++;
-				ROSE_TextUpdateString(&layers_text, "LAYERS [%d]", map.info.layers);
-				MapUpdate(&map);
+				ROSE_TextUpdateString(&layers_text, "LAYERS: %d", map.info.layers);
+				//MapUpdate(&map);
 			}
 		}
 
 		if (ROSE_ButtonPressed(&layers_dec_button)) {
 			if (map.info.layers > 1) {
 				map.info.layers--;
-				ROSE_TextUpdateString(&layers_text, "LAYERS [%d]", map.info.layers);
-				MapUpdate(&map);
+				ROSE_TextUpdateString(&layers_text, "LAYERS: %d", map.info.layers);
+				//MapUpdate(&map);
 			}
 		}
 
+		ROSE_TextUpdateString(&attenuation_text, "DETAIL: %.2f", map.info.attenuation);
+		if (ROSE_SliderReleased(&attenuation_slider)) {
+			//MapUpdate(&map);
+		}
+
+		MapUpdate(&map);
 		ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
 		{
 			const uint32_t MAP_PADDING = 50;
@@ -160,11 +169,8 @@ int main(void)
 			ROSE_ButtonDraw(&layers_inc_button);
 			ROSE_TextDraw(&layers_text);
 
-			// --- [SLIDER] ------------------------------------------------------------------------------
-			ROSE_SliderDraw(&slider);
-			if (ROSE_SliderReleased(&slider)) {
-				fprintf(stdout, "Slider Released!\n");
-			}
+			ROSE_SliderDraw(&attenuation_slider);
+			ROSE_TextDraw(&attenuation_text);
 		}
 		ROSE_WindowEndFrame();
 	}
