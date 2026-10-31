@@ -164,14 +164,12 @@ int main(void)
 	{
 		if (ROSE_ButtonPressed(&random_seed_button)) {
 			map.info.seed = rand();
-			//MapUpdate(&map);
 		}
 
 		if (ROSE_ButtonPressed(&init_divs_inc_button)) {
 			if (map.info.divisions < 20) {
 				map.info.divisions++;
 				ROSE_TextUpdateString(&init_divs_text, "SCALE:  %d", map.info.divisions);
-				//MapUpdate(&map);
 			}
 		}
 
@@ -179,7 +177,6 @@ int main(void)
 			if (map.info.divisions > 1) {
 				map.info.divisions--;
 				ROSE_TextUpdateString(&init_divs_text, "SCALE:  %d", map.info.divisions);
-				//MapUpdate(&map);
 			}
 		}
 
@@ -187,7 +184,6 @@ int main(void)
 			if (map.info.layers < 8) {
 				map.info.layers++;
 				ROSE_TextUpdateString(&layers_text, "LAYERS: %d", map.info.layers);
-				//MapUpdate(&map);
 			}
 		}
 
@@ -195,7 +191,6 @@ int main(void)
 			if (map.info.layers > 1) {
 				map.info.layers--;
 				ROSE_TextUpdateString(&layers_text, "LAYERS: %d", map.info.layers);
-				//MapUpdate(&map);
 			}
 		}
 
