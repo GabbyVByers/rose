@@ -16,6 +16,7 @@ ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 		._height = image->_height,
 		.color = ROSE_COLOR_WHITE,
 		._texture = ROSE__SDLCreateTexture(image),
+		._transfer_buffer = NULL,
 	};
 }
 
@@ -29,6 +30,7 @@ ROSE_Sprite ROSE_SpriteCreateEmpty(uint32_t width, uint32_t height)
 		._height = height,
 		.color = ROSE_COLOR_WHITE,
 		._texture = NULL,
+		._transfer_buffer = NULL,
 	};
 }
 
@@ -44,6 +46,7 @@ void ROSE_SpriteDestroy(ROSE_Sprite* sprite)
 {
 	if (sprite) {
 		if (sprite->_texture) SDL_ReleaseGPUTexture(rose__device, sprite->_texture);
+		if (sprite->_transfer_buffer) SDL_ReleaseGPUTransferBuffer(rose__device, sprite->_transfer_buffer);
 		*sprite = (ROSE_Sprite) { 0 };
 	}
 }
@@ -55,14 +58,17 @@ void ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image)
 		&& (sprite->_height == image->_height);
 	
 	if (reuse_texture) {
-		ROSE__SDLUploadImageToTexture(sprite->_texture, image);
+		ROSE__SDLUploadImageToTexture(sprite->_texture, &sprite->_transfer_buffer, image);
 		return;
 	}
 
 	if (sprite->_texture)
 		SDL_ReleaseGPUTexture(rose__device, sprite->_texture);
-	
+	if (sprite->_transfer_buffer)
+		SDL_ReleaseGPUTransferBuffer(rose__device, sprite->_transfer_buffer);
+
 	sprite->_texture = ROSE__SDLCreateTexture(image);
+	sprite->_transfer_buffer = NULL;
 	sprite->_width = image->_width;
 	sprite->_height = image->_height;
 }
@@ -70,16 +76,7 @@ void ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image)
 void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 {
 	if (rose_screen.minimized) return;
-	if (!rose__render_pass) abort();
-
-	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = rose__sprite_quad_buffer,
-	};
-
-	SDL_GPUTextureSamplerBinding texture_binding = {
-		.texture = (sprite->_texture) ? (sprite->_texture) : (rose__dummy_texture),
-		.sampler = rose__sampler,
-	};
+	if (!rose__render_pass) ROSE_PANIC("ROSE_SpriteDraw() called outside of a frame!");
 
 	float scaled_width = (float)sprite->_width * sprite->scale;
 	float scaled_height = (float)sprite->_height * sprite->scale;
@@ -109,15 +106,18 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 		}
 	};
 
-	SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__sprite_pipeline);
+	ROSE__SDLBindGraphicsPipeline(rose__sprite_pipeline);
 	SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), sizeof(uniform));
-	SDL_BindGPUVertexBuffers(rose__render_pass, 0, &buffer_binding, 1);
-	SDL_BindGPUFragmentSamplers(rose__render_pass, 0, &texture_binding, 1);
+	ROSE__SDLBindVertexBuffer(rose__sprite_quad_buffer);
+	ROSE__SDLBindTexture((sprite->_texture) ? (sprite->_texture) : (rose__dummy_texture));
 	SDL_DrawGPUPrimitives(rose__render_pass, 6, 1, 0, 0);
 }
 
 ROSE_Sprite ROSE_SpriteCreateGUIBox(uint32_t width, uint32_t height, bool normal)
 {
+	if ((width == 0) || (height == 0))
+		return ROSE_SpriteCreateEmpty(width, height);
+
 	ROSE_Image image = ROSE_ImageCreate(width, height);
 
 	const ROSE_RGBA color        = ((ROSE_RGBA) { 100, 100, 100, 255 });

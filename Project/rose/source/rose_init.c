@@ -8,6 +8,8 @@
 
 void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 {
+	if (rose__device) ROSE_PANIC("ROSE_Init() called twice without ROSE_Quit()!");
+
 	#ifdef ROSE_CRTDBG
 	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
 	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
@@ -27,11 +29,23 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 	rose_screen.width = (screen_width < screen_min) ? screen_min : screen_width;
 	rose_screen.height = (screen_height < screen_min) ? screen_min : screen_height;
 
-	SDL_Init(SDL_INIT_VIDEO);
-	rose__window = SDL_CreateWindow(title, (int)rose_screen.width, (int)rose_screen.height, SDL_WINDOW_RESIZABLE);
-	rose__device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, vkdebug, NULL);
+	if (!SDL_Init(SDL_INIT_VIDEO)) {
+		ROSE_PANIC("SDL_Init() failed! %s", SDL_GetError());
+	}
 
-	SDL_ClaimWindowForGPUDevice(rose__device, rose__window);
+	rose__window = SDL_CreateWindow(title, (int)rose_screen.width, (int)rose_screen.height, SDL_WINDOW_RESIZABLE);
+	if (!rose__window) {
+		ROSE_PANIC("SDL_CreateWindow() failed! %s", SDL_GetError());
+	}
+
+	rose__device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, vkdebug, NULL);
+	if (!rose__device) {
+		ROSE_PANIC("SDL_CreateGPUDevice() failed! %s", SDL_GetError());
+	}
+
+	if (!SDL_ClaimWindowForGPUDevice(rose__device, rose__window)) {
+		ROSE_PANIC("SDL_ClaimWindowForGPUDevice() failed! %s", SDL_GetError());
+	}
 	SDL_SetGPUSwapchainParameters(rose__device, rose__window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
 	SDL_SetWindowMinimumSize(rose__window, (int)screen_min, (int)screen_min);
 
@@ -67,6 +81,7 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 void ROSE_Quit(void)
 {
 	if (rose__device) {
+		ROSE__SDLSubmitCopyPass();
 		SDL_WaitForGPUIdle(rose__device);
 		if (rose__sprite_quad_buffer) SDL_ReleaseGPUBuffer(rose__device, rose__sprite_quad_buffer);
 		if (rose__sprite_pipeline)    SDL_ReleaseGPUGraphicsPipeline(rose__device, rose__sprite_pipeline);
@@ -102,6 +117,11 @@ void ROSE_Quit(void)
 	rose__render_pass = NULL;
 	rose__swapchain_texture = NULL;
 	rose__command_buffer = NULL;
+	rose__copy_command_buffer = NULL;
+	rose__copy_pass = NULL;
+	rose__bound_pipeline = NULL;
+	rose__bound_vertex_buffer = NULL;
+	rose__bound_texture = NULL;
 	rose__present_mode = SDL_GPU_PRESENTMODE_VSYNC;
 	rose__present_mode_dirty = false;
 

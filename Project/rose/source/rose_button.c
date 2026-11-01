@@ -42,14 +42,14 @@ void ROSE_ButtonDestroy(ROSE_Button* button)
 
 void ROSE_ButtonUpdateString(ROSE_Button* button, const char* string)
 {
-	ROSE_TextUpdateString(&button->_text, string);
+	ROSE_TextUpdateString(&button->_text, "%s", string);
 }
 
 void ROSE_ButtonDraw(ROSE_Button* button)
 {
 	button->_prev_pressed = button->_curr_pressed;
 	if (rose_screen.minimized) return;
-	if (!rose__render_pass) abort();
+	if (!rose__render_pass) ROSE_PANIC("ROSE_ButtonDraw() called outside of a frame!");
 
 	ROSE__ButtonUpdate(button);
 	const uint32_t width = button->_width;

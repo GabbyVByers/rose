@@ -31,6 +31,10 @@ void ROSE_WindowVSync(bool vsync)
 
 bool ROSE_WindowPollEvents(void)
 {
+	const int32_t minimized_timeout_ms = 100;
+	if (rose_screen.minimized)
+		SDL_WaitEventTimeout(NULL, minimized_timeout_ms);
+
 	rose_mouse.xvel = 0.0f;
 	rose_mouse.yvel = 0.0f;
 	rose_mouse.scroll = 0.0f;
@@ -69,7 +73,7 @@ bool ROSE_WindowPollEvents(void)
 
 void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 {
-	if (rose__render_pass) abort();
+	if (rose__render_pass) ROSE_PANIC("ROSE_WindowBeginFrame() called twice without ROSE_WindowEndFrame()!");
 	if (rose__present_mode_dirty) {
 		SDL_SetGPUSwapchainParameters(
 			rose__device,
@@ -92,7 +96,9 @@ void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 		&width, &height
 	);
 	
-	if (!acquired) abort();
+	if (!acquired) {
+		ROSE_PANIC("SDL_WaitAndAcquireGPUSwapchainTexture() failed! %s", SDL_GetError());
+	}
 	rose_screen.minimized =
 		(rose__swapchain_texture == NULL);
 	if (rose_screen.minimized) {
@@ -116,12 +122,16 @@ void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 	};
 
 	rose__render_pass = SDL_BeginGPURenderPass(rose__command_buffer, &color_target_info, 1, NULL);
+	rose__bound_pipeline = NULL;
+	rose__bound_vertex_buffer = NULL;
+	rose__bound_texture = NULL;
 }
 
 void ROSE_WindowEndFrame(void)
 {
+	ROSE__SDLSubmitCopyPass();
 	if (rose_screen.minimized) return;
-	if (!rose__render_pass) abort();
+	if (!rose__render_pass) ROSE_PANIC("ROSE_WindowEndFrame() called without ROSE_WindowBeginFrame()!");
 	SDL_EndGPURenderPass(rose__render_pass);
 	SDL_SubmitGPUCommandBuffer(rose__command_buffer);
 	rose__render_pass = NULL;

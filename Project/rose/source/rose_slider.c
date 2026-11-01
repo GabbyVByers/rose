@@ -43,22 +43,25 @@ void ROSE_SliderDraw(ROSE_Slider* slider)
 	{
 		float mouse_x = rose_mouse.xpos;
 		float bar_width = (float)slider->_width * (float)slider->scale;
+		float travel_width = (bar_width > hand_width) ? (bar_width - hand_width) : 0.0f;
 		float min = slider->min;
 		float max = slider->max;
 
 		if (slider->_curr_aquired) {
 			float pos = mouse_x - (hand_width / 2.0f);
 			float pos_min = slider->xpos;
-			float pos_max = slider->xpos + (bar_width - hand_width);
+			float pos_max = slider->xpos + travel_width;
 			if (pos < pos_min)
 				pos = pos_min;
 			if (pos > pos_max)
 				pos = pos_max;
 			hand_xpos = pos;
-			*slider->subject = min + ((max - min) * ((pos - slider->xpos) / (bar_width - hand_width)));
+			if (slider->subject && (travel_width > 0.0f))
+				*slider->subject = min + ((max - min) * ((pos - slider->xpos) / travel_width));
 		} else {
-			float travel = (*slider->subject - min) / (max - min);
-			hand_xpos = slider->xpos + ((bar_width - hand_width) * travel);
+			float value = (slider->subject) ? (*slider->subject) : min;
+			float travel = (max != min) ? ((value - min) / (max - min)) : 0.0f;
+			hand_xpos = slider->xpos + (travel_width * travel);
 		}
 	}
 

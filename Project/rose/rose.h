@@ -356,6 +356,11 @@ ROSE_GLOBAL(SDL_GPUGraphicsPipeline*, rose__lines_pipeline)
 ROSE_GLOBAL(SDL_GPURenderPass*, rose__render_pass)
 ROSE_GLOBAL(SDL_GPUTexture*, rose__swapchain_texture)
 ROSE_GLOBAL(SDL_GPUCommandBuffer*, rose__command_buffer)
+ROSE_GLOBAL(SDL_GPUCommandBuffer*, rose__copy_command_buffer)
+ROSE_GLOBAL(SDL_GPUCopyPass*, rose__copy_pass)
+ROSE_GLOBAL(SDL_GPUGraphicsPipeline*, rose__bound_pipeline)
+ROSE_GLOBAL(SDL_GPUBuffer*, rose__bound_vertex_buffer)
+ROSE_GLOBAL(SDL_GPUTexture*, rose__bound_texture)
 ROSE_GLOBAL(SDL_GPUPresentMode, rose__present_mode)
 ROSE_GLOBAL(bool, rose__present_mode_dirty)
 
@@ -420,6 +425,7 @@ typedef struct ROSE_Text {
 	uint32_t _num_characters;
 	uint32_t _num_vertices;
 	uint32_t _character_capacity;
+	char* _string;
 	SDL_GPUBuffer* _vertex_buffer;
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Text;
@@ -432,6 +438,7 @@ typedef struct ROSE_Sprite {
 	uint32_t _height;
 	ROSE_Color color;
 	SDL_GPUTexture* _texture;
+	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Sprite;
 
 typedef struct ROSE_Button {
@@ -557,8 +564,13 @@ void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertic
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
-void                     ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, ROSE_Image* image);
+void                     ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, SDL_GPUTransferBuffer** transfer_buffer, ROSE_Image* image);
 SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size);
+SDL_GPUCopyPass*         ROSE__SDLAcquireCopyPass(void);
+void                     ROSE__SDLSubmitCopyPass(void);
+void                     ROSE__SDLBindGraphicsPipeline(SDL_GPUGraphicsPipeline* pipeline);
+void                     ROSE__SDLBindVertexBuffer(SDL_GPUBuffer* vertex_buffer);
+void                     ROSE__SDLBindTexture(SDL_GPUTexture* texture);
 SDL_GPUShader*           ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uint32_t uniforms, uint32_t samplers);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vert, const char* frag, uint32_t samplers, SDL_GPUVertexInputState input, SDL_GPUPrimitiveType primitive);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void);

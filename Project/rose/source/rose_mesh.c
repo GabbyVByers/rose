@@ -51,11 +51,7 @@ void ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uint32_t 
 		.size = vertex_buffer_size,
 	};
 
-	SDL_GPUCommandBuffer* command_buffer = SDL_AcquireGPUCommandBuffer(rose__device);
-	SDL_GPUCopyPass* copy_pass = SDL_BeginGPUCopyPass(command_buffer);
-	SDL_UploadToGPUBuffer(copy_pass, &source_buffer_location, &destination_buffer_region, true);
-	SDL_EndGPUCopyPass(copy_pass);
-	SDL_SubmitGPUCommandBuffer(command_buffer);
+	SDL_UploadToGPUBuffer(ROSE__SDLAcquireCopyPass(), &source_buffer_location, &destination_buffer_region, true);
 }
 
 void ROSE_MeshDestroy(ROSE_Mesh* mesh)
@@ -70,11 +66,8 @@ void ROSE_MeshDestroy(ROSE_Mesh* mesh)
 void ROSE_MeshDraw(ROSE_Mesh* mesh)
 {
 	if (rose_screen.minimized) return;
-	if (!rose__render_pass) abort();
-
-	SDL_GPUBufferBinding buffer_binding = {
-		.buffer = mesh->_vertex_buffer,
-	};
+	if (!rose__render_pass) ROSE_PANIC("ROSE_MeshDraw() called outside of a frame!");
+	if (mesh->_num_vertices == 0) return;
 
 	float ratio = (float)rose_screen.height / (float)rose_screen.width;
 	float w = mesh->scale * ratio;
@@ -120,24 +113,24 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 
 	switch (mesh->shape) {
 		case (ROSE_TRIANGLES): {
-			SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__triangles_pipeline);
+			ROSE__SDLBindGraphicsPipeline(rose__triangles_pipeline);
 			SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
 		}
 		break;
 		case (ROSE_LINES): {
-			SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__lines_pipeline);
+			ROSE__SDLBindGraphicsPipeline(rose__lines_pipeline);
 			SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
 		}
 		break;
 		case (ROSE_POINTS): {
-			SDL_BindGPUGraphicsPipeline(rose__render_pass, rose__points_pipeline);
+			ROSE__SDLBindGraphicsPipeline(rose__points_pipeline);
 			SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size_points);
 		}
 		break;
-		default: break;
+		default: ROSE_PANIC("ROSE_MeshDraw() invalid shape! [%d]", (int)mesh->shape);
 	}
 
-	SDL_BindGPUVertexBuffers(rose__render_pass, 0, &buffer_binding, 1);
+	ROSE__SDLBindVertexBuffer(mesh->_vertex_buffer);
 	SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
 }
 

@@ -25,9 +25,13 @@ ROSE_Image ROSE_ImageCreate(uint32_t width, uint32_t height)
 
 ROSE_Image ROSE_ImageCreatePerlin(uint32_t width, uint32_t height, ROSE_PerlinInfo* info)
 {
-	assert(info->divisions > 0);
-	assert(info->layers > 0);
-	assert(info->division_growth > 0.0f);
+	bool valid_info = (info->divisions > 0)
+		&& (info->layers > 0)
+		&& (info->division_growth > 0.0f);
+
+	if (!valid_info)
+		ROSE_PANIC("ROSE_ImageCreatePerlin() invalid info! [divisions: %u] [layers: %u] [division_growth: %f]", info->divisions, info->layers, info->division_growth);
+
 	srand(info->seed);
 	ROSE_Image image = ROSE_ImageCreate(width, height);
 
@@ -80,8 +84,7 @@ ROSE_Image ROSE_ImageLoadFromFile(const char* path)
 	stbi_set_flip_vertically_on_load(true);
 	uint8_t* stbi_image = stbi_load(path, &width, &height, &num, 4);
 	if (!stbi_image) {
-		fprintf(stderr, "stbi_load() failed!\n");
-		abort();
+		ROSE_PANIC("stbi_load() failed! [%s] %s", path, stbi_failure_reason());
 	}
 
 	size_t size = (size_t)width * height * 4;
@@ -105,8 +108,7 @@ void ROSE_ImageSavePNG(ROSE_Image* image, const char* path)
 	stbi_flip_vertically_on_write(true);
 	bool success = stbi_write_png(path, width, height, 4, pixels, stride);
 	if (!success) {
-		fprintf(stderr, "stbi_write_png() failed!\n");
-		abort();
+		ROSE_PANIC("stbi_write_png() failed! [%s]", path);
 	}
 }
 
@@ -143,8 +145,10 @@ void ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height)
 
 ROSE_Color ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos)
 {
-	assert(xpos < image->_width);
-	assert(ypos < image->_height);
+	#if defined (ROSE_DEBUG)
+	if ((xpos >= image->_width) || (ypos >= image->_height))
+		ROSE_PANIC("pixel out of bounds! [%u, %u] [%u x %u]", xpos, ypos, image->_width, image->_height);
+	#endif
 	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
 	float r = ((float)(image->_pixels[index + 0]) / 255.0f);
 	float g = ((float)(image->_pixels[index + 1]) / 255.0f);
@@ -155,8 +159,10 @@ ROSE_Color ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t yp
 
 ROSE_RGBA ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos)
 {
-	assert(xpos < image->_width);
-	assert(ypos < image->_height);
+	#if defined (ROSE_DEBUG)
+	if ((xpos >= image->_width) || (ypos >= image->_height))
+		ROSE_PANIC("pixel out of bounds! [%u, %u] [%u x %u]", xpos, ypos, image->_width, image->_height);
+	#endif
 	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
 	uint8_t r = image->_pixels[index + 0];
 	uint8_t g = image->_pixels[index + 1];
@@ -167,8 +173,10 @@ ROSE_RGBA ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos
 
 void ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color)
 {
-	assert(xpos < image->_width);
-	assert(ypos < image->_height);
+	#if defined (ROSE_DEBUG)
+	if ((xpos >= image->_width) || (ypos >= image->_height))
+		ROSE_PANIC("pixel out of bounds! [%u, %u] [%u x %u]", xpos, ypos, image->_width, image->_height);
+	#endif
 	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
 	image->_pixels[index + 0] = (uint8_t)((color.r * 255.0f) + 0.5f);
 	image->_pixels[index + 1] = (uint8_t)((color.g * 255.0f) + 0.5f);
@@ -178,8 +186,10 @@ void ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, RO
 
 void ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color)
 {
-	assert(xpos < image->_width);
-	assert(ypos < image->_height);
+	#if defined (ROSE_DEBUG)
+	if ((xpos >= image->_width) || (ypos >= image->_height))
+		ROSE_PANIC("pixel out of bounds! [%u, %u] [%u x %u]", xpos, ypos, image->_width, image->_height);
+	#endif
 	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
 	image->_pixels[index + 0] = color.r;
 	image->_pixels[index + 1] = color.g;
@@ -194,14 +204,15 @@ void ROSE__ImagePerlinLayer(float* intensities, uint32_t width, uint32_t height,
 	} Arrow;
 
 	const float tau = 6.2831855f;
-	const uint32_t NUM_PRECOMPUTED_DIRECTIONS = 32;
-	static Arrow* precomputed_directions = NULL;
-	if (!precomputed_directions) {
-		precomputed_directions = calloc(NUM_PRECOMPUTED_DIRECTIONS, sizeof(Arrow));
+	static Arrow precomputed_directions[32] = { 0 };
+	static bool precomputed = false;
+	const uint32_t NUM_PRECOMPUTED_DIRECTIONS = sizeof(precomputed_directions) / sizeof(precomputed_directions[0]);
+	if (!precomputed) {
 		for (uint32_t i = 0; i < NUM_PRECOMPUTED_DIRECTIONS; i++) {
 			float angle = ((float)i / (float)NUM_PRECOMPUTED_DIRECTIONS) * tau;
 			precomputed_directions[i] = (Arrow){ cos(angle), sin(angle) };
 		}
+		precomputed = true;
 	}
 
 	float cell_size = (float)width / divisions;
