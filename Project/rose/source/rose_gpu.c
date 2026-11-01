@@ -111,7 +111,6 @@ SDL_GPUBuffer* ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices
 
 SDL_GPUCopyPass* ROSE__SDLAcquireCopyPass(void)
 {
-	// an upload can cycle (or replace) a buffer or texture that is currently bound
 	rose__bound_vertex_buffer = NULL;
 	rose__bound_texture = NULL;
 
