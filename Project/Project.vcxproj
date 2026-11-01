@@ -163,6 +163,7 @@
     <ClCompile Include="main.c" />
     <ClCompile Include="rose\source\rose_button.c" />
     <ClCompile Include="rose\source\rose_gpu.c" />
+    <ClCompile Include="rose\source\rose_perlin.c" />
     <ClCompile Include="rose\source\rose_slider.c" />
     <ClCompile Include="rose\source\rose_image.c" />
     <ClCompile Include="rose\source\rose_init.c" />

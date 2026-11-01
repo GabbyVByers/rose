@@ -23,58 +23,30 @@ ROSE_Image ROSE_ImageCreate(uint32_t width, uint32_t height)
 	};
 }
 
-ROSE_Image ROSE_ImageCreatePerlin(uint32_t width, uint32_t height, ROSE_PerlinInfo* info)
+ROSE_Image ROSE_ImageCreateFromPerlin(ROSE_Perlin* perlin)
 {
-	bool valid_info = (info->divisions > 0)
-		&& (info->layers > 0)
-		&& (info->division_growth > 0.0f);
-
-	if (!valid_info)
-		ROSE_PANIC("ROSE_ImageCreatePerlin() invalid info! [divisions: %u] [layers: %u] [division_growth: %f]", info->divisions, info->layers, info->division_growth);
-
-	srand(info->seed);
+	uint32_t width = perlin->_width;
+	uint32_t height = perlin->_height;
 	ROSE_Image image = ROSE_ImageCreate(width, height);
-
-	size_t num_pixels = (size_t)width * height;
-	if (num_pixels == 0) return image;
-	float* intensities = calloc(num_pixels, sizeof(float));
-
-	float amplitude = 1.0f;
-	float layer_divisions = (float)info->divisions;
-	for (uint32_t layer = 0; layer < info->layers; layer++) {
-		ROSE__ImagePerlinLayer(intensities, width, height, layer_divisions, amplitude);
-		amplitude *= info->attenuation;
-		layer_divisions *= info->division_growth;
-		if ((layer_divisions >= width) || (layer_divisions >= height)) break;
-		if (amplitude < 0.001f) break;
-	}
+	if ((width == 0) || (height == 0))
+		return image;
 
 	float min = FLT_MAX;
 	float max = -FLT_MAX;
+	size_t num_pixels = (size_t)width * height;
 	for (size_t i = 0; i < num_pixels; i++) {
-		if (intensities[i] < min) min = intensities[i];
-		if (intensities[i] > max) max = intensities[i];
+		if (perlin->_noise[i] < min) min = perlin->_noise[i];
+		if (perlin->_noise[i] > max) max = perlin->_noise[i];
 	}
 
 	float difference = max - min;
 	for (uint32_t y = 0; y < height; y++) {
 		for (uint32_t x = 0; x < width; x++) {
-			float intensity = intensities[((size_t)y * width) + x];
+			float intensity = perlin->_noise[((size_t)y * width) + x];
 			float value = (difference > 0.0f) ? ((intensity - min) / difference) : 0.0f;
 			uint8_t c = (uint8_t)((value * 255.0f) + 0.5f);
 			ROSE_ImageSetPixelRGBA(&image, x, y, (ROSE_RGBA) { c, c, c, 255 });
 		}
-	}
-
-	free(intensities);
-	return image;
-}
-
-void ROSE_ImageDestroy(ROSE_Image* image)
-{
-	if (image) {
-		if (image->_pixels) free(image->_pixels);
-		*image = (ROSE_Image) { 0 };
 	}
 }
 
@@ -97,6 +69,14 @@ ROSE_Image ROSE_ImageLoadFromFile(const char* path)
 		._height = height,
 		._pixels = pixels,
 	};
+}
+
+void ROSE_ImageDestroy(ROSE_Image* image)
+{
+	if (image) {
+		if (image->_pixels) free(image->_pixels);
+		*image = (ROSE_Image) { 0 };
+	}
 }
 
 void ROSE_ImageSavePNG(ROSE_Image* image, const char* path)
@@ -141,6 +121,24 @@ void ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height)
 		._height = height,
 		._pixels = pixels,
 	};
+}
+
+void ROSE_ImageFillColor(ROSE_Image* image, ROSE_Color color)
+{
+	for (uint32_t y = 0; y < image->_height; y++) {
+		for (uint32_t x = 0; x < image->_width; x++) {
+			ROSE_ImageSetPixelColor(image, x, y, color);
+		}
+	}
+}
+
+void ROSE_ImageFillRGBA(ROSE_Image* image, ROSE_RGBA color)
+{
+	for (uint32_t y = 0; y < image->_height; y++) {
+		for (uint32_t x = 0; x < image->_width; x++) {
+			ROSE_ImageSetPixelRGBA(image, x, y, color);
+		}
+	}
 }
 
 ROSE_Color ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos)
@@ -195,78 +193,5 @@ void ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROS
 	image->_pixels[index + 1] = color.g;
 	image->_pixels[index + 2] = color.b;
 	image->_pixels[index + 3] = color.a;
-}
-
-void ROSE__ImagePerlinLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude)
-{
-	typedef struct {
-		float dx, dy;
-	} Arrow;
-
-	const float tau = 6.2831855f;
-	static Arrow precomputed_directions[32] = { 0 };
-	static bool precomputed = false;
-	const uint32_t NUM_PRECOMPUTED_DIRECTIONS = sizeof(precomputed_directions) / sizeof(precomputed_directions[0]);
-	if (!precomputed) {
-		for (uint32_t i = 0; i < NUM_PRECOMPUTED_DIRECTIONS; i++) {
-			float angle = ((float)i / (float)NUM_PRECOMPUTED_DIRECTIONS) * tau;
-			precomputed_directions[i] = (Arrow){ cos(angle), sin(angle) };
-		}
-		precomputed = true;
-	}
-
-	float cell_size = (float)width / divisions;
-	size_t arrow_columns = (size_t)SDL_ceilf(divisions) + 1;
-	size_t arrow_rows = (size_t)SDL_ceilf((float)height / cell_size) + 1;
-	Arrow* arrows = malloc(arrow_columns * arrow_rows * sizeof(Arrow));
-
-	for (size_t i = 0; i < arrow_columns * arrow_rows; i++) {
-		arrows[i] = precomputed_directions[rand() % NUM_PRECOMPUTED_DIRECTIONS];
-	}
-
-	const float inv_cell = 1.0f / cell_size;
-
-	for (uint32_t y = 0; y < height; y++) {
-		float gy = ((float)y + 0.5f) * inv_cell;
-		size_t j = (size_t)gy;
-		if (j > arrow_rows - 2) j = arrow_rows - 2;
-		float py = gy - (float)j;
-		float sy = (3.0f * py * py) - (2.0f * py * py * py);
-
-		const Arrow* top = &arrows[j * arrow_columns];
-		const Arrow* bot = top + arrow_columns;
-		float* row = &intensities[(size_t)y * width];
-
-		uint32_t x = 0;
-		for (size_t i = 0; (i < arrow_columns - 1) && (x < width); i++) {
-			uint32_t x_end = width;
-			if (i < arrow_columns - 2) {
-				x_end = (uint32_t)SDL_ceilf(((float)(i + 1) * cell_size) - 0.5f);
-				if (x_end > width) x_end = width;
-			}
-
-			Arrow tl = top[i], tr = top[i + 1], bl = bot[i], br = bot[i + 1];
-			float a1 = tl.dx, a0 = py * tl.dy;
-			float b1 = tr.dx, b0 = (py * tr.dy) - tr.dx;
-			float c1 = bl.dx, c0 = (py - 1.0f) * bl.dy;
-			float d1 = br.dx, d0 = ((py - 1.0f) * br.dy) - br.dx;
-
-			float l1 = amplitude * (a1 + ((c1 - a1) * sy));
-			float l0 = amplitude * (a0 + ((c0 - a0) * sy));
-			float r1 = amplitude * (b1 + ((d1 - b1) * sy));
-			float r0 = amplitude * (b0 + ((d0 - b0) * sy));
-
-			float origin = (float)i;
-			for (; x < x_end; x++) {
-				float px = (((float)x + 0.5f) * inv_cell) - origin;
-				float sx = (3.0f * px * px) - (2.0f * px * px * px);
-				float l = (l1 * px) + l0;
-				float r = (r1 * px) + r0;
-				row[x] += l + (sx * (r - l));
-			}
-		}
-	}
-
-	free(arrows);
 }
 

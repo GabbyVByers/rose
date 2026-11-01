@@ -55,3 +55,18 @@ bool ROSE_KeyboardReleased(ROSE_Scancode scancode)
 		&& (!rose__curr_keyboard_state[scancode]);
 }
 
+ROSE_Scancode ROSE_KeyboardCurrPressing(void)
+{
+	return 0; // stub
+}
+
+ROSE_Scancode ROSE_KeyboardLastPressed(void)
+{
+	return 0; // stub
+}
+
+ROSE_Scancode ROSE_KeyboardLastReleased(void)
+{
+	return 0; // stub
+}
+

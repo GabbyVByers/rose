@@ -403,13 +403,16 @@ typedef struct ROSE_Vertex2D {
 	float position[2];
 } ROSE_Vertex2D;
 
-typedef struct ROSE_PerlinInfo {
+typedef struct ROSE_Perlin {
 	uint32_t seed;
 	uint32_t divisions;
 	uint32_t layers;
 	float attenuation;
 	float division_growth;
-} ROSE_PerlinInfo;
+	uint32_t _width;
+	uint32_t _height;
+	float* _noise;
+} ROSE_Perlin;
 
 typedef struct ROSE_Image {
 	uint32_t _width;
@@ -507,18 +510,29 @@ void ROSE_MouseReveal(void);
 bool ROSE_KeyboardPressing(ROSE_Scancode scancode);
 bool ROSE_KeyboardPressed(ROSE_Scancode scancode);
 bool ROSE_KeyboardReleased(ROSE_Scancode scancode);
+ROSE_Scancode ROSE_KeyboardCurrPressing(void);
+ROSE_Scancode ROSE_KeyboardLastPressed(void);
+ROSE_Scancode ROSE_KeyboardLastReleased(void);
+
+ROSE_Perlin ROSE_PerlinCreate(uint32_t width, uint32_t height);
+void        ROSE_PerlinDestroy(ROSE_Perlin* perlin);
+void        ROSE_PerlinGenerate(ROSE_Perlin* perlin);
+float       ROSE_PerlinGetIntensity(ROSE_Perlin* perlin, uint32_t xpos, uint32_t ypos);
+void        ROSE_PerlinSetIntensity(ROSE_Perlin* perlin, uint32_t xpos, uint32_t ypos, float intensity);
+void        ROSE__PerlinLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude);
 
 ROSE_Image  ROSE_ImageCreate(uint32_t width, uint32_t height);
-ROSE_Image  ROSE_ImageCreatePerlin(uint32_t width, uint32_t height, ROSE_PerlinInfo* info);
-void        ROSE_ImageDestroy(ROSE_Image* image);
+ROSE_Image  ROSE_ImageCreateFromPerlin(ROSE_Perlin* perlin);
 ROSE_Image  ROSE_ImageLoadFromFile(const char* path);
+void        ROSE_ImageDestroy(ROSE_Image* image);
 void        ROSE_ImageSavePNG(ROSE_Image* image, const char* path);
 void        ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height);
+void        ROSE_ImageFillColor(ROSE_Image* image, ROSE_Color color);
+void        ROSE_ImageFillRGBA(ROSE_Image* image, ROSE_RGBA color);
 ROSE_Color  ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
 ROSE_RGBA   ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
 void        ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color);
 void        ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color);
-void        ROSE__ImagePerlinLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude);
 
 ROSE_Text   ROSE_TextCreate(const char* format, ...);
 ROSE_Text   ROSE_TextCreateEmpty(void);
