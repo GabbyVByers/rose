@@ -89,6 +89,7 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 	typedef struct Uniform {
 		float TransformMatrix[16];
 		float TintColor[4];
+		float TexCoordScale[2];
 	} Uniform;
 
 	Uniform uniform = {
@@ -105,6 +106,12 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 			sprite->color.a,
 		}
 	};
+
+	if (sprite->_texture) {
+		ROSE__SDLTexCoordScale(sprite->_width, sprite->_height, uniform.TexCoordScale);
+	} else {
+		ROSE__SDLTexCoordScale(1, 1, uniform.TexCoordScale);
+	}
 
 	ROSE__SDLBindGraphicsPipeline(rose__sprite_pipeline);
 	SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), sizeof(uniform));

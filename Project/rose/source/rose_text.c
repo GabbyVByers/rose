@@ -103,6 +103,7 @@ void ROSE_TextDraw(ROSE_Text* text)
 	typedef struct Uniform {
 		float TransformMatrix[16];
 		float TintColor[4];
+		float TexCoordScale[2];
 	} Uniform;
 
 	Uniform uniform = {
@@ -120,6 +121,12 @@ void ROSE_TextDraw(ROSE_Text* text)
 		}
 	};
 
+	ROSE__SDLTexCoordScale(
+		ROSE_ASCII_GLYPHS * ROSE_ASCII_WIDTH,
+		ROSE_ASCII_HEIGHT,
+		uniform.TexCoordScale
+	);
+
 	ROSE__SDLBindGraphicsPipeline(rose__sprite_pipeline);
 	SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), sizeof(uniform));
 	ROSE__SDLBindVertexBuffer(text->_vertex_buffer);
@@ -129,7 +136,7 @@ void ROSE_TextDraw(ROSE_Text* text)
 
 void ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uint32_t num_characters)
 {
-	const float w = (1.0f / 95.0f);
+	const float w = (1.0f / (float)ROSE_ASCII_GLYPHS);
 	for (uint32_t i = 0; i < num_characters; i++) {
 		uint32_t index = i * 6;
 		unsigned char c = (unsigned char)string[i];

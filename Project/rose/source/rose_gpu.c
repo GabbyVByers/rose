@@ -21,14 +21,44 @@ SDL_GPUSampler* ROSE__SDLCreateSampler(void)
 	return sampler;
 }
 
+/*
+ *   Texture padding (workaround for an SDL3 Vulkan allocator bug)
+ *
+ *   SDL's Vulkan backend sub-allocates buffers and optimal-tiling images from the same
+ *   VkDeviceMemory block without respecting VkPhysicalDeviceLimits::bufferImageGranularity.
+ *   On NVIDIA that granularity is 1 KiB: a buffer placed in the same 1 KiB page as an image
+ *   corrupts it (e.g. text vertex data showing up inside a 48x5 slider bar texture).
+ *
+ *   NVIDIA aligns images to 1 KiB, but a small image can end mid-page (48x5 RGBA8 reports
+ *   1536 bytes), leaving room for a buffer in its last page. Textures whose width and height
+ *   are multiples of ROSE__TEXTURE_PADDING always report a whole number of KiB, so each image
+ *   starts and ends on a page boundary and no buffer can share a page with it.
+ *
+ *   The image is uploaded into the corner of the padded texture. The sprite vertex shader
+ *   scales texcoords by ROSE__SDLTexCoordScale() so only that corner is ever sampled; the
+ *   padding texels are left uninitialized.
+ */
+
+uint32_t ROSE__SDLPadTextureSize(uint32_t size)
+{
+	if (size == 0) return ROSE__TEXTURE_PADDING;
+	return ((size + (ROSE__TEXTURE_PADDING - 1)) / ROSE__TEXTURE_PADDING) * ROSE__TEXTURE_PADDING;
+}
+
+void ROSE__SDLTexCoordScale(uint32_t width, uint32_t height, float scale[2])
+{
+	scale[0] = (float)width / (float)ROSE__SDLPadTextureSize(width);
+	scale[1] = (float)height / (float)ROSE__SDLPadTextureSize(height);
+}
+
 SDL_GPUTexture* ROSE__SDLCreateTexture(ROSE_Image* image)
 {
 	SDL_GPUTextureCreateInfo texture_create_info = {
 		.type = SDL_GPU_TEXTURETYPE_2D,
 		.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
 		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER,
-		.width = image->_width,
-		.height = image->_height,
+		.width = ROSE__SDLPadTextureSize(image->_width),
+		.height = ROSE__SDLPadTextureSize(image->_height),
 		.layer_count_or_depth = 1,
 		.num_levels = 1,
 		.sample_count = SDL_GPU_SAMPLECOUNT_1,

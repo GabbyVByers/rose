@@ -373,6 +373,8 @@ ROSE_GLOBAL(bool, rose__prev_keyboard_state[SDL_SCANCODE_COUNT])
 
 #define ROSE_ASCII_WIDTH 7
 #define ROSE_ASCII_HEIGHT 11
+#define ROSE_ASCII_GLYPHS 95
+#define ROSE__TEXTURE_PADDING 16u
 
 typedef struct { float   r, g, b, a; } ROSE_Color;
 typedef struct { uint8_t r, g, b, a; } ROSE_RGBA;
@@ -577,6 +579,8 @@ void        ROSE_MeshCoordinateTransformScreenToPixels(float xpos, float ypos, i
 void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertices);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
+uint32_t                 ROSE__SDLPadTextureSize(uint32_t size);
+void                     ROSE__SDLTexCoordScale(uint32_t width, uint32_t height, float scale[2]);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
 void                     ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, SDL_GPUTransferBuffer** transfer_buffer, ROSE_Image* image);
 SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size);
