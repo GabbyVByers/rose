@@ -1,6 +1,6 @@
 
 /*
- *   Source File [rose_image.c]
+ *   Source File [rose_perlin.c]
  */
 
 #define ROSE_EXTERN
@@ -41,8 +41,8 @@ void ROSE_PerlinGenerate(ROSE_Perlin* perlin)
 		if (!perlin->_noise)
 			return;
 
-		float divs = perlin->divisions;
-		float layers = perlin->layers;
+		uint32_t divs = perlin->divisions;
+		uint32_t layers = perlin->layers;
 		float growth = perlin->division_growth;
 
 		bool valid_info = (divs > 0)
@@ -50,13 +50,15 @@ void ROSE_PerlinGenerate(ROSE_Perlin* perlin)
 			&& (growth > 0.0f);
 
 		if (!valid_info)
-			ROSE_PANIC("ROSE_ImageCreatePerlin() invalid configuration! [divs: %u] [layers: %u] [growth: %f]", divs, layers, growth);
+			ROSE_PANIC("ROSE_PerlinGenerate() invalid configuration! [divs: %u] [layers: %u] [growth: %f]", divs, layers, growth);
 	}
 
-	srand(perlin->seed);
 	uint32_t width = perlin->_width;
 	uint32_t height = perlin->_height;
+	size_t num_pixels = (size_t)width * height;
+	memset(perlin->_noise, 0, num_pixels * sizeof(float));
 
+	srand(perlin->seed);
 	float amplitude = 1.0f;
 	float layer_divisions = (float)perlin->divisions;
 	for (uint32_t layer = 0; layer < perlin->layers; layer++) {
@@ -65,6 +67,18 @@ void ROSE_PerlinGenerate(ROSE_Perlin* perlin)
 		layer_divisions *= perlin->division_growth;
 		if ((layer_divisions >= width) || (layer_divisions >= height)) break;
 		if (amplitude < 0.001f) break;
+	}
+
+	float min = FLT_MAX;
+	float max = -FLT_MAX;
+	for (size_t i = 0; i < num_pixels; i++) {
+		if (perlin->_noise[i] < min) min = perlin->_noise[i];
+		if (perlin->_noise[i] > max) max = perlin->_noise[i];
+	}
+
+	float difference = max - min;
+	for (size_t i = 0; i < num_pixels; i++) {
+		perlin->_noise[i] = (difference > 0.0f) ? ((perlin->_noise[i] - min) / difference) : 0.0f;
 	}
 }
 
@@ -95,7 +109,7 @@ void ROSE__PerlinLayer(float* intensities, uint32_t width, uint32_t height, floa
 	} Vec2;
 
 	const float tau = 6.2831855f;
-	static Vec2 precomputed_dirs[100] = { 0 };
+	static Vec2 precomputed_dirs[32] = { 0 };
 	static bool precomputed = false;
 	const uint32_t num_precomputed = sizeof(precomputed_dirs) / sizeof(precomputed_dirs[0]);
 	if (!precomputed) {

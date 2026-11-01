@@ -5,32 +5,45 @@
 
 #include "rose.h"
 
-#define BUTTON_SCALE 3
+#define MAP_WIDTH 350
+
+#define WIDGET_SCALE 3
 #define BUTTON_WIDTH (ROSE_ASCII_WIDTH * 3)
-#define BUTTON_HEIGHT ((ROSE_ASCII_HEIGHT + 4) * BUTTON_SCALE)
+#define BUTTON_LARGE_WIDTH (ROSE_ASCII_WIDTH * 5)
+#define BUTTON_HEIGHT ((ROSE_ASCII_HEIGHT + 4) * WIDGET_SCALE)
 
 #define BUTTON_PADDING 20
-#define BUTTON_XPOS(x) (BUTTON_PADDING + (((BUTTON_WIDTH * BUTTON_SCALE) + BUTTON_PADDING) * x))
+#define BUTTON_XPOS(x) (BUTTON_PADDING + (((BUTTON_WIDTH * WIDGET_SCALE) + BUTTON_PADDING) * x))
+#define BUTTON_LARGE_XPOS(x) (BUTTON_PADDING + (((BUTTON_LARGE_WIDTH * WIDGET_SCALE) + BUTTON_PADDING) * x))
 #define BUTTON_YPOS(x) (BUTTON_PADDING + ((BUTTON_HEIGHT + BUTTON_PADDING) * x))
-#define TEXT_YPOS(x) ((BUTTON_PADDING + ((BUTTON_HEIGHT + BUTTON_PADDING) * x)) + (2 * BUTTON_SCALE))
 #define SLIDER_WIDTH 48
 
 typedef struct Map {
 	uint32_t width;
-	ROSE_PerlinInfo info;
-	ROSE_Image image;
-	ROSE_Sprite sprite;
 	float sea_level;
+	ROSE_Image image;
+	ROSE_Perlin perlin;
+	ROSE_Sprite sprite;
+
+	bool show_raw_noise;
+	bool show_clipped_noise;
+
 } Map;
 
 void MapUpdate(Map* map)
 {
 	ROSE_ImageDestroy(&map->image);
-	map->image = ROSE_ImageCreatePerlin(map->width, map->width, &map->info);
-	
-	int32_t radius = map->image._width / 2;
-	int32_t width = map->image._width;
+	ROSE_PerlinGenerate(&map->perlin);
 
+	if (map->show_raw_noise) {
+		map->image = ROSE_ImageCreateFromPerlin(&map->perlin);
+		ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
+		ROSE_ImageDestroy(&map->image);
+		return;
+	}
+
+	int32_t width = map->width;
+	int32_t radius = width / 2;
 	for (int32_t y = 0; y < width; y++) {
 		for (int32_t x = 0; x < width; x++) {
 			int32_t dx = x - radius;
@@ -38,160 +51,198 @@ void MapUpdate(Map* map)
 			int32_t dist2 = (dx * dx) + (dy * dy);
 			int32_t radius2 = radius * radius;
 			if (dist2 > (radius * radius)) {
-				ROSE_ImageSetPixelRGBA(&map->image, x, y, (ROSE_RGBA) { 0, 0, 0, 255 });
+				ROSE_PerlinSetIntensity(&map->perlin, x, y, 0.0f);
 			} else {
-				ROSE_RGBA color = ROSE_ImageGetPixelRGBA(&map->image, x, y);
-				float strength = 1.0f - ((float)dist2 / radius2);
-				color.r *= strength;
-				color.g *= strength;
-				color.b *= strength;
-				ROSE_ImageSetPixelRGBA(&map->image, x, y, color);
+				float intensity = ROSE_PerlinGetIntensity(&map->perlin, x, y);
+				float s = 1.0f - ((float)dist2 / radius2);
+				float smooth_strength = (((3.0f * s) + 2.0f - (s * s * s)) / 2.0f) - 1.0f;
+				intensity *= smooth_strength;
+				ROSE_PerlinSetIntensity(&map->perlin, x, y, intensity);
 			}
 		}
+	}
+
+	if (map->show_clipped_noise) {
+		map->image = ROSE_ImageCreateFromPerlin(&map->perlin);
+		ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
+		ROSE_ImageDestroy(&map->image);
+		return;
 	}
 
 	for (int32_t y = 0; y < width; y++) {
 		for (int32_t x = 0; x < width; x++) {
-			ROSE_RGBA color = ROSE_ImageGetPixelRGBA(&map->image, x, y);
-			float intensity = (float)color.r / 255.0f;
+			float intensity = ROSE_PerlinGetIntensity(&map->perlin, x, y);
 			if (intensity < map->sea_level) {
-				ROSE_ImageSetPixelColor(&map->image, x, y, ROSE_COLOR_BLUE);
+				ROSE_PerlinSetIntensity(&map->perlin, x, y, 0.0f);
 			} else {
-				ROSE_ImageSetPixelColor(&map->image, x, y, ROSE_COLOR_GREEN);
+				ROSE_PerlinSetIntensity(&map->perlin, x, y, 1.0f);
 			}
 		}
 	}
 
+	map->image = ROSE_ImageCreateFromPerlin(&map->perlin);
+	for (int32_t y = 0; y < width; y++) {
+		for (int32_t x = 0; x < width; x++) {
+			float intensity = ROSE_PerlinGetIntensity(&map->perlin, x, y);
+			if (intensity >= 0.95f) {
+				ROSE_ImageSetPixelColor(&map->image, x, y, ROSE_COLOR_GREEN);
+			}
+			else {
+				ROSE_ImageSetPixelColor(&map->image, x, y, ROSE_COLOR_BLUE);
+			}
+		}
+	}
+	
 	ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
 }
 
 int main(void)
 {
-	ROSE_Init("Pearl", 1600, 800);
+	ROSE_Init("Pearl", 1600, 900);
 	ROSE_WindowVSync(false);
 
-	Map map = { 0 };
-	map.info = (ROSE_PerlinInfo) {
-		.seed = 0,
-		.divisions = 5,
-		.layers = 8,
-		.attenuation = 1.0f,
-		.division_growth = 2.0f,
+	Map map = (Map) {
+		.width = MAP_WIDTH,
+		.sea_level = 0.5f,
+		.perlin = ROSE_PerlinCreate(MAP_WIDTH, MAP_WIDTH),
+		.sprite = ROSE_SpriteCreateEmpty(MAP_WIDTH, MAP_WIDTH),
 	};
 
-	map.width = 350;
-	map.image = ROSE_ImageCreatePerlin(map.width, map.width, &map.info);
-	map.sprite = ROSE_SpriteCreate(&map.image);
 	map.sprite.scale = 2;
-	map.sprite.xpos = 500;
-	map.sprite.ypos = 100;
-	map.sea_level = 0.5f;
+	map.perlin.divisions = 5;
+	map.perlin.layers = 5;
+	map.perlin.attenuation = 0.7f;
+	MapUpdate(&map);
 
-	// [  RANDOM SEED  ]
+	// [  SAVE MAP  ]
 
-	ROSE_Button random_seed_button = ROSE_ButtonCreate("RANDOM SEED");
-	random_seed_button.scale = BUTTON_SCALE;
-	random_seed_button.xpos = BUTTON_XPOS(0);
-	random_seed_button.ypos = BUTTON_YPOS(0);
+	ROSE_Button button_save_map      = ROSE_ButtonCreate("SAVE MAP");
+	ROSE_Button button_random_seed   = ROSE_ButtonCreate("RANDOM SEED");
 	
-	// [ - ] [ + ] DIVISIONS
+	ROSE_Button button_init_divs_dec = ROSE_ButtonCreate("-");
+	ROSE_Button button_init_divs_inc = ROSE_ButtonCreate("+");
+	ROSE_Text   text_init_divs       = ROSE_TextCreate("SCALE:     %d", map.perlin.divisions);
+	
+	ROSE_Button button_layers_dec    = ROSE_ButtonCreate("-");
+	ROSE_Button button_layers_inc    = ROSE_ButtonCreate("+");
+	ROSE_Text   text_layers          = ROSE_TextCreate("LAYERS:    %d", map.perlin.layers);
+	
+	ROSE_Slider slider_attenuation   = ROSE_SliderCreate();
+	ROSE_Text   text_attenuation     = ROSE_TextCreate("DETAIL:    %.2f", map.perlin.attenuation);
+	
+	ROSE_Slider slider_sea_level     = ROSE_SliderCreate();
+	ROSE_Text   text_sea_level       = ROSE_TextCreate("SEA LEVEL: %.2f", map.sea_level);
+	
+	ROSE_Button button_show_raw      = ROSE_ButtonCreate("RAW");
+	ROSE_Button button_show_clipped  = ROSE_ButtonCreate("CLIP");
+	ROSE_Button button_show_land     = ROSE_ButtonCreate("LAND");
+	
+	slider_attenuation.subject = &map.perlin.attenuation;
+	slider_sea_level.subject   = &map.sea_level;
 
-	ROSE_Button init_divs_dec_button = ROSE_ButtonCreate("-");
-	init_divs_dec_button.scale = BUTTON_SCALE;
-	init_divs_dec_button.width = BUTTON_WIDTH;
-	init_divs_dec_button.xpos = BUTTON_XPOS(0);
-	init_divs_dec_button.ypos = BUTTON_YPOS(1);
+	button_save_map.scale      = WIDGET_SCALE;
+	button_random_seed.scale   = WIDGET_SCALE;
+	button_init_divs_dec.scale = WIDGET_SCALE;
+	button_init_divs_inc.scale = WIDGET_SCALE;
+	text_init_divs.scale       = WIDGET_SCALE;
+	button_layers_dec.scale    = WIDGET_SCALE;
+	button_layers_inc.scale    = WIDGET_SCALE;
+	text_layers.scale          = WIDGET_SCALE;
+	slider_attenuation.scale   = WIDGET_SCALE;
+	text_attenuation.scale     = WIDGET_SCALE;
+	slider_sea_level.scale     = WIDGET_SCALE;
+	text_sea_level.scale       = WIDGET_SCALE;
+	button_show_raw.scale      = WIDGET_SCALE;
+	button_show_clipped.scale  = WIDGET_SCALE;
+	button_show_land.scale     = WIDGET_SCALE;
 
-	ROSE_Button init_divs_inc_button = ROSE_ButtonCreate("+");
-	init_divs_inc_button.scale = BUTTON_SCALE;
-	init_divs_inc_button.width = BUTTON_WIDTH;
-	init_divs_inc_button.xpos = BUTTON_XPOS(1);
-	init_divs_inc_button.ypos = BUTTON_YPOS(1);
+	button_save_map.xpos      = BUTTON_XPOS(0);
+	button_random_seed.xpos   = BUTTON_XPOS(0);
+	button_init_divs_dec.xpos = BUTTON_XPOS(0);
+	button_init_divs_inc.xpos = BUTTON_XPOS(1);
+	text_init_divs.xpos       = BUTTON_XPOS(2);
+	button_layers_dec.xpos    = BUTTON_XPOS(0);
+	button_layers_inc.xpos    = BUTTON_XPOS(1);
+	text_layers.xpos          = BUTTON_XPOS(2);
+	slider_attenuation.xpos   = BUTTON_XPOS(0);
+	text_attenuation.xpos     = BUTTON_XPOS(2);
+	slider_sea_level.xpos     = BUTTON_XPOS(0);
+	text_sea_level.xpos       = BUTTON_XPOS(2);
 
-	ROSE_Text init_divs_text = ROSE_TextCreate("SCALE:  %d", map.info.divisions);
-	init_divs_text.scale = BUTTON_SCALE;
-	init_divs_text.xpos = BUTTON_XPOS(2);
-	init_divs_text.ypos = TEXT_YPOS(1);
-
-	// [ - ] [ + ] LAYERS
-
-	ROSE_Button layers_dec_button = ROSE_ButtonCreate("-");
-	layers_dec_button.scale = BUTTON_SCALE;
-	layers_dec_button.width = BUTTON_WIDTH;
-	layers_dec_button.xpos = BUTTON_XPOS(0);
-	layers_dec_button.ypos = BUTTON_YPOS(2);
-
-	ROSE_Button layers_inc_button = ROSE_ButtonCreate("+");
-	layers_inc_button.scale = BUTTON_SCALE;
-	layers_inc_button.width = BUTTON_WIDTH;
-	layers_inc_button.xpos = BUTTON_XPOS(1);
-	layers_inc_button.ypos = BUTTON_YPOS(2);
-
-	ROSE_Text layers_text = ROSE_TextCreate("LAYERS: %d", map.info.layers);
-	layers_text.scale = BUTTON_SCALE;
-	layers_text.xpos = BUTTON_XPOS(2);
-	layers_text.ypos = TEXT_YPOS(2);
-
-	// --[]------ ATTENUATION
-
-	ROSE_Slider attenuation_slider = ROSE_SliderCreate();
-	attenuation_slider.subject = &map.info.attenuation;
-	attenuation_slider.width = SLIDER_WIDTH;
-	attenuation_slider.scale = BUTTON_SCALE;
-	attenuation_slider.xpos = BUTTON_XPOS(0);
-	attenuation_slider.ypos = BUTTON_YPOS(3);
-
-	ROSE_Text attenuation_text = ROSE_TextCreate("DETAIL: %.2f", map.info.attenuation);
-	attenuation_text.scale = BUTTON_SCALE;
-	attenuation_text.xpos = BUTTON_XPOS(2);
-	attenuation_text.ypos = TEXT_YPOS(3);
-
-	// --[]------ SEA LEVEL
-
-	ROSE_Slider sea_level_slider = ROSE_SliderCreate();
-	sea_level_slider.subject = &map.sea_level;
-	sea_level_slider.width = SLIDER_WIDTH;
-	sea_level_slider.scale = BUTTON_SCALE;
-	sea_level_slider.xpos = BUTTON_XPOS(0);
-	sea_level_slider.ypos = BUTTON_YPOS(4);
-
-	ROSE_Text sea_level_text = ROSE_TextCreate("SEA LEVEL: %.2f", map.sea_level);
-	sea_level_text.scale = BUTTON_SCALE;
-	sea_level_text.xpos = BUTTON_XPOS(2);
-	sea_level_text.ypos = TEXT_YPOS(4);
+	button_save_map.ypos      = BUTTON_YPOS(0);
+	button_random_seed.ypos   = BUTTON_YPOS(1);
+	button_init_divs_dec.ypos = BUTTON_YPOS(2);
+	button_init_divs_inc.ypos = BUTTON_YPOS(2);
+	text_init_divs.ypos       = BUTTON_YPOS(2) + (2 * WIDGET_SCALE);
+	button_layers_dec.ypos    = BUTTON_YPOS(3);
+	button_layers_inc.ypos    = BUTTON_YPOS(3);
+	text_layers.ypos          = BUTTON_YPOS(3) + (2 * WIDGET_SCALE);
+	slider_attenuation.ypos   = BUTTON_YPOS(4);
+	text_attenuation.ypos     = BUTTON_YPOS(4) + (2 * WIDGET_SCALE);
+	slider_sea_level.ypos     = BUTTON_YPOS(5);
+	text_sea_level.ypos       = BUTTON_YPOS(5) + (2 * WIDGET_SCALE);
+	
+	button_init_divs_dec.width = BUTTON_WIDTH;
+	button_init_divs_inc.width = BUTTON_WIDTH;
+	button_layers_dec.width    = BUTTON_WIDTH;
+	button_layers_inc.width    = BUTTON_WIDTH;
+	slider_attenuation.width   = SLIDER_WIDTH;
+	slider_sea_level.width     = SLIDER_WIDTH;
+	button_show_raw.width      = BUTTON_LARGE_WIDTH;
+	button_show_clipped.width  = BUTTON_LARGE_WIDTH;
+	button_show_land.width     = BUTTON_LARGE_WIDTH;
 
 	while (ROSE_WindowPollEvents())
 	{
-		if (ROSE_ButtonPressed(&random_seed_button)) {
-			map.info.seed = rand();
+		if (ROSE_ButtonPressed(&button_random_seed)) {
+			map.perlin.seed = rand();
 		}
 
-		if (ROSE_ButtonPressed(&init_divs_inc_button)) {
-			if (map.info.divisions < 20) {
-				map.info.divisions++;
-				ROSE_TextUpdateString(&init_divs_text, "SCALE:  %d", map.info.divisions);
+		if (ROSE_ButtonPressed(&button_init_divs_inc)) {
+			if (map.perlin.divisions < 20) {
+				map.perlin.divisions++;
+				ROSE_TextUpdateString(&text_init_divs, "SCALE:  %d", map.perlin.divisions);
 			}
 		}
 
-		if (ROSE_ButtonPressed(&init_divs_dec_button)) {
-			if (map.info.divisions > 1) {
-				map.info.divisions--;
-				ROSE_TextUpdateString(&init_divs_text, "SCALE:  %d", map.info.divisions);
+		if (ROSE_ButtonPressed(&button_init_divs_dec)) {
+			if (map.perlin.divisions > 1) {
+				map.perlin.divisions--;
+				ROSE_TextUpdateString(&text_init_divs, "SCALE:  %d", map.perlin.divisions);
 			}
 		}
 
-		if (ROSE_ButtonPressed(&layers_inc_button)) {
-			if (map.info.layers < 8) {
-				map.info.layers++;
-				ROSE_TextUpdateString(&layers_text, "LAYERS: %d", map.info.layers);
+		if (ROSE_ButtonPressed(&button_layers_inc)) {
+			if (map.perlin.layers < 8) {
+				map.perlin.layers++;
+				ROSE_TextUpdateString(&text_layers, "LAYERS: %d", map.perlin.layers);
 			}
 		}
 
-		if (ROSE_ButtonPressed(&layers_dec_button)) {
-			if (map.info.layers > 1) {
-				map.info.layers--;
-				ROSE_TextUpdateString(&layers_text, "LAYERS: %d", map.info.layers);
+		if (ROSE_ButtonPressed(&button_layers_dec)) {
+			if (map.perlin.layers > 1) {
+				map.perlin.layers--;
+				ROSE_TextUpdateString(&text_layers, "LAYERS: %d", map.perlin.layers);
 			}
+		}
+
+		if (ROSE_ButtonPressed(&button_show_raw)) {
+			map.show_raw_noise = true;
+			map.show_clipped_noise = false;
+		}
+
+		if (ROSE_ButtonPressed(&button_show_clipped)) {
+			map.show_raw_noise = false;
+			map.show_clipped_noise = true;
+		}
+
+		if (ROSE_ButtonPressed(&button_show_land)) {
+			map.show_raw_noise = false;
+			map.show_clipped_noise = false;
+		}
+
+		if (ROSE_ButtonPressed(&button_save_map)) {
+			ROSE_ImageSavePNG(&map.image, "map.png");
 		}
 
 		MapUpdate(&map);
@@ -201,24 +252,39 @@ int main(void)
 			map.sprite.xpos = rose_screen.width - (MAP_PADDING + (map.width * map.sprite.scale));
 			map.sprite.ypos = MAP_PADDING;
 
+			button_show_raw.xpos = BUTTON_LARGE_XPOS(0) + map.sprite.xpos;
+			button_show_raw.ypos = BUTTON_YPOS(0) + map.sprite.ypos + (map.width * map.sprite.scale);
+
+			button_show_clipped.xpos = BUTTON_LARGE_XPOS(1) + map.sprite.xpos;
+			button_show_clipped.ypos = BUTTON_YPOS(0) + map.sprite.ypos + (map.width * map.sprite.scale);
+
+			button_show_land.xpos = BUTTON_LARGE_XPOS(2) + map.sprite.xpos;
+			button_show_land.ypos = BUTTON_YPOS(0) + map.sprite.ypos + (map.width * map.sprite.scale);
+
 			ROSE_SpriteDraw(&map.sprite);
-			ROSE_ButtonDraw(&random_seed_button);
 
-			ROSE_ButtonDraw(&init_divs_dec_button);
-			ROSE_ButtonDraw(&init_divs_inc_button);
-			ROSE_TextDraw(&init_divs_text);
+			ROSE_ButtonDraw(&button_save_map);
+			ROSE_ButtonDraw(&button_random_seed);
 
-			ROSE_ButtonDraw(&layers_dec_button);
-			ROSE_ButtonDraw(&layers_inc_button);
-			ROSE_TextDraw(&layers_text);
+			ROSE_ButtonDraw(&button_init_divs_dec);
+			ROSE_ButtonDraw(&button_init_divs_inc);
+			ROSE_TextDraw(&text_init_divs);
 
-			ROSE_SliderDraw(&attenuation_slider);
-			ROSE_TextUpdateString(&attenuation_text, "DETAIL: %.2f", map.info.attenuation);
-			ROSE_TextDraw(&attenuation_text);
+			ROSE_ButtonDraw(&button_layers_dec);
+			ROSE_ButtonDraw(&button_layers_inc);
+			ROSE_TextDraw(&text_layers);
 
-			ROSE_SliderDraw(&sea_level_slider);
-			ROSE_TextUpdateString(&sea_level_text, "SEA LEVEL: %.2f", map.sea_level);
-			ROSE_TextDraw(&sea_level_text);
+			ROSE_SliderDraw(&slider_attenuation);
+			ROSE_TextUpdateString(&text_attenuation, "DETAIL: %.2f", map.perlin.attenuation);
+			ROSE_TextDraw(&text_attenuation);
+
+			ROSE_SliderDraw(&slider_sea_level);
+			ROSE_TextUpdateString(&text_sea_level, "SEA LEVEL: %.2f", map.sea_level);
+			ROSE_TextDraw(&text_sea_level);
+
+			ROSE_ButtonDraw(&button_show_raw);
+			ROSE_ButtonDraw(&button_show_clipped);
+			ROSE_ButtonDraw(&button_show_land);
 		}
 		ROSE_WindowEndFrame();
 	}

@@ -28,26 +28,18 @@ ROSE_Image ROSE_ImageCreateFromPerlin(ROSE_Perlin* perlin)
 	uint32_t width = perlin->_width;
 	uint32_t height = perlin->_height;
 	ROSE_Image image = ROSE_ImageCreate(width, height);
-	if ((width == 0) || (height == 0))
-		return image;
 
-	float min = FLT_MAX;
-	float max = -FLT_MAX;
-	size_t num_pixels = (size_t)width * height;
-	for (size_t i = 0; i < num_pixels; i++) {
-		if (perlin->_noise[i] < min) min = perlin->_noise[i];
-		if (perlin->_noise[i] > max) max = perlin->_noise[i];
-	}
-
-	float difference = max - min;
 	for (uint32_t y = 0; y < height; y++) {
 		for (uint32_t x = 0; x < width; x++) {
 			float intensity = perlin->_noise[((size_t)y * width) + x];
-			float value = (difference > 0.0f) ? ((intensity - min) / difference) : 0.0f;
-			uint8_t c = (uint8_t)((value * 255.0f) + 0.5f);
+			if (intensity < 0.0f) intensity = 0.0f;
+			if (intensity > 1.0f) intensity = 1.0f;
+			uint8_t c = (uint8_t)((intensity * 255.0f) + 0.5f);
 			ROSE_ImageSetPixelRGBA(&image, x, y, (ROSE_RGBA) { c, c, c, 255 });
 		}
 	}
+
+	return image;
 }
 
 ROSE_Image ROSE_ImageLoadFromFile(const char* path)
