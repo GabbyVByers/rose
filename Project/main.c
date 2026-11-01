@@ -29,10 +29,23 @@
 #define STRING_INC  "+"
 #define STRING_DEC  "-"
 
-#define STRING_RAW      "RAW"
-#define STRING_CLIP     "CLIP"
-#define STRING_LAND     "LAND"
-#define STRING_DEBURRED "DEBURR"
+#define STRING_RAW       "RAW"
+#define STRING_CLIP      "CLIP"
+#define STRING_LAND      "LAND"
+#define STRING_DEBURRED  "DEBURR"
+#define STRING_FLOOD     "FLOOD"
+#define STRING_NO_LAKES  "LAKES"
+#define STRING_PROVINCES "PROVS"
+
+typedef enum DisplayStage {
+	RAW_NOISE,
+	CLIPPED,
+	RAW_LAND,
+	DEBURRED,
+	FLOOD_FILL,
+	REMOVE_LAKES,
+	PROVINCES,
+} DisplayStage;
 
 typedef struct Map {
 	uint32_t width;
@@ -40,9 +53,7 @@ typedef struct Map {
 	ROSE_Image image;
 	ROSE_Perlin perlin;
 	ROSE_Sprite sprite;
-	bool show_raw_noise;
-	bool show_clipped_noise;
-	bool show_raw_land;
+	DisplayStage stage;
 } Map;
 
 void MapUpdate(Map* map)
@@ -50,7 +61,7 @@ void MapUpdate(Map* map)
 	ROSE_ImageDestroy(&map->image);
 	ROSE_PerlinGenerate(&map->perlin);
 
-	if (map->show_raw_noise) {
+	if (map->stage == RAW_NOISE) {
 		map->image = ROSE_ImageCreateFromPerlin(&map->perlin);
 		ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
 		ROSE_ImageDestroy(&map->image);
@@ -82,7 +93,7 @@ void MapUpdate(Map* map)
 			}
 		}
 
-		if (map->show_clipped_noise) {
+		if (map->stage == CLIPPED) {
 			map->image = ROSE_ImageCreateFromPerlin(&map->perlin);
 			ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
 			ROSE_ImageDestroy(&map->image);
@@ -114,7 +125,7 @@ void MapUpdate(Map* map)
 			}
 		}
 
-		if (map->show_raw_land) {
+		if (map->stage == RAW_LAND) {
 			ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
 			return;
 		}
@@ -188,6 +199,11 @@ void MapUpdate(Map* map)
 				}
 			}
 		}
+
+		if (map->stage == DEBURRED) {
+			ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
+			return;
+		}
 	}
 
 	{ /* Flood Fill */
@@ -203,9 +219,9 @@ void MapUpdate(Map* map)
 			{  1,  0 }
 		};
 
-		size_t position_queue_head = 0;
-		size_t position_queue_size = 0;
-		size_t position_queue_capacity = 1024;
+		uint32_t position_queue_head = 0;
+		uint32_t position_queue_size = 0;
+		uint32_t position_queue_capacity = 1024;
 		Vec2* position_queue = malloc(position_queue_capacity * sizeof(Vec2));
 
 		Vec2 start = (Vec2) { 0, 0 };
@@ -237,6 +253,182 @@ void MapUpdate(Map* map)
 		}
 
 		free(position_queue);
+		if (map->stage == FLOOD_FILL) {
+			ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
+			return;
+		}
+	}
+
+	{ /* Remove Lakes */
+		for (uint32_t y = 0; y < width; y++) {
+			for (uint32_t x = 0; x < width; x++) {
+				ROSE_RGBA color = ROSE_ImageGetPixelRGBA(&map->image, x, y);
+				bool is_lake = (color.b == 255);
+				if (is_lake) {
+					ROSE_ImageSetPixelRGBA(&map->image, x, y, color_green);
+				}
+			}
+		}
+
+		for (uint32_t y = 0; y < width; y++) {
+			for (uint32_t x = 0; x < width; x++) {
+				ROSE_RGBA color = ROSE_ImageGetPixelRGBA(&map->image, x, y);
+				bool is_blood = (color.r == 255);
+				if (is_blood) {
+					ROSE_ImageSetPixelRGBA(&map->image, x, y, color_blue);
+				}
+			}
+		}
+
+		if (map->stage == REMOVE_LAKES) {
+			ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
+			return;
+		}
+	}
+
+	{ /* Province Flood */
+		typedef struct {
+			uint32_t x;
+			uint32_t y;
+		} Vec2;
+
+		typedef struct {
+			ROSE_RGBA color;
+			Vec2* frontier;
+			uint32_t pixel_count;
+			uint32_t frontier_size;
+			uint32_t frontier_capacity;
+		} PixelProv;
+
+		const uint32_t province_spacing = 8;
+		const uint32_t seeds_per_row = (width + province_spacing - 1) / province_spacing;
+		
+		uint32_t province_count = 0;
+		uint32_t province_capacity = seeds_per_row * seeds_per_row;
+		PixelProv* provinces = malloc(province_capacity * sizeof(PixelProv));
+
+		for (uint32_t y = 0; y < width; y += province_spacing) {
+			for (uint32_t x = 0; x < width; x += province_spacing) {
+				if ((y / province_spacing) % 2 == 0)
+					x += (province_spacing / 2);
+
+				ROSE_RGBA color = ROSE_ImageGetPixelRGBA(&map->image, x, y);
+				bool is_land = (color.g == 255);
+				if (!is_land) continue;
+
+				uint8_t r = (uint8_t)(55 + (rand() % 200));
+				uint8_t g = (uint8_t)(55 + (rand() % 200));
+				uint8_t b = (uint8_t)(55 + (rand() % 200));
+
+				PixelProv province = (PixelProv) {
+					.color = (ROSE_RGBA) { r, g, b, 255 },
+					.pixel_count = 1,
+					.frontier_size = 0,
+					.frontier_capacity = 32,
+				};
+
+				ROSE_ImageSetPixelRGBA(&map->image, x, y, province.color);
+				province.frontier = malloc(province.frontier_capacity * sizeof(Vec2));
+				province.frontier[province.frontier_size++] = (Vec2) { x, y };
+				provinces[province_count++] = province;
+			}
+		}
+
+		const int32_t neighbour_offsets[4][2] = {
+			{  0, -1 },
+			{  0,  1 },
+			{ -1,  0 },
+			{  1,  0 }
+		};
+
+		uint32_t active_count = province_count;
+		while (active_count > 0) {
+			active_count = 0;
+
+			for (uint32_t p = 0; p < province_count; p++) {
+				PixelProv* province = &provinces[p];
+
+				while (province->frontier_size > 0) {
+					uint32_t index = rand() % province->frontier_size;
+					Vec2 position = province->frontier[index];
+
+					uint32_t open_directions[4];
+					uint32_t open_count = 0;
+					for (uint32_t i = 0; i < 4; i++) {
+						uint32_t next_xpos = position.x + (uint32_t)neighbour_offsets[i][0];
+						uint32_t next_ypos = position.y + (uint32_t)neighbour_offsets[i][1];
+						if ((next_xpos >= width) || (next_ypos >= width))
+							continue;
+
+						ROSE_RGBA color = ROSE_ImageGetPixelRGBA(&map->image, next_xpos, next_ypos);
+						bool is_land = (color.g == 255);
+						if (is_land) open_directions[open_count++] = i;
+					}
+
+					if (open_count == 0) {
+						province->frontier[index] = province->frontier[--province->frontier_size];
+						continue;
+					}
+
+					uint32_t direction = open_directions[(uint32_t)rand() % open_count];
+					uint32_t next_xpos = position.x + (uint32_t)neighbour_offsets[direction][0];
+					uint32_t next_ypos = position.y + (uint32_t)neighbour_offsets[direction][1];
+
+					if (province->frontier_size == province->frontier_capacity) {
+						province->frontier_capacity *= 2;
+						Vec2* new_frontier = realloc(province->frontier, province->frontier_capacity * sizeof(Vec2));
+						province->frontier = new_frontier;
+					}
+
+					ROSE_ImageSetPixelRGBA(&map->image, next_xpos, next_ypos, province->color);
+					province->pixel_count++;
+					province->frontier[province->frontier_size++] = (Vec2) { next_xpos, next_ypos };
+					break;
+				}
+
+				if (province->frontier_size > 0)
+					active_count++;
+			}
+		}
+
+		uint32_t pixel_sum = 0;
+		for (uint32_t p = 0; p < province_count; p++) {
+			pixel_sum += provinces[p].pixel_count;
+		}
+
+		uint32_t mean_pixels = pixel_sum / province_count;
+		for (uint32_t p = 0; p < province_count; p++) {
+			PixelProv* province = &provinces[p];
+			if (province->pixel_count < (mean_pixels / 2)) {
+				for (uint32_t y = 0; y < width; y++) {
+					for (uint32_t x = 0; x < width; x++) {
+						ROSE_RGBA color = ROSE_ImageGetPixelRGBA(&map->image, x, y);
+						ROSE_RGBA pcolor = province->color;
+						bool is_province = (color.r == pcolor.r) && (color.g == pcolor.g) && (color.b == pcolor.b);
+						if (!is_province) continue;
+						ROSE_ImageSetPixelRGBA(&map->image, x, y, color_blue);
+					}
+				}
+			}
+		}
+
+		for (uint32_t p = 0; p < province_count; p++) {
+			free(provinces[p].frontier);
+		} free(provinces);
+
+		for (uint32_t y = 0; y < width; y++) {
+			for (uint32_t x = 0; x < width; x++) {
+				ROSE_RGBA color = ROSE_ImageGetPixelRGBA(&map->image, x, y);
+				bool is_land = (color.g == 255);
+				if (!is_land) continue;
+				ROSE_ImageSetPixelRGBA(&map->image, x, y, color_blue);
+			}
+		}
+
+		if (map->stage == PROVINCES) {
+			ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
+			return;
+		}
 	}
 
 	ROSE_SpriteUpdateTexture(&map->sprite, &map->image);
@@ -328,31 +520,43 @@ int main(void)
 	slider_sea_level.width           = SLIDER_WIDTH;
 	
 	// [ RAW ] [ CLIP ] [ LAND ] [ DEBURR ]
-	ROSE_Button button_show_raw      = ROSE_ButtonCreate(STRING_RAW);
-	ROSE_Button button_show_clipped  = ROSE_ButtonCreate(STRING_CLIP);
-	ROSE_Button button_show_land     = ROSE_ButtonCreate(STRING_LAND);
-	ROSE_Button button_show_deburred = ROSE_ButtonCreate(STRING_DEBURRED);
+	ROSE_Button button_show_raw       = ROSE_ButtonCreate(STRING_RAW);
+	ROSE_Button button_show_clipped   = ROSE_ButtonCreate(STRING_CLIP);
+	ROSE_Button button_show_land      = ROSE_ButtonCreate(STRING_LAND);
+	ROSE_Button button_show_deburred  = ROSE_ButtonCreate(STRING_DEBURRED);
+	ROSE_Button button_show_flood     = ROSE_ButtonCreate(STRING_FLOOD);
+	ROSE_Button button_show_no_lakes  = ROSE_ButtonCreate(STRING_NO_LAKES);
+	ROSE_Button button_show_provinces = ROSE_ButtonCreate(STRING_PROVINCES);
 	button_show_raw.scale            = GUI_SCALE;
 	button_show_clipped.scale        = GUI_SCALE;
 	button_show_land.scale           = GUI_SCALE;
 	button_show_deburred.scale       = GUI_SCALE;
+	button_show_flood.scale          = GUI_SCALE;
+	button_show_no_lakes.scale       = GUI_SCALE;
+	button_show_provinces.scale      = GUI_SCALE;
 	button_show_raw.width            = BUTTON_LARGE_WIDTH;
 	button_show_clipped.width        = BUTTON_LARGE_WIDTH;
 	button_show_land.width           = BUTTON_LARGE_WIDTH;
 	button_show_deburred.width       = BUTTON_LARGE_WIDTH;
+	button_show_flood.width          = BUTTON_LARGE_WIDTH;
+	button_show_no_lakes.width       = BUTTON_LARGE_WIDTH;
+	button_show_provinces.width      = BUTTON_LARGE_WIDTH;
 
 	while (ROSE_WindowPollEvents())
 	{
-		const bool pressed_button_save_map      = ROSE_ButtonPressed(&button_save_map);
-		const bool pressed_button_random_seed   = ROSE_ButtonPressed(&button_random_seed);
-		const bool pressed_button_init_divs_dec = ROSE_ButtonPressed(&button_init_divs_dec);
-		const bool pressed_button_init_divs_inc = ROSE_ButtonPressed(&button_init_divs_inc);
-		const bool pressed_button_layers_dec    = ROSE_ButtonPressed(&button_layers_dec);
-		const bool pressed_button_layers_inc    = ROSE_ButtonPressed(&button_layers_inc);
-		const bool pressed_button_show_raw      = ROSE_ButtonPressed(&button_show_raw);
-		const bool pressed_button_show_clipped  = ROSE_ButtonPressed(&button_show_clipped);
-		const bool pressed_button_show_land     = ROSE_ButtonPressed(&button_show_land);
-		const bool pressed_button_show_deburred = ROSE_ButtonPressed(&button_show_deburred);
+		const bool pressed_button_save_map       = ROSE_ButtonPressed(&button_save_map);
+		const bool pressed_button_random_seed    = ROSE_ButtonPressed(&button_random_seed);
+		const bool pressed_button_init_divs_dec  = ROSE_ButtonPressed(&button_init_divs_dec);
+		const bool pressed_button_init_divs_inc  = ROSE_ButtonPressed(&button_init_divs_inc);
+		const bool pressed_button_layers_dec     = ROSE_ButtonPressed(&button_layers_dec);
+		const bool pressed_button_layers_inc     = ROSE_ButtonPressed(&button_layers_inc);
+		const bool pressed_button_show_raw       = ROSE_ButtonPressed(&button_show_raw);
+		const bool pressed_button_show_clipped   = ROSE_ButtonPressed(&button_show_clipped);
+		const bool pressed_button_show_land      = ROSE_ButtonPressed(&button_show_land);
+		const bool pressed_button_show_deburred  = ROSE_ButtonPressed(&button_show_deburred);
+		const bool pressed_button_show_flood     = ROSE_ButtonPressed(&button_show_flood);
+		const bool pressed_button_show_no_lakes  = ROSE_ButtonPressed(&button_show_no_lakes);
+		const bool pressed_button_show_provinces = ROSE_ButtonPressed(&button_show_provinces);
 
 		if (pressed_button_save_map) {
 			if (&map.image._pixels) {
@@ -392,29 +596,13 @@ int main(void)
 			}
 		}
 
-		if (pressed_button_show_raw) {
-			map.show_raw_noise = true;
-			map.show_clipped_noise = false;
-			map.show_raw_land = false;
-		}
-
-		if (pressed_button_show_clipped) {
-			map.show_raw_noise = false;
-			map.show_clipped_noise = true;
-			map.show_raw_land = false;
-		}
-
-		if (pressed_button_show_land) {
-			map.show_raw_noise = false;
-			map.show_clipped_noise = false;
-			map.show_raw_land = true;
-		}
-
-		if (pressed_button_show_deburred) {
-			map.show_raw_noise = false;
-			map.show_clipped_noise = false;
-			map.show_raw_land = false;
-		}
+		if (pressed_button_show_raw)       { map.stage = RAW_NOISE;    }
+		if (pressed_button_show_clipped)   { map.stage = CLIPPED;      }
+		if (pressed_button_show_land)      { map.stage = RAW_LAND;     }
+		if (pressed_button_show_deburred)  { map.stage = DEBURRED;     }
+		if (pressed_button_show_flood)     { map.stage = FLOOD_FILL;   }
+		if (pressed_button_show_no_lakes)  { map.stage = REMOVE_LAKES; }
+		if (pressed_button_show_provinces) { map.stage = PROVINCES;    }
 
 		MapUpdate(&map);
 		ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
@@ -422,15 +610,21 @@ int main(void)
 			map.sprite.xpos = rose_screen.width - (MAP_PADDING + (map.width * map.sprite.scale));
 			map.sprite.ypos = MAP_PADDING;
 
-			button_show_raw.xpos      = GUI_LARGE_HORIZONTAL_POSITION(0) + map.sprite.xpos;
-			button_show_clipped.xpos  = GUI_LARGE_HORIZONTAL_POSITION(1) + map.sprite.xpos;
-			button_show_land.xpos     = GUI_LARGE_HORIZONTAL_POSITION(2) + map.sprite.xpos;
-			button_show_deburred.xpos = GUI_LARGE_HORIZONTAL_POSITION(3) + map.sprite.xpos;
+			button_show_raw.xpos       = GUI_LARGE_HORIZONTAL_POSITION(0) + map.sprite.xpos;
+			button_show_clipped.xpos   = GUI_LARGE_HORIZONTAL_POSITION(1) + map.sprite.xpos;
+			button_show_land.xpos      = GUI_LARGE_HORIZONTAL_POSITION(2) + map.sprite.xpos;
+			button_show_deburred.xpos  = GUI_LARGE_HORIZONTAL_POSITION(3) + map.sprite.xpos;
+			button_show_flood.xpos     = GUI_LARGE_HORIZONTAL_POSITION(0) + map.sprite.xpos;
+			button_show_no_lakes.xpos  = GUI_LARGE_HORIZONTAL_POSITION(1) + map.sprite.xpos;
+			button_show_provinces.xpos = GUI_LARGE_HORIZONTAL_POSITION(2) + map.sprite.xpos;
 
-			button_show_raw.ypos      = GUI_VERTICAL_POSITION(0) + map.sprite.ypos + (map.width * map.sprite.scale);
-			button_show_clipped.ypos  = GUI_VERTICAL_POSITION(0) + map.sprite.ypos + (map.width * map.sprite.scale);
-			button_show_land.ypos     = GUI_VERTICAL_POSITION(0) + map.sprite.ypos + (map.width * map.sprite.scale);
-			button_show_deburred.ypos = GUI_VERTICAL_POSITION(0) + map.sprite.ypos + (map.width * map.sprite.scale);
+			button_show_raw.ypos       = GUI_VERTICAL_POSITION(0) + map.sprite.ypos + (map.width * map.sprite.scale);
+			button_show_clipped.ypos   = GUI_VERTICAL_POSITION(0) + map.sprite.ypos + (map.width * map.sprite.scale);
+			button_show_land.ypos      = GUI_VERTICAL_POSITION(0) + map.sprite.ypos + (map.width * map.sprite.scale);
+			button_show_deburred.ypos  = GUI_VERTICAL_POSITION(0) + map.sprite.ypos + (map.width * map.sprite.scale);
+			button_show_flood.ypos     = GUI_VERTICAL_POSITION(1) + map.sprite.ypos + (map.width * map.sprite.scale);
+			button_show_no_lakes.ypos  = GUI_VERTICAL_POSITION(1) + map.sprite.ypos + (map.width * map.sprite.scale);
+			button_show_provinces.ypos = GUI_VERTICAL_POSITION(1) + map.sprite.ypos + (map.width * map.sprite.scale);
 
 			ROSE_ButtonDraw(&button_save_map);
 			ROSE_ButtonDraw(&button_random_seed);
@@ -456,6 +650,9 @@ int main(void)
 			ROSE_ButtonDraw(&button_show_clipped);
 			ROSE_ButtonDraw(&button_show_land);
 			ROSE_ButtonDraw(&button_show_deburred);
+			ROSE_ButtonDraw(&button_show_flood);
+			ROSE_ButtonDraw(&button_show_no_lakes);
+			ROSE_ButtonDraw(&button_show_provinces);
 		}
 		ROSE_WindowEndFrame();
 	}
