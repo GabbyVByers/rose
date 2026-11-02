@@ -21,24 +21,6 @@ SDL_GPUSampler* ROSE__SDLCreateSampler(void)
 	return sampler;
 }
 
-/*
- *   Texture padding (workaround for an SDL3 Vulkan allocator bug)
- *
- *   SDL's Vulkan backend sub-allocates buffers and optimal-tiling images from the same
- *   VkDeviceMemory block without respecting VkPhysicalDeviceLimits::bufferImageGranularity.
- *   On NVIDIA that granularity is 1 KiB: a buffer placed in the same 1 KiB page as an image
- *   corrupts it (e.g. text vertex data showing up inside a 48x5 slider bar texture).
- *
- *   NVIDIA aligns images to 1 KiB, but a small image can end mid-page (48x5 RGBA8 reports
- *   1536 bytes), leaving room for a buffer in its last page. Textures whose width and height
- *   are multiples of ROSE__TEXTURE_PADDING always report a whole number of KiB, so each image
- *   starts and ends on a page boundary and no buffer can share a page with it.
- *
- *   The image is uploaded into the corner of the padded texture. The sprite vertex shader
- *   scales texcoords by ROSE__SDLTexCoordScale() so only that corner is ever sampled; the
- *   padding texels are left uninitialized.
- */
-
 uint32_t ROSE__SDLPadTextureSize(uint32_t size)
 {
 	if (size == 0) return ROSE__TEXTURE_PADDING;
