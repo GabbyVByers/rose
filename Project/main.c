@@ -5,7 +5,183 @@
 
 #include "rose.h"
 
-#define MAP_GENERATOR_REFACTOR
+#define MAP_GEOMETRY_CONSTRUCTOR
+#if defined(MAP_GEOMETRY_CONSTRUCTOR)
+
+#define INIT_CAPACITY 256
+
+typedef struct Vec2 {
+	int32_t x;
+	int32_t y;
+} Vec2;
+
+typedef struct Province {
+	ROSE_RGBA color;
+	
+	Vec2*          pixels;
+	uint32_t       pixel_count;
+	uint32_t       pixel_capacity;
+
+	ROSE_Vertex2D* vert_triangles;
+	uint32_t       vert_triangle_count;
+	uint32_t       vert_triangle_capacity;
+
+	ROSE_Vertex2D* vert_lines;
+	uint32_t       vert_line_count;
+	uint32_t       vert_line_capacity;
+
+	uint32_t*      neighbours;
+	uint32_t       neighbour_count;
+	uint32_t       neighbour_capacity;
+
+} Province;
+
+int main(void)
+{
+	//ROSE_Init("Van Gogh's Epic Odyssey", 1600, 900);
+	ROSE_Init("Van Gogh's Epic Odyssey", 0, 0);
+	ROSE_WindowVSync(true);
+
+	ROSE_Image image = ROSE_ImageLoadFromFile("map.png");
+	const uint32_t width  = image._width;
+	const uint32_t height = image._height;
+
+	const ROSE_RGBA color_red   = (ROSE_RGBA) { 255, 0, 0, 255 };
+	const ROSE_RGBA color_green = (ROSE_RGBA) { 0, 255, 0, 255 };
+	const ROSE_RGBA color_blue  = (ROSE_RGBA) { 0, 0, 255, 255 };
+
+	uint32_t  province_count = 0;
+	uint32_t  province_capacity = INIT_CAPACITY;
+	Province* provinces = calloc(province_capacity, sizeof(Province));
+
+	for (uint32_t y = 0; y < height; y++) {
+		for (uint32_t x = 0; x < width; x++) {
+			ROSE_RGBA curr_color = ROSE_ImageGetPixelRGBA(&image, x, y);
+			const bool ocean =
+				(curr_color.r == color_blue.r) &&
+				(curr_color.g == color_blue.g) &&
+				(curr_color.b == color_blue.b);
+			if (ocean)
+				continue;
+
+			bool seen_color = false;
+			for (uint32_t i = 0; i < province_count; i++) {
+				Province* other = &provinces[i];
+				ROSE_RGBA other_color = other->color;
+				const bool seen =
+					(curr_color.r == other_color.r) &&
+					(curr_color.g == other_color.g) &&
+					(curr_color.b == other_color.b);
+				if (seen) {
+					seen_color = true;
+					break;
+				}
+			}
+
+			if (seen_color)
+				continue;
+
+			Province province = (Province) {
+				.color                  = curr_color,
+				.pixels                 = NULL,
+				.pixel_count            = 0,
+				.pixel_capacity         = INIT_CAPACITY,
+				.vert_triangles         = NULL,
+				.vert_triangle_count    = 0,
+				.vert_triangle_capacity = INIT_CAPACITY,
+				.vert_lines             = NULL,
+				.vert_line_count        = 0,
+				.vert_line_capacity     = INIT_CAPACITY,
+				.neighbours             = NULL,
+				.neighbour_count        = 0,
+				.neighbour_capacity     = INIT_CAPACITY,
+			};
+
+			province.pixels         = calloc(province.pixel_capacity,         sizeof(Vec2));
+			province.vert_triangles = calloc(province.vert_triangle_capacity, sizeof(ROSE_Vertex2D));
+			province.vert_lines     = calloc(province.vert_line_capacity,     sizeof(ROSE_Vertex2D));
+			province.neighbours     = calloc(province.neighbour_capacity,     sizeof(uint32_t));
+
+			Vec2 pixel = (Vec2) { x, y };
+			province.pixel_count = 1;
+			province.pixels[0] = pixel;
+
+			if (province_count >= province_capacity) {
+				province_capacity *= 2;
+				provinces = realloc(provinces, province_capacity * sizeof(Province));
+			} provinces[province_count++] = province;
+		}
+	}
+
+	for (uint32_t y = 0; y < height; y++) {
+		for (uint32_t x = 0; x < width; x++) {
+			ROSE_RGBA curr_color = ROSE_ImageGetPixelRGBA(&image, x, y);
+			const bool ocean =
+				(curr_color.r == color_blue.r) &&
+				(curr_color.g == color_blue.g) &&
+				(curr_color.b == color_blue.b);
+			if (ocean)
+				continue;
+
+			Province* province = NULL;
+			for (uint32_t i = 0; i < province_count; i++) {
+				Province* other = &provinces[i];
+				const bool color_match =
+					(curr_color.r == other->color.r) &&
+					(curr_color.g == other->color.g) &&
+					(curr_color.b == other->color.b);
+				if (color_match) {
+					province = other;
+					break;
+				}
+			}
+
+			Vec2 pixel = (Vec2){ x, y };
+			if (province->pixel_count >= province->pixel_capacity) {
+				province->pixel_capacity *= 2;
+				province->pixels = realloc(province->pixels, province->pixel_capacity * sizeof(Province));
+			} province->pixels[province->pixel_count++] = pixel;
+		}
+	}
+
+	// --- dump --------------
+
+	fprintf(stdout,
+		"PROVINCE COUNT: %d\n",
+		province_count
+	);
+
+	for (uint32_t i = 0; i < province_count; i++) {
+		Province* province = &provinces[i];
+		fprintf(stdout, "COLOR: %d, %d, %d\t PIXEL COUNT: %d\n",
+			province->color.r,
+			province->color.g,
+			province->color.b,
+			province->pixel_count
+		);
+	}
+
+	while (ROSE_WindowPollEvents())
+	{
+		ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
+		ROSE_WindowEndFrame();
+	}
+
+	for (uint32_t i = 0; i < province_count; i++) {
+		Province* province = &provinces[i];
+		free(province->pixels);
+		free(province->vert_triangles);
+		free(province->vert_lines);
+		free(province->neighbours);
+	} free(provinces);
+
+	ROSE_ImageDestroy(&image);
+	ROSE_Quit();
+}
+
+#endif /* MAP_GEOMETRY_CONSTRUCTOR */
+
+//#define MAP_GENERATOR_REFACTOR
 #if defined(MAP_GENERATOR_REFACTOR)
 
 typedef enum MapStage {
