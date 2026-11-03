@@ -69,11 +69,10 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 	if (!rose__render_pass) ROSE_PANIC("ROSE_MeshDraw() called outside of a frame!");
 	if (mesh->_num_vertices == 0) return;
 
-	float ratio = (float)rose_screen.height / (float)rose_screen.width;
-	float w = mesh->scale * ratio;
-	float h = mesh->scale;
-	float x = mesh->xpos * ratio;
-	float y = mesh->ypos;
+	float w = (mesh->scale / (float)rose_screen.width) * 2.0f;
+	float h = -(mesh->scale / (float)rose_screen.height) * 2.0f;
+	float x = -1.0f + ((mesh->xpos / (float)rose_screen.width) * 2.0f);
+	float y = 1.0f - ((mesh->ypos / (float)rose_screen.height) * 2.0f);
 
 	uint32_t uniform_size =
 	sizeof(struct {
@@ -132,24 +131,6 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 
 	ROSE__SDLBindVertexBuffer(mesh->_vertex_buffer);
 	SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
-}
-
-void ROSE_MeshCoordinateTransformPixelsToScreen(int32_t px, int32_t py, float* xpos, float* ypos)
-{
-	float screen_width = (float)rose_screen.width;
-	float screen_height = (float)rose_screen.height;
-	*xpos = ((2.0f * (float)px) + 1.0f - screen_width) / screen_height;
-	*ypos = (screen_height - (2.0f * (float)py) - 1.0f) / screen_height;
-}
-
-void ROSE_MeshCoordinateTransformScreenToPixels(float xpos, float ypos, int32_t* px, int32_t* py)
-{
-	float screen_width = (float)rose_screen.width;
-	float screen_height = (float)rose_screen.height;
-	float float_px = ((xpos * screen_height) + screen_width) / 2.0f;
-	float float_py = ((1.0f - ypos) * screen_height) / 2.0f;
-	*px = (int32_t)SDL_floorf(float_px);
-	*py = (int32_t)SDL_floorf(float_py);
 }
 
 void ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertices)

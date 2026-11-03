@@ -574,8 +574,6 @@ ROSE_Mesh   ROSE_MeshCreateEmpty(void);
 void        ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uint32_t num_vertices);
 void        ROSE_MeshDestroy(ROSE_Mesh* mesh);
 void        ROSE_MeshDraw(ROSE_Mesh* mesh);
-void        ROSE_MeshCoordinateTransformPixelsToScreen(int32_t px, int32_t py, float* xpos, float* ypos);
-void        ROSE_MeshCoordinateTransformScreenToPixels(float xpos, float ypos, int32_t* px, int32_t* py);
 void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertices);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);

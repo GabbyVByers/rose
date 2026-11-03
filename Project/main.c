@@ -18,41 +18,106 @@ typedef struct Vec2 {
 typedef struct Province {
 	ROSE_RGBA color;
 	
-	Vec2*          pixels;
-	uint32_t       pixel_count;
-	uint32_t       pixel_capacity;
-
-	ROSE_Vertex2D* vert_triangles;
-	uint32_t       vert_triangle_count;
-	uint32_t       vert_triangle_capacity;
-
-	ROSE_Vertex2D* vert_lines;
-	uint32_t       vert_line_count;
-	uint32_t       vert_line_capacity;
-
 	uint32_t*      neighbours;
 	uint32_t       neighbour_count;
 	uint32_t       neighbour_capacity;
 
+	Vec2*          pixels;
+	uint32_t       pixel_count;
+	uint32_t       pixel_capacity;
+
+	ROSE_Vertex2D* vert_points;
+	uint32_t       vert_point_count;
+	uint32_t       vert_point_capacity;
+
+	ROSE_Vertex2D* vert_lines;
+	uint32_t       vert_line_count;
+	uint32_t       vert_line_capacity;
+	
+	ROSE_Vertex2D* vert_triangles;
+	uint32_t       vert_triangle_count;
+	uint32_t       vert_triangle_capacity;
+	
+	ROSE_Mesh      mesh_points;
+	ROSE_Mesh      mesh_lines;
+	ROSE_Mesh      mesh_triangles;
+
 } Province;
+
+typedef struct Provinces {
+	Province* array;
+	uint32_t count;
+	uint32_t capacity;
+} Provinces;
+
+static bool ColorEqual(ROSE_RGBA colorA, ROSE_RGBA colorB)
+{
+	bool same =
+		(colorA.r == colorB.r) &&
+		(colorA.g == colorB.g) &&
+		(colorA.b == colorB.b);
+	return same;
+}
+
+static ROSE_RGBA MapGetPixel(ROSE_Image* image, int32_t x, int32_t y)
+{
+	bool bad_bounds =
+		(x < 0) ||
+		(y < 0) ||
+		((uint32_t)x >= image->_width) ||
+		((uint32_t)y >= image->_height);
+
+	if (bad_bounds)
+		return (ROSE_RGBA) { 0, 0, 255, 255 };
+	
+	return ROSE_ImageGetPixelRGBA(image, (uint32_t)x, (uint32_t)y);
+}
+
+static bool CornerIsChamfered(ROSE_Image* image, int32_t vx, int32_t vy, ROSE_RGBA color)
+{
+	const ROSE_RGBA around[4] = {
+		MapGetPixel(image, vx - 1, vy - 1),
+		MapGetPixel(image, vx,     vy - 1),
+		MapGetPixel(image, vx - 1, vy    ),
+		MapGetPixel(image, vx,     vy    ),
+	};
+
+	uint32_t  same_count = 0;
+	bool      have_other = false;
+	ROSE_RGBA other = { 0 };
+	for (uint32_t k = 0; k < 4; k++) {
+		if (ColorEqual(around[k], color)) {
+			same_count++;
+		} else if (!have_other) {
+			other = around[k];
+			have_other = true;
+		} else if (!ColorEqual(around[k], other)) {
+			return false;
+		}
+	}
+
+	return (same_count == 1) || (same_count == 3);
+}
+
+Provinces GenerateMapGeometry(ROSE_Image* image)
+{
+	// here
+}
 
 int main(void)
 {
-	//ROSE_Init("Van Gogh's Epic Odyssey", 1600, 900);
-	ROSE_Init("Van Gogh's Epic Odyssey", 0, 0);
+	ROSE_Init("Van Gogh's Epic Odyssey", 1200, 700);
 	ROSE_WindowVSync(true);
 
 	ROSE_Image image = ROSE_ImageLoadFromFile("map.png");
 	const uint32_t width  = image._width;
 	const uint32_t height = image._height;
 
-	const ROSE_RGBA color_red   = (ROSE_RGBA) { 255, 0, 0, 255 };
-	const ROSE_RGBA color_green = (ROSE_RGBA) { 0, 255, 0, 255 };
 	const ROSE_RGBA color_blue  = (ROSE_RGBA) { 0, 0, 255, 255 };
 
 	uint32_t  province_count = 0;
 	uint32_t  province_capacity = INIT_CAPACITY;
-	Province* provinces = calloc(province_capacity, sizeof(Province));
+	Province* provinces = calloc(INIT_CAPACITY, sizeof(Province));
 
 	for (uint32_t y = 0; y < height; y++) {
 		for (uint32_t x = 0; x < width; x++) {
@@ -86,25 +151,28 @@ int main(void)
 				.pixels                 = NULL,
 				.pixel_count            = 0,
 				.pixel_capacity         = INIT_CAPACITY,
-				.vert_triangles         = NULL,
+				.neighbours             = NULL,
+				.neighbour_count        = 0,
+				.neighbour_capacity     = INIT_CAPACITY,
+				.vert_points            = NULL,
+				.vert_point_count       = 0,
+				.vert_point_capacity    = INIT_CAPACITY,
+				.vert_triangles        = NULL,
 				.vert_triangle_count    = 0,
 				.vert_triangle_capacity = INIT_CAPACITY,
 				.vert_lines             = NULL,
 				.vert_line_count        = 0,
 				.vert_line_capacity     = INIT_CAPACITY,
-				.neighbours             = NULL,
-				.neighbour_count        = 0,
-				.neighbour_capacity     = INIT_CAPACITY,
+				.mesh_points    = (ROSE_Mesh) { 0 },
+				.mesh_lines     = (ROSE_Mesh) { 0 },
+				.mesh_triangles = (ROSE_Mesh) { 0 },
 			};
 
-			province.pixels         = calloc(province.pixel_capacity,         sizeof(Vec2));
-			province.vert_triangles = calloc(province.vert_triangle_capacity, sizeof(ROSE_Vertex2D));
-			province.vert_lines     = calloc(province.vert_line_capacity,     sizeof(ROSE_Vertex2D));
-			province.neighbours     = calloc(province.neighbour_capacity,     sizeof(uint32_t));
-
-			Vec2 pixel = (Vec2) { x, y };
-			province.pixel_count = 1;
-			province.pixels[0] = pixel;
+			province.pixels         = calloc(INIT_CAPACITY, sizeof(Vec2));
+			province.neighbours     = calloc(INIT_CAPACITY, sizeof(uint32_t));
+			province.vert_points    = calloc(INIT_CAPACITY, sizeof(ROSE_Vertex2D));
+			province.vert_triangles = calloc(INIT_CAPACITY, sizeof(ROSE_Vertex2D));
+			province.vert_lines     = calloc(INIT_CAPACITY, sizeof(ROSE_Vertex2D));
 
 			if (province_count >= province_capacity) {
 				province_capacity *= 2;
@@ -139,43 +207,232 @@ int main(void)
 			Vec2 pixel = (Vec2){ x, y };
 			if (province->pixel_count >= province->pixel_capacity) {
 				province->pixel_capacity *= 2;
-				province->pixels = realloc(province->pixels, province->pixel_capacity * sizeof(Province));
+				province->pixels = realloc(province->pixels, province->pixel_capacity * sizeof(Vec2));
 			} province->pixels[province->pixel_count++] = pixel;
 		}
 	}
 
-	// --- dump --------------
+	{
+		const int32_t direction_steps[4][2] = { { 1,  0 }, { 0, 1 }, { -1,  0 }, {  0, -1 } };
+		const int32_t side_neighbours[4][2] = { { 0, -1 }, { 1, 0 }, {  0,  1 }, { -1,  0 } };
+		const int32_t side_starts[4][2]     = { { 0,  0 }, { 1, 0 }, {  1,  1 }, {  0,  1 } };
 
-	fprintf(stdout,
-		"PROVINCE COUNT: %d\n",
-		province_count
-	);
+		const uint32_t vertex_columns = width + 1;
+		const uint32_t vertex_rows    = height + 1;
+		uint8_t* edge_masks = calloc((size_t)vertex_columns * vertex_rows, sizeof(uint8_t));
+
+		for (uint32_t i = 0; i < province_count; i++) {
+			Province* province = &provinces[i];
+
+			for (uint32_t j = 0; j < province->pixel_count; j++) {
+				const Vec2 pixel = province->pixels[j];
+				for (uint32_t s = 0; s < 4; s++) {
+					const ROSE_RGBA neighbour = MapGetPixel(&image, pixel.x + side_neighbours[s][0], pixel.y + side_neighbours[s][1]);
+					if (ColorEqual(neighbour, province->color))
+						continue;
+					const uint32_t v = ((uint32_t)(pixel.y + side_starts[s][1]) * vertex_columns) + (uint32_t)(pixel.x + side_starts[s][0]);
+					edge_masks[v] |= (uint8_t)(1u << s);
+				}
+			}
+
+			const int32_t start_x = province->pixels[0].x;
+			const int32_t start_y = province->pixels[0].y;
+			int32_t  vx  = start_x;
+			int32_t  vy  = start_y;
+			uint32_t dir = 0;
+
+			for (;;) {
+				edge_masks[((uint32_t)vy * vertex_columns) + (uint32_t)vx] &= (uint8_t)~(1u << dir);
+
+				if ((province->vert_point_count + 2) > province->vert_point_capacity) {
+					province->vert_point_capacity *= 2;
+					province->vert_points = realloc(province->vert_points, province->vert_point_capacity * sizeof(ROSE_Vertex2D));
+				}
+
+				const ROSE_Vertex2D midpoint = { {
+					(float)vx + (0.5f * (float)direction_steps[dir][0]),
+					(float)vy + (0.5f * (float)direction_steps[dir][1]),
+				} };
+				province->vert_points[province->vert_point_count++] = midpoint;
+
+				vx += direction_steps[dir][0];
+				vy += direction_steps[dir][1];
+
+				const bool closed = (vx == start_x) && (vy == start_y);
+				uint32_t next = 0;
+				if (!closed) {
+					const uint8_t mask = edge_masks[((uint32_t)vy * vertex_columns) + (uint32_t)vx];
+					while (!(mask & (1u << next))) next++;
+				}
+
+				if ((next != dir) && !CornerIsChamfered(&image, vx, vy, province->color)) {
+					const ROSE_Vertex2D corner = { { (float)vx, (float)vy } };
+					province->vert_points[province->vert_point_count++] = corner;
+				}
+
+				dir = next;
+				if (closed)
+					break;
+			}
+		}
+
+		free(edge_masks);
+	}
 
 	for (uint32_t i = 0; i < province_count; i++) {
 		Province* province = &provinces[i];
-		fprintf(stdout, "COLOR: %d, %d, %d\t PIXEL COUNT: %d\n",
-			province->color.r,
-			province->color.g,
-			province->color.b,
-			province->pixel_count
-		);
+		const uint32_t point_count = province->vert_point_count;
+		if (point_count == 0)
+			continue;
+
+		ROSE_Vertex2D* original = malloc(point_count * sizeof(ROSE_Vertex2D));
+		memcpy(original, province->vert_points, point_count * sizeof(ROSE_Vertex2D));
+
+		uint32_t kept_count = 0;
+		for (uint32_t j = 0; j < point_count; j++) {
+			const ROSE_Vertex2D prev = original[(j + point_count - 1) % point_count];
+			const ROSE_Vertex2D curr = original[j];
+			const ROSE_Vertex2D next = original[(j + 1) % point_count];
+
+			const float in_x  = curr.position[0] - prev.position[0];
+			const float in_y  = curr.position[1] - prev.position[1];
+			const float out_x = next.position[0] - curr.position[0];
+			const float out_y = next.position[1] - curr.position[1];
+
+			const float cross = (in_x * out_y) - (in_y * out_x);
+			const float dot   = (in_x * out_x) + (in_y * out_y);
+
+			const bool inline_point = (cross == 0.0f) && (dot > 0.0f);
+			if (!inline_point) {
+				province->vert_points[kept_count++] = curr;
+			}
+		}
+
+		province->vert_point_count = kept_count;
+		free(original);
 	}
+
+	for (uint32_t i = 0; i < province_count; i++) {
+		Province* province = &provinces[i];
+		const uint32_t point_count = province->vert_point_count;
+		for (uint32_t j = 0; j < point_count; j++) {
+			ROSE_Vertex2D pointA = province->vert_points[j];
+			ROSE_Vertex2D pointB = province->vert_points[(j + 1) % point_count];
+
+			if ((province->vert_line_count + 2) > province->vert_line_capacity) {
+				province->vert_line_capacity *= 2;
+				province->vert_lines = realloc(province->vert_lines, province->vert_line_capacity * sizeof(ROSE_Vertex2D));
+			}
+
+			province->vert_lines[province->vert_line_count++] = pointA;
+			province->vert_lines[province->vert_line_count++] = pointB;
+		}
+	}
+
+	//// --- dump --------------
+	//
+	//fprintf(stdout,
+	//	"PROVINCE COUNT: %d\n",
+	//	province_count
+	//);
+	//
+	//for (uint32_t i = 0; i < province_count; i++) {
+	//	Province* province = &provinces[i];
+	//	fprintf(stdout, "COLOR: %d, %d, %d\t PIXEL COUNT: %d\n",
+	//		province->color.r,
+	//		province->color.g,
+	//		province->color.b,
+	//		province->pixel_count
+	//	);
+	//}
+
+	// --- visual ------------
+
+	for (uint32_t i = 0; i < province_count; i++) {
+		Province* province = &provinces[i];
+		
+		if (province->vert_point_count != 0) {
+			province->mesh_points = ROSE_MeshCreate(province->vert_points, province->vert_point_count);
+			province->mesh_points.shape = ROSE_POINTS;
+			province->mesh_points.diameter = 4;
+		}
+		
+		if (province->vert_line_count != 0) {
+			province->mesh_lines = ROSE_MeshCreate(province->vert_lines, province->vert_line_count);
+			province->mesh_lines.shape = ROSE_LINES;
+		}
+		
+		if (province->vert_triangle_count != 0) {
+			province->mesh_triangles = ROSE_MeshCreate(province->vert_triangles, province->vert_triangle_count);
+			province->mesh_triangles.shape = ROSE_TRIANGLES;
+		}
+	}
+
+	uint32_t map_scale = 1;
+	float map_xpos = 0.0f;
+	float map_ypos = 0.0f;
+
+	ROSE_Sprite sprite = ROSE_SpriteCreate(&image);
 
 	while (ROSE_WindowPollEvents())
 	{
-		ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
+		int32_t scroll = 0;
+		if (rose_mouse.scroll > 0.0f) scroll = 1;
+		if (rose_mouse.scroll < 0.0f) scroll = -1;
+
+		if (scroll != 0) {
+			if (!((scroll == -1) && (map_scale <= 1))) {
+				map_xpos = rose_mouse.xpos + (map_xpos - rose_mouse.xpos) * ((float)(map_scale + scroll) / map_scale);
+				map_ypos = rose_mouse.ypos + (map_ypos - rose_mouse.ypos) * ((float)(map_scale + scroll) / map_scale);
+				map_scale += scroll;
+			}
+		}
+
+		if (ROSE_MousePressing(ROSE_BUTTON_MIDDLE)) {
+			map_xpos += rose_mouse.xvel;
+			map_ypos += rose_mouse.yvel;
+		}
+
+		sprite.scale = map_scale;
+		sprite.xpos = (int32_t)map_xpos;
+		sprite.ypos = (int32_t)map_ypos;
+
+		ROSE_WindowBeginFrame(ROSE_COLOR_BLUE);
+		ROSE_SpriteDraw(&sprite);
+
+		for (uint32_t i = 0; i < province_count; i++) {
+			Province* province = &provinces[i];
+			province->mesh_points.scale = (float)map_scale;
+			province->mesh_lines.scale = (float)map_scale;
+			province->mesh_triangles.scale = (float)map_scale;
+			province->mesh_points.xpos = (float)sprite.xpos;
+			province->mesh_points.ypos = (float)sprite.ypos;
+			province->mesh_lines.xpos = (float)sprite.xpos;
+			province->mesh_lines.ypos = (float)sprite.ypos;
+			province->mesh_triangles.xpos = (float)sprite.xpos;
+			province->mesh_triangles.ypos = (float)sprite.ypos;
+			ROSE_MeshDraw(&province->mesh_points);
+			ROSE_MeshDraw(&province->mesh_lines);
+			ROSE_MeshDraw(&province->mesh_triangles);
+		}
+
 		ROSE_WindowEndFrame();
 	}
 
 	for (uint32_t i = 0; i < province_count; i++) {
 		Province* province = &provinces[i];
-		free(province->pixels);
-		free(province->vert_triangles);
-		free(province->vert_lines);
 		free(province->neighbours);
+		free(province->pixels);
+		free(province->vert_points);
+		free(province->vert_lines);
+		free(province->vert_triangles);
+		ROSE_MeshDestroy(&province->mesh_points);
+		ROSE_MeshDestroy(&province->mesh_lines);
+		ROSE_MeshDestroy(&province->mesh_triangles);
 	} free(provinces);
 
 	ROSE_ImageDestroy(&image);
+	ROSE_SpriteDestroy(&sprite);
 	ROSE_Quit();
 }
 
