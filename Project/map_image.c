@@ -11,6 +11,20 @@ typedef struct Vec2u {
 	uint32_t y;
 } Vec2u;
 
+static ROSE_RGBA getpixelsafe(ROSE_Image* image, int32_t x, int32_t y)
+{
+	bool bad_bounds =
+		(x < 0) ||
+		(y < 0) ||
+		((uint32_t)x >= image->_width) ||
+		((uint32_t)y >= image->_height);
+
+	if (bad_bounds)
+		return (ROSE_RGBA) { 0, 0, 255, 255 };
+
+	return ROSE_ImageGetPixelRGBA(image, (uint32_t)x, (uint32_t)y);
+}
+
 ROSE_Image MAP_GenerateImage(MapInfo* map_info)
 {
 	const uint32_t width     = map_info->map_width;
@@ -21,6 +35,7 @@ ROSE_Image MAP_GenerateImage(MapInfo* map_info)
 	const uint32_t layers           = map_info->perlin_layers;
 	const float    attenuation      = map_info->perlin_attenuation;
 	const uint32_t province_spacing = map_info->province_spacing;
+	const uint32_t province_drift   = map_info->province_drift;
 
 	const ROSE_RGBA color_red   = (ROSE_RGBA) { 255, 0, 0, 255 };
 	const ROSE_RGBA color_green = (ROSE_RGBA) { 0, 255, 0, 255 };
@@ -214,13 +229,16 @@ ROSE_Image MAP_GenerateImage(MapInfo* map_info)
 		uint32_t province_capacity = seeds_per_row * seeds_per_row;
 		PixelProv* provinces = malloc(province_capacity * sizeof(PixelProv));
 
-		for (uint32_t y = province_spacing; y < (width - province_spacing); y += province_spacing) {
+		for (int32_t y = 0; y < width; y += province_spacing) {
 			
 			const bool even_row = (((y / province_spacing) % 2) == 0);
-			const uint32_t x_start = province_spacing + (even_row ? (province_spacing / 2) : 0);
+			const int32_t x_start = (even_row) ? (province_spacing / 2) : 0;
 			
-			for (uint32_t x = x_start; x < (width - province_spacing); x += province_spacing) {
-				ROSE_RGBA color = ROSE_ImageGetPixelRGBA(&image, x, y);
+			for (int32_t x = x_start; x < width; x += province_spacing) {
+				float dx = (2.0f * (float)province_spacing * ((float)rand() / (float)RAND_MAX)) - 1.0f;
+				float dy = (2.0f * (float)province_spacing * ((float)rand() / (float)RAND_MAX)) - 1.0f;
+				ROSE_RGBA color = getpixelsafe(&image, (int32_t)(x + dx), (int32_t)(y + dy));
+
 				bool is_land = (color.g == 255);
 				if (!is_land) continue;
 

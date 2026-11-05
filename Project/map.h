@@ -16,6 +16,7 @@ typedef struct MapInfo {
 	uint32_t perlin_layers;
 	float    perlin_attenuation;
 	uint32_t province_spacing;
+	uint32_t province_drift;
 } MapInfo;
 
 typedef struct Province {
