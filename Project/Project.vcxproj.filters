@@ -18,6 +18,12 @@
     <ClCompile Include="main.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="map_image.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="map_provinces.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="rose\source\rose_gpu.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -56,6 +62,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="map.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="rose\rose.h">
       <Filter>Header Files</Filter>
     </ClInclude>
