@@ -3,7 +3,6 @@
  *   Source File [map_geometry.c]
  */
 
-#define ROSE_EXTERN
 #include "map.h"
 
 #define INIT_CAPACITY 256

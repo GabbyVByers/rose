@@ -3,7 +3,6 @@
  *   Source File [rose_sprite.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)

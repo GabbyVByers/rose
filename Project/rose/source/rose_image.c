@@ -3,7 +3,6 @@
  *   Source File [rose_image.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 ROSE_Image ROSE_ImageCreate(uint32_t width, uint32_t height)

@@ -3,7 +3,6 @@
  *   Source File [rose_mesh.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 ROSE_Mesh ROSE_MeshCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices)

@@ -3,7 +3,6 @@
  *   Source File [rose_gpu.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 SDL_GPUSampler* ROSE__SDLCreateSampler(void)

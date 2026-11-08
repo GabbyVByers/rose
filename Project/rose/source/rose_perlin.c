@@ -3,7 +3,6 @@
  *   Source File [rose_perlin.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 ROSE_Perlin ROSE_PerlinCreate(uint32_t width, uint32_t height)

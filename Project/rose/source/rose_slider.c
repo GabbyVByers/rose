@@ -3,7 +3,6 @@
  *   Source File [rose_slider.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 ROSE_Slider ROSE_SliderCreate(void)

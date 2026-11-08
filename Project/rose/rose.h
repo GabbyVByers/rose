@@ -329,13 +329,11 @@ typedef struct ROSE_MouseInfo {
 	float scroll; // read only
 } ROSE_MouseInfo;
 
-#define ROSE_GLOBAL(type, var) \
-type var = { 0 };
-
-#ifdef ROSE_EXTERN
-#undef ROSE_GLOBAL
-#define ROSE_GLOBAL(type, var) \
-extern type var;
+#ifdef __MAIN__
+#define ROSE_GLOBAL(type, var) type var = { 0 };
+#endif
+#ifndef ROSE_GLOBAL
+#define ROSE_GLOBAL(type, var) extern type var;
 #endif
 
 ROSE_GLOBAL(ROSE_ScreenInfo, rose_screen)

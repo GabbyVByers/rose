@@ -3,7 +3,6 @@
  *   Source File [rose_window.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 void ROSE_WindowVSync(bool vsync)

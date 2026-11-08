@@ -3,7 +3,6 @@
  *   Source File [rose_button.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 ROSE_Button ROSE_ButtonCreate(const char* string)

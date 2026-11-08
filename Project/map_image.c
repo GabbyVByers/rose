@@ -3,7 +3,6 @@
  *   Source File [map_generator.c]
  */
 
-#define ROSE_EXTERN
 #include "map.h"
 
 typedef struct Vec2u {

@@ -3,7 +3,6 @@
  *   Source File [rose_peripherals.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 bool ROSE_MousePressing(uint32_t mouse_button)

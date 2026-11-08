@@ -3,7 +3,6 @@
  *   Source File [rose_text.c]
  */
 
-#define ROSE_EXTERN
 #include "rose.h"
 
 #define MAX_STRING_LENGTH 512

@@ -3,6 +3,7 @@
  *   Source File [main.c]
  */
 
+#define __MAIN__
 #include "rose.h"
 #include "map.h"
 
