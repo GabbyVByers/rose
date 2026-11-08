@@ -5,184 +5,144 @@
 
 #include "rose.h"
 
-ROSE_Image ROSE_ImageCreate(uint32_t width, uint32_t height)
+ROSE_Image ROSE_ImageCreate(uInt32 width, uInt32 height)
 {
-	size_t size = (size_t)width * height * 4;
-	uint8_t* pixels = NULL;
+	const bool nonzero =
+		(width != 0) &&
+		(height != 0);
 
-	if (size != 0) {
-		pixels = malloc(size);
-		memset(pixels, 255, size);
+	uInt32* pixels = NULL;
+	if (nonzero) {
+		uInt32 count = width * height;
+		pixels = calloc(count, sizeof(uInt32));
+		memset(pixels, (uInt8)255, count * sizeof(uInt32));
 	}
 
-	return (ROSE_Image) {
-		._width = width,
-		._height = height,
-		._pixels = pixels,
-	};
+	ROSE_Image image = { 0 };
+	image._width = width;
+	image._height = height;
+	image._pixels = pixels;
+	return image;
 }
 
 ROSE_Image ROSE_ImageCreateFromPerlin(ROSE_Perlin* perlin)
 {
-	uint32_t width = perlin->_width;
-	uint32_t height = perlin->_height;
+	uInt32 width = perlin->_width;
+	uInt32 height = perlin->_height;
 	ROSE_Image image = ROSE_ImageCreate(width, height);
 
-	for (uint32_t y = 0; y < height; y++) {
-		for (uint32_t x = 0; x < width; x++) {
-			float intensity = perlin->_noise[((size_t)y * width) + x];
+	for (uInt32 y = 0; y < height; y++) {
+		for (uInt32 x = 0; x < width; x++) {
+			float intensity = perlin->_noise[(y * width) + x];
 			if (intensity < 0.0f) intensity = 0.0f;
 			if (intensity > 1.0f) intensity = 1.0f;
-			uint8_t c = (uint8_t)((intensity * 255.0f) + 0.5f);
-			ROSE_ImageSetPixelRGBA(&image, x, y, (ROSE_RGBA) { c, c, c, 255 });
+			uInt8 c = (uInt8)((intensity * 255.0f) + 0.5f);
+			uInt32 color = ROSE_COLOR(c, c, c, c);
+			ROSE_ImageSetPixel(&image, x, y, color);
 		}
 	}
 
 	return image;
 }
 
-ROSE_Image ROSE_ImageLoadFromFile(const char* path)
-{
-	int width, height, num;
-	stbi_set_flip_vertically_on_load(true);
-	uint8_t* stbi_image = stbi_load(path, &width, &height, &num, 4);
-	if (!stbi_image) {
-		ROSE_PANIC("stbi_load() failed! [%s] %s", path, stbi_failure_reason());
-	}
-
-	size_t size = (size_t)width * height * 4;
-	uint8_t* pixels = malloc(size);
-	memcpy(pixels, stbi_image, size);
-	stbi_image_free(stbi_image);
-
-	return (ROSE_Image) {
-		._width = width,
-		._height = height,
-		._pixels = pixels,
-	};
-}
-
 void ROSE_ImageDestroy(ROSE_Image* image)
 {
-	if (image) {
-		if (image->_pixels) free(image->_pixels);
-		*image = (ROSE_Image) { 0 };
+	if (image->_pixels) {
+		free(image->_pixels);
 	}
-}
-
-void ROSE_ImageSavePNG(ROSE_Image* image, const char* path)
-{
-	int width = (int)image->_width;
-	int height = (int)image->_height;
-	void* pixels = (void*)image->_pixels;
-	int stride = (int)image->_width * 4;
-	stbi_flip_vertically_on_write(true);
-	bool success = stbi_write_png(path, width, height, 4, pixels, stride);
-	if (!success) {
-		ROSE_PANIC("stbi_write_png() failed! [%s]", path);
-	}
-}
-
-void ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height)
-{
-	size_t size = (size_t)width * height * 4;
-	uint8_t* pixels = NULL;
 	
-	if (size != 0) {
-		pixels = malloc(size);
-		memset(pixels, 255, size);
+	image->_width = 0;
+	image->_height = 0;
+	image->_pixels = NULL;
+}
+
+ROSE_Image ROSE_ImageLoad(const char* path)
+{
+	uInt32 width = 0;
+	uInt32 height = 0;
+	uInt32 pixels = NULL;
+	int retcode = png_decode(path, &pixels, &width, &height);
+
+	ROSE_Image image = { 0 };
+	image._width = width;
+	image._height = height;
+	image._pixels = pixels;
+
+	if (retcode != 0) {
+		fprintf(stderr, "png_decode() failed! [path: %s] [retcode: %s]", png_error(retcode));
+	}
+	
+	return image;
+}
+
+void ROSE_ImageSave(ROSE_Image* image, const char* path)
+{
+	uInt32 width = image->_width;
+	uInt32 height = image->_height;
+	uInt32* pixels = image->_pixels;
+	int retcode = png_encode(path, pixels, width, height);
+
+	if (retcode != 0) {
+		fprintf(stderr, "png_encode() failed! [path: %s] [retcode: %s]", png_error(retcode));
+	}
+}
+
+void ROSE_ImageResize(ROSE_Image* image, uInt32 width, uInt32 height)
+{
+	uInt32 count = width * height;
+	uInt32* pixels = NULL;
+	
+	if (count != 0) {
+		pixels = calloc(count, sizeof(uInt32));
+		memset(pixels, 255, count * sizeof(uInt32));
 	}
 
 	if (pixels && image->_pixels) {
-		size_t copy_width = (width < image->_width) ? width : image->_width;
-		size_t copy_height = (height < image->_height) ? height : image->_height;
-		size_t src_offset = image->_height - copy_height;
-		size_t dst_offset = height - copy_height;
+		uInt32 copy_width = (width < image->_width) ? width : image->_width;
+		uInt32 copy_height = (height < image->_height) ? height : image->_height;
+		uInt32 src_offset = image->_height - copy_height;
+		uInt32 dst_offset = height - copy_height;
 
-		for (size_t y = 0; y < copy_height; y++) {
-			size_t src_index = (src_offset + y) * image->_width * 4;
-			size_t dst_index = (dst_offset + y) * width * 4;
-			memcpy(pixels + dst_index, image->_pixels + src_index, copy_width * 4);
+		for (uInt32 y = 0; y < copy_height; y++) {
+			uInt32 src_index = (src_offset + y) * image->_width;
+			uInt32 dst_index = (dst_offset + y) * width;
+			uInt32 copy_size = copy_width * sizeof(uInt32);
+			memcpy(pixels + dst_index, image->_pixels + src_index, copy_size);
 		}
 	}
 
-	if (image->_pixels) free(image->_pixels);
-	*image = (ROSE_Image) {
-		._width = width,
-		._height = height,
-		._pixels = pixels,
-	};
-}
-
-void ROSE_ImageFillColor(ROSE_Image* image, ROSE_Color color)
-{
-	for (uint32_t y = 0; y < image->_height; y++) {
-		for (uint32_t x = 0; x < image->_width; x++) {
-			ROSE_ImageSetPixelColor(image, x, y, color);
-		}
+	if (image->_pixels) {
+		free(image->_pixels);
 	}
+	
+	image->_width = width;
+	image->_height = height;
+	image->_pixels = pixels;
 }
 
-void ROSE_ImageFillRGBA(ROSE_Image* image, ROSE_RGBA color)
+void ROSE_ImageFillColor(ROSE_Image* image, uInt32 color)
 {
-	for (uint32_t y = 0; y < image->_height; y++) {
-		for (uint32_t x = 0; x < image->_width; x++) {
-			ROSE_ImageSetPixelRGBA(image, x, y, color);
+	for (uInt32 y = 0; y < image->_height; y++) {
+		for (uInt32 x = 0; x < image->_width; x++) {
+			ROSE_ImageSetPixel(image, x, y, color);
 		}
 	}
 }
 
-ROSE_Color ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos)
+uInt32 ROSE_ImageGetPixel(ROSE_Image* image, uInt32 xpos, uInt32 ypos)
 {
-	#if defined (ROSE_DEBUG)
-	if ((xpos >= image->_width) || (ypos >= image->_height))
-		ROSE_PANIC("pixel out of bounds! [%u, %u] [%u x %u]", xpos, ypos, image->_width, image->_height);
-	#endif
-	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
-	float r = ((float)(image->_pixels[index + 0]) / 255.0f);
-	float g = ((float)(image->_pixels[index + 1]) / 255.0f);
-	float b = ((float)(image->_pixels[index + 2]) / 255.0f);
-	float a = ((float)(image->_pixels[index + 3]) / 255.0f);
-	return (ROSE_Color) { r, g, b, a };
+	assert(xpos < image->_width);
+	assert(ypos < image->_height);
+	uInt32 index = (ypos * image->_width) + xpos;
+	uInt32 color = image->_pixels[index];
+	return color;
 }
 
-ROSE_RGBA ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos)
+void ROSE_ImageSetPixel(ROSE_Image* image, uInt32 xpos, uInt32 ypos, uInt32 color)
 {
-	#if defined (ROSE_DEBUG)
-	if ((xpos >= image->_width) || (ypos >= image->_height))
-		ROSE_PANIC("pixel out of bounds! [%u, %u] [%u x %u]", xpos, ypos, image->_width, image->_height);
-	#endif
-	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
-	uint8_t r = image->_pixels[index + 0];
-	uint8_t g = image->_pixels[index + 1];
-	uint8_t b = image->_pixels[index + 2];
-	uint8_t a = image->_pixels[index + 3];
-	return (ROSE_RGBA) { r, g, b, a };
-}
-
-void ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color)
-{
-	#if defined (ROSE_DEBUG)
-	if ((xpos >= image->_width) || (ypos >= image->_height))
-		ROSE_PANIC("pixel out of bounds! [%u, %u] [%u x %u]", xpos, ypos, image->_width, image->_height);
-	#endif
-	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
-	image->_pixels[index + 0] = (uint8_t)((color.r * 255.0f) + 0.5f);
-	image->_pixels[index + 1] = (uint8_t)((color.g * 255.0f) + 0.5f);
-	image->_pixels[index + 2] = (uint8_t)((color.b * 255.0f) + 0.5f);
-	image->_pixels[index + 3] = (uint8_t)((color.a * 255.0f) + 0.5f);
-}
-
-void ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color)
-{
-	#if defined (ROSE_DEBUG)
-	if ((xpos >= image->_width) || (ypos >= image->_height))
-		ROSE_PANIC("pixel out of bounds! [%u, %u] [%u x %u]", xpos, ypos, image->_width, image->_height);
-	#endif
-	size_t index = ((((((size_t)image->_height - 1) - ypos) * image->_width) + xpos) * 4);
-	image->_pixels[index + 0] = color.r;
-	image->_pixels[index + 1] = color.g;
-	image->_pixels[index + 2] = color.b;
-	image->_pixels[index + 3] = color.a;
+	assert(xpos < image->_width);
+	assert(ypos < image->_height);
+	uInt32 index = (ypos * image->_width) + xpos;
+	image->_pixels[index] = color;
 }
 

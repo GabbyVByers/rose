@@ -5,7 +5,7 @@
 
 #include "rose.h"
 
-ROSE_Mesh ROSE_MeshCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices)
+ROSE_Mesh ROSE_MeshCreate(ROSE_Vertex2D* vertices, uInt32 num_vertices)
 {
 	ROSE_Mesh mesh = ROSE_MeshCreateEmpty();
 	ROSE_MeshUpdateVertices(&mesh, vertices, num_vertices);
@@ -28,17 +28,18 @@ ROSE_Mesh ROSE_MeshCreateEmpty(void)
 	};
 }
 
-void ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uint32_t num_vertices)
+void ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uInt32 num_vertices)
 {
 	ROSE__MeshReserveVertexCapacity(mesh, num_vertices);
 	mesh->_num_vertices = num_vertices;
 
-	if (num_vertices == 0)
+	if (num_vertices == 0) {
 		return;
+	}
 
-	uint32_t vertex_buffer_size = num_vertices * (uint32_t)sizeof(ROSE_Vertex2D);
+	uInt32 vertex_buffer_size = num_vertices * (uInt32)sizeof(ROSE_Vertex2D);
 	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, mesh->_transfer_buffer, true);
-	memcpy(transfer_buffer_beginning, vertices, (size_t)vertex_buffer_size);
+	memcpy(transfer_buffer_beginning, vertices, vertex_buffer_size);
 	SDL_UnmapGPUTransferBuffer(rose__device, mesh->_transfer_buffer);
 
 	SDL_GPUTransferBufferLocation source_buffer_location = {
@@ -55,31 +56,43 @@ void ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uint32_t 
 
 void ROSE_MeshDestroy(ROSE_Mesh* mesh)
 {
-	if (mesh) {
-		if (mesh->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, mesh->_vertex_buffer);
-		if (mesh->_transfer_buffer) SDL_ReleaseGPUTransferBuffer(rose__device, mesh->_transfer_buffer);
-		*mesh = (ROSE_Mesh) { 0 };
+	if (mesh->_vertex_buffer) {
+		SDL_ReleaseGPUBuffer(rose__device, mesh->_vertex_buffer);
 	}
+
+	if (mesh->_transfer_buffer) {
+		SDL_ReleaseGPUTransferBuffer(rose__device, mesh->_transfer_buffer);
+	}
+
+	*mesh = (ROSE_Mesh) { 0 };
 }
 
 void ROSE_MeshDraw(ROSE_Mesh* mesh)
 {
-	if (rose_screen.minimized) return;
-	if (!rose__render_pass) ROSE_PANIC("ROSE_MeshDraw() called outside of a frame!");
-	if (mesh->_num_vertices == 0) return;
+	if (rose_screen.minimized) {
+		return;
+	}
+
+	if (!rose__render_pass) {
+		ROSE_PANIC("ROSE_MeshDraw() called outside of a frame!");
+	}
+
+	if (mesh->_num_vertices == 0) {
+		return;
+	}
 
 	float w = (mesh->scale / (float)rose_screen.width) * 2.0f;
 	float h = -(mesh->scale / (float)rose_screen.height) * 2.0f;
 	float x = -1.0f + ((mesh->xpos / (float)rose_screen.width) * 2.0f);
 	float y = 1.0f - ((mesh->ypos / (float)rose_screen.height) * 2.0f);
 
-	uint32_t uniform_size =
+	uInt32 uniform_size =
 	sizeof(struct {
 		float TransformMatrix[16];
 		float TintColor[4];
 	});
 
-	uint32_t uniform_size_points =
+	uInt32 uniform_size_points =
 	sizeof(struct {
 		float TransformMatrix[16];
 		float TintColor[4];
@@ -92,6 +105,12 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 		float PixelDiameter;
 	} Uniform;
 
+	const uInt32 color = mesh->color;
+	float r = ((float)((uInt8)(color << 24))) / 255.0f;
+	float g = ((float)((uInt8)(color << 16))) / 255.0f;
+	float b = ((float)((uInt8)(color << 8))) / 255.0f;
+	float a = ((float)((uInt8)(color))) / 255.0f;
+
 	Uniform uniform = {
 		.TransformMatrix = {
 			w, 0, 0, 0,
@@ -100,10 +119,7 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 			x, y, 0, 1,
 		},
 		.TintColor = {
-			mesh->color.r,
-			mesh->color.g,
-			mesh->color.b,
-			mesh->color.a,
+			r, g, b, a,
 		},
 		.PixelDiameter = mesh->diameter,
 	};
@@ -131,21 +147,28 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 	SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
 }
 
-void ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertices)
+void ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uInt32 num_vertices)
 {
-	if (num_vertices <= mesh->_vertex_capacity)
+	if (num_vertices <= mesh->_vertex_capacity) {
 		return;
+	}
 
-	const uint32_t min_capacity = 32;
-	uint32_t capacity = mesh->_vertex_capacity;
+	const uInt32 min_capacity = 32;
+	uInt32 capacity = mesh->_vertex_capacity;
 	if (capacity == 0) {
 		capacity = min_capacity;
 	}
 
 	while (capacity < num_vertices) capacity *= 2;
-	uint32_t vertex_buffer_size = capacity * (uint32_t)sizeof(ROSE_Vertex2D);
-	if (mesh->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, mesh->_vertex_buffer);
-	if (mesh->_transfer_buffer) SDL_ReleaseGPUTransferBuffer(rose__device, mesh->_transfer_buffer);
+	uInt32 vertex_buffer_size = capacity * (uInt32)sizeof(ROSE_Vertex2D);
+	
+	if (mesh->_vertex_buffer) {
+		SDL_ReleaseGPUBuffer(rose__device, mesh->_vertex_buffer);
+	}
+	
+	if (mesh->_transfer_buffer) {
+		SDL_ReleaseGPUTransferBuffer(rose__device, mesh->_transfer_buffer);
+	}
 
 	SDL_GPUBufferCreateInfo buffer_create_info = {
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,

@@ -5,18 +5,18 @@
 
 #include "rose.h"
 
-bool ROSE_MousePressing(uint32_t mouse_button)
+bool ROSE_MousePressing(uInt32 mouse_button)
 {
 	return (rose__curr_mouse_state & SDL_BUTTON_MASK(mouse_button)) != 0;
 }
 
-bool ROSE_MousePressed(uint32_t mouse_button)
+bool ROSE_MousePressed(uInt32 mouse_button)
 {
 	return ((rose__prev_mouse_state & SDL_BUTTON_MASK(mouse_button)) == 0)
 		&& ((rose__curr_mouse_state & SDL_BUTTON_MASK(mouse_button)) != 0);
 }
 
-bool ROSE_MouseReleased(uint32_t mouse_button)
+bool ROSE_MouseReleased(uInt32 mouse_button)
 {
 	return ((rose__prev_mouse_state & SDL_BUTTON_MASK(mouse_button)) != 0)
 		&& ((rose__curr_mouse_state & SDL_BUTTON_MASK(mouse_button)) == 0);
@@ -39,33 +39,21 @@ void ROSE_MouseReveal(void)
 
 bool ROSE_KeyboardPressing(ROSE_Scancode scancode)
 {
+	assert(scancode < ROSE_SCANCODE_COUNT);
 	return rose__curr_keyboard_state[scancode];
 }
 
 bool ROSE_KeyboardPressed(ROSE_Scancode scancode)
 {
+	assert(scancode < ROSE_SCANCODE_COUNT);
 	return (!rose__prev_keyboard_state[scancode])
 		&& (rose__curr_keyboard_state[scancode]);
 }
 
 bool ROSE_KeyboardReleased(ROSE_Scancode scancode)
 {
+	assert(scancode < ROSE_SCANCODE_COUNT);
 	return (rose__prev_keyboard_state[scancode])
 		&& (!rose__curr_keyboard_state[scancode]);
-}
-
-ROSE_Scancode ROSE_KeyboardCurrPressing(void)
-{
-	return 0; // stub
-}
-
-ROSE_Scancode ROSE_KeyboardLastPressed(void)
-{
-	return 0; // stub
-}
-
-ROSE_Scancode ROSE_KeyboardLastReleased(void)
-{
-	return 0; // stub
 }
 

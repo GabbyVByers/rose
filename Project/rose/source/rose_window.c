@@ -9,30 +9,28 @@ void ROSE_WindowVSync(bool vsync)
 {
 	rose__present_mode_dirty = true;
 	rose__present_mode = SDL_GPU_PRESENTMODE_VSYNC;
-	if (vsync) return;
+	
+	if (vsync) {
+		return;
+	}
 
-	if (SDL_WindowSupportsGPUPresentMode(
-		rose__device,
-		rose__window,
-		SDL_GPU_PRESENTMODE_IMMEDIATE)) {
+	if (SDL_WindowSupportsGPUPresentMode(rose__device, rose__window, SDL_GPU_PRESENTMODE_IMMEDIATE)) {
 		rose__present_mode = SDL_GPU_PRESENTMODE_IMMEDIATE;
 		return;
 	}
 
-	if (SDL_WindowSupportsGPUPresentMode(
-		rose__device,
-		rose__window,
-		SDL_GPU_PRESENTMODE_MAILBOX)) {
+	if (SDL_WindowSupportsGPUPresentMode(rose__device, rose__window, SDL_GPU_PRESENTMODE_MAILBOX)) {
 		rose__present_mode = SDL_GPU_PRESENTMODE_MAILBOX;
 		return;
 	}
 }
 
-bool ROSE_WindowPollEvents(void)
+bool ROSE_WindowIsOpen(void)
 {
-	const int32_t minimized_timeout_ms = 100;
-	if (rose_screen.minimized)
+	const Int32 minimized_timeout_ms = 50;
+	if (rose_screen.minimized) {
 		SDL_WaitEventTimeout(NULL, minimized_timeout_ms);
+	}
 
 	rose_mouse.xvel = 0.0f;
 	rose_mouse.yvel = 0.0f;
@@ -70,36 +68,24 @@ bool ROSE_WindowPollEvents(void)
 	return true;
 }
 
-void ROSE_WindowBeginFrame(ROSE_Color clear_color)
+void ROSE_WindowFrameClear(uInt32 clear_color)
 {
-	if (rose__render_pass) ROSE_PANIC("ROSE_WindowBeginFrame() called twice without ROSE_WindowEndFrame()!");
+	if (rose__render_pass) {
+		ROSE_PANIC("ROSE_WindowFrameClear() called twice without ROSE_WindowFrameRender()!");
+	}
+
 	if (rose__present_mode_dirty) {
-		SDL_SetGPUSwapchainParameters(
-			rose__device,
-			rose__window,
-			SDL_GPU_SWAPCHAINCOMPOSITION_SDR,
-			rose__present_mode
-		);
+		SDL_SetGPUSwapchainParameters(rose__device, rose__window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, rose__present_mode);
 	}
 
 	rose__present_mode_dirty = false;
 	rose__command_buffer = SDL_AcquireGPUCommandBuffer(rose__device);
 
-	uint32_t width = 0;
-	uint32_t height = 0;
-	bool acquired =
-	SDL_WaitAndAcquireGPUSwapchainTexture(
-		rose__command_buffer,
-		rose__window,
-		&rose__swapchain_texture,
-		&width, &height
-	);
+	uInt32 width = 0;
+	uInt32 height = 0;
+	SDL_WaitAndAcquireGPUSwapchainTexture(rose__command_buffer, rose__window, &rose__swapchain_texture, &width, &height);
 	
-	if (!acquired) {
-		ROSE_PANIC("SDL_WaitAndAcquireGPUSwapchainTexture() failed! %s", SDL_GetError());
-	}
-	rose_screen.minimized =
-		(rose__swapchain_texture == NULL);
+	rose_screen.minimized = (rose__swapchain_texture == NULL);
 	if (rose_screen.minimized) {
 		SDL_SubmitGPUCommandBuffer(rose__command_buffer);
 		return;
@@ -108,13 +94,18 @@ void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 	rose_screen.width = width;
 	rose_screen.height = height;
 
+	uInt8 r = (uInt8)(clear_color >> 24);
+	uInt8 g = (uInt8)(clear_color >> 16);
+	uInt8 b = (uInt8)(clear_color >> 8);
+	uInt8 a = (uInt8)(clear_color);
+
 	SDL_GPUColorTargetInfo color_target_info = {
 		.texture = rose__swapchain_texture,
 		.clear_color = {
-			.r = clear_color.r,
-			.g = clear_color.g,
-			.b = clear_color.b,
-			.a = clear_color.a,
+			.r = r,
+			.g = g,
+			.b = b,
+			.a = a,
 		},
 		.load_op = SDL_GPU_LOADOP_CLEAR,
 		.store_op = SDL_GPU_STOREOP_STORE,
@@ -126,26 +117,19 @@ void ROSE_WindowBeginFrame(ROSE_Color clear_color)
 	rose__bound_texture = NULL;
 }
 
-void ROSE_WindowEndFrame(void)
+void ROSE_WindowFrameRender(void)
 {
 	ROSE__SDLSubmitCopyPass();
-	if (rose_screen.minimized) return;
-	if (!rose__render_pass) ROSE_PANIC("ROSE_WindowEndFrame() called without ROSE_WindowBeginFrame()!");
+	if (rose_screen.minimized) {
+		return;
+	}
+
+	if (!rose__render_pass) {
+		ROSE_PANIC("ROSE_WindowFrameRender() called without ROSE_WindowFrameClear()!");
+	}
+
 	SDL_EndGPURenderPass(rose__render_pass);
 	SDL_SubmitGPUCommandBuffer(rose__command_buffer);
 	rose__render_pass = NULL;
-}
-
-double ROSE_WindowDeltaTime(void)
-{
-	static uint64_t curr_timestamp = 0;
-	static uint64_t prev_timestamp = 0;
-	prev_timestamp = curr_timestamp;
-	curr_timestamp = SDL_GetTicksNS();
-	double nanoseconds =
-		(curr_timestamp > prev_timestamp) ?
-		(curr_timestamp - prev_timestamp) : 0.0;
-	return nanoseconds;
-	// FPS = 1e9 / nanoseconds;
 }
 

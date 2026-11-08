@@ -7,8 +7,8 @@
 
 ROSE_Slider ROSE_SliderCreate(void)
 {
-	uint32_t width = (ROSE_ASCII_WIDTH + 2);
-	uint32_t height = (ROSE_ASCII_HEIGHT + 4);
+	uInt32 width = (ROSE_ASCII_WIDTH + 2);
+	uInt32 height = (ROSE_ASCII_HEIGHT + 4);
 	ROSE_Sprite sprite_handle_normal = ROSE_SpriteCreateGUIBox(width, height, true);
 	ROSE_Sprite sprite_handle_pressed = ROSE_SpriteCreateGUIBox(width, height, false);
 
@@ -87,14 +87,20 @@ void ROSE_SliderDraw(ROSE_Slider* slider)
 	const bool mouse_over = horizontal && vertical;
 
 	slider->_prev_aquired = slider->_curr_aquired;
-	if (mouse_over && ROSE_MousePressed(ROSE_BUTTON_LEFT))
+	if (mouse_over && ROSE_MousePressed(ROSE_BUTTON_LEFT)) {
 		slider->_curr_aquired = true;
-	if (ROSE_MouseReleased(ROSE_BUTTON_LEFT))
+	}
+
+	if (ROSE_MouseReleased(ROSE_BUTTON_LEFT)) {
 		slider->_curr_aquired = false;
+	}
 
 	ROSE_SpriteDraw(&slider->_sprite_bar);
-	if (slider->_curr_aquired) ROSE_SpriteDraw(&slider->_sprite_handle_pressed);
-	else ROSE_SpriteDraw(&slider->_sprite_handle_normal);
+	if (slider->_curr_aquired) {
+		ROSE_SpriteDraw(&slider->_sprite_handle_pressed);
+	} else {
+		ROSE_SpriteDraw(&slider->_sprite_handle_normal);
+	}
 }
 
 bool ROSE_SliderPressed(ROSE_Slider* slider)
@@ -114,11 +120,9 @@ bool ROSE_SliderPressing(ROSE_Slider* slider)
 
 void ROSE_SliderDestroy(ROSE_Slider* slider)
 {
-	if (slider) {
-		ROSE_SpriteDestroy(&slider->_sprite_handle_normal);
-		ROSE_SpriteDestroy(&slider->_sprite_handle_pressed);
-		ROSE_SpriteDestroy(&slider->_sprite_bar);
-		*slider = (ROSE_Slider){ 0 };
-	}
+	ROSE_SpriteDestroy(&slider->_sprite_handle_normal);
+	ROSE_SpriteDestroy(&slider->_sprite_handle_pressed);
+	ROSE_SpriteDestroy(&slider->_sprite_bar);
+	*slider = (ROSE_Slider){ 0 };
 }
 

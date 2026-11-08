@@ -5,46 +5,22 @@
 
 #include "rose.h"
 
-void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
+void ROSE_Init(const char* title, uInt32 screen_width, uInt32 screen_height)
 {
-	if (rose__device) ROSE_PANIC("ROSE_Init() called twice without ROSE_Quit()!");
-
-	#ifdef ROSE_CRTDBG
-	_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
-	_CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
-	_CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
-	_CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
-	_CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
-	_CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
-	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_DELAY_FREE_MEM_DF);
-	#endif
-
 	bool vkdebug = false;
 	#if defined(ROSE_DEBUG)
 	vkdebug = true;
 	#endif
 
-	const uint32_t screen_min = 256;
+	const uInt32 screen_min = 256;
 	rose_screen.width = (screen_width < screen_min) ? screen_min : screen_width;
 	rose_screen.height = (screen_height < screen_min) ? screen_min : screen_height;
 
-	if (!SDL_Init(SDL_INIT_VIDEO)) {
-		ROSE_PANIC("SDL_Init() failed! %s", SDL_GetError());
-	}
-
+	SDL_Init(SDL_INIT_VIDEO);
 	rose__window = SDL_CreateWindow(title, (int)rose_screen.width, (int)rose_screen.height, SDL_WINDOW_RESIZABLE);
-	if (!rose__window) {
-		ROSE_PANIC("SDL_CreateWindow() failed! %s", SDL_GetError());
-	}
-
 	rose__device = SDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_SPIRV, vkdebug, NULL);
-	if (!rose__device) {
-		ROSE_PANIC("SDL_CreateGPUDevice() failed! %s", SDL_GetError());
-	}
 
-	if (!SDL_ClaimWindowForGPUDevice(rose__device, rose__window)) {
-		ROSE_PANIC("SDL_ClaimWindowForGPUDevice() failed! %s", SDL_GetError());
-	}
+	SDL_ClaimWindowForGPUDevice(rose__device, rose__window);
 	SDL_SetGPUSwapchainParameters(rose__device, rose__window, SDL_GPU_SWAPCHAINCOMPOSITION_SDR, SDL_GPU_PRESENTMODE_VSYNC);
 	SDL_SetWindowMinimumSize(rose__window, (int)screen_min, (int)screen_min);
 
@@ -69,7 +45,7 @@ void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height)
 		sizeof(ROSE_VertexSprite)
 	);
 
-	ROSE_Image ascii_image = ROSE_ImageLoadFromFile("textures/ascii.png");
+	ROSE_Image ascii_image = ROSE_ImageLoad("textures/ascii.png");
 	ROSE_Image dummy_image = ROSE_ImageCreate(1, 1);
 	rose__ascii_texture = ROSE__SDLCreateTexture(&ascii_image);
 	rose__dummy_texture = ROSE__SDLCreateTexture(&dummy_image);

@@ -81,7 +81,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\stb-master;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\png;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -103,7 +103,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\stb-master;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\png;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -123,7 +123,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\stb-master;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\png;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -145,7 +145,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\stb-master;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Project\libraries\SDL3-3.4.18\include;$(SolutionDir)Project\libraries\png;$(SolutionDir)Project\rose;$(SolutionDir)Project;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -159,6 +159,7 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="libraries\png\png.c" />
     <ClCompile Include="libraries\stb-master\stb_image.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="rose\source\rose_button.c" />
@@ -174,6 +175,7 @@
     <ClCompile Include="rose\source\rose_window.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="libraries\png\png.h" />
     <ClInclude Include="libraries\SDL3-3.4.18\include\SDL3\SDL.h" />
     <ClInclude Include="libraries\SDL3-3.4.18\include\SDL3\SDL_assert.h" />
     <ClInclude Include="libraries\SDL3-3.4.18\include\SDL3\SDL_asyncio.h" />

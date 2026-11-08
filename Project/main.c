@@ -11,10 +11,10 @@ int main(void)
 	ROSE_Init("My Window", 1600, 900);
 	ROSE_WindowVSync(true);
 
-	while (ROSE_WindowPollEvents())
+	while (ROSE_WindowIsOpen())
 	{
-		ROSE_WindowBeginFrame(ROSE_COLOR_BLACK);
-		ROSE_WindowEndFrame();
+		ROSE_WindowFrameClear(ROSE_COLOR_BLACK);
+		ROSE_WindowFrameRender();
 	}
 
 	ROSE_Quit();

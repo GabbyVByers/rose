@@ -42,21 +42,21 @@ SDL_GPUTexture* ROSE__SDLCreateTexture(ROSE_Image* image)
 
 void ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, SDL_GPUTransferBuffer** transfer_buffer, ROSE_Image* image)
 {
-	uint32_t width = image->_width;
-	uint32_t height = image->_height;
-	uint32_t image_size = (width * height * (uint32_t)sizeof(ROSE_RGBA));
+	uInt32 width = image->_width;
+	uInt32 height = image->_height;
+	uInt32 count = width * height;
 
 	if (!(*transfer_buffer)) {
 		SDL_GPUTransferBufferCreateInfo transfer_buffer_create_info = {
 			.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-			.size = image_size,
+			.size = count * sizeof(uInt32),
 		};
 
 		*transfer_buffer = SDL_CreateGPUTransferBuffer(rose__device, &transfer_buffer_create_info);
 	}
 
 	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, *transfer_buffer, true);
-	memcpy(transfer_buffer_beginning, image->_pixels, (size_t)image_size);
+	memcpy(transfer_buffer_beginning, image->_pixels, count * sizeof(uInt32));
 	SDL_UnmapGPUTransferBuffer(rose__device, *transfer_buffer);
 
 	SDL_GPUTextureTransferInfo texture_transfer_info = {
@@ -75,23 +75,24 @@ void ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, SDL_GPUTransferBuffe
 	SDL_UploadToGPUTexture(ROSE__SDLAcquireCopyPass(), &texture_transfer_info, &destination_texture_region, true);
 }
 
-SDL_GPUBuffer* ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size)
+SDL_GPUBuffer* ROSE__SDLCreateVertexBuffer(void* vertices, uInt32 num_vertices, uInt32 vertex_size)
 {
+	uInt32 size = num_vertices * vertex_size;
 	SDL_GPUBufferCreateInfo buffer_create_info = {
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
-		.size = num_vertices * vertex_size,
+		.size = size,
 	};
 
 	SDL_GPUBuffer* vertex_buffer = SDL_CreateGPUBuffer(rose__device, &buffer_create_info);
 
 	SDL_GPUTransferBufferCreateInfo transfer_buffer_create_info = {
 		.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD,
-		.size = num_vertices * vertex_size,
+		.size = size,
 	};
 
 	SDL_GPUTransferBuffer* transfer_buffer = SDL_CreateGPUTransferBuffer(rose__device, &transfer_buffer_create_info);
 	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, transfer_buffer, false);
-	memcpy(transfer_buffer_beginning, vertices, (size_t)num_vertices * vertex_size);
+	memcpy(transfer_buffer_beginning, vertices, size);
 	SDL_UnmapGPUTransferBuffer(rose__device, transfer_buffer);
 
 	SDL_GPUTransferBufferLocation source_buffer_location = {
@@ -100,7 +101,7 @@ SDL_GPUBuffer* ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices
 
 	SDL_GPUBufferRegion destination_buffer_region = {
 		.buffer = vertex_buffer,
-		.size = num_vertices * vertex_size,
+		.size = size,
 	};
 
 	SDL_UploadToGPUBuffer(ROSE__SDLAcquireCopyPass(), &source_buffer_location, &destination_buffer_region, true);
@@ -123,23 +124,32 @@ SDL_GPUCopyPass* ROSE__SDLAcquireCopyPass(void)
 
 void ROSE__SDLSubmitCopyPass(void)
 {
-	if (!rose__copy_pass) return;
+	if (!rose__copy_pass) {
+		return;
+	}
+
 	SDL_EndGPUCopyPass(rose__copy_pass);
 	SDL_SubmitGPUCommandBuffer(rose__copy_command_buffer);
+
 	rose__copy_pass = NULL;
 	rose__copy_command_buffer = NULL;
 }
 
 void ROSE__SDLBindGraphicsPipeline(SDL_GPUGraphicsPipeline* pipeline)
 {
-	if (rose__bound_pipeline == pipeline) return;
+	if (rose__bound_pipeline == pipeline) {
+		return;
+	}
+
 	SDL_BindGPUGraphicsPipeline(rose__render_pass, pipeline);
 	rose__bound_pipeline = pipeline;
 }
 
 void ROSE__SDLBindVertexBuffer(SDL_GPUBuffer* vertex_buffer)
 {
-	if (rose__bound_vertex_buffer == vertex_buffer) return;
+	if (rose__bound_vertex_buffer == vertex_buffer) {
+		return;
+	}
 
 	SDL_GPUBufferBinding buffer_binding = {
 		.buffer = vertex_buffer,
@@ -151,7 +161,9 @@ void ROSE__SDLBindVertexBuffer(SDL_GPUBuffer* vertex_buffer)
 
 void ROSE__SDLBindTexture(SDL_GPUTexture* texture)
 {
-	if (rose__bound_texture == texture) return;
+	if (rose__bound_texture == texture) {
+		return;
+	}
 
 	SDL_GPUTextureSamplerBinding texture_binding = {
 		.texture = texture,
@@ -162,12 +174,12 @@ void ROSE__SDLBindTexture(SDL_GPUTexture* texture)
 	rose__bound_texture = texture;
 }
 
-SDL_GPUShader* ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uint32_t uniforms, uint32_t samplers)
+SDL_GPUShader* ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uInt32 uniforms, uInt32 samplers)
 {
 	size_t code_size = 0;
 	void* code = SDL_LoadFile(path, &code_size);
 	if (!code) {
-		ROSE_PANIC("SDL_LoadFile() failed! [%s] %s", path, SDL_GetError());
+		ROSE_PANIC("SDL_LoadFile() failed! [path: %s] [error: %s]", path, SDL_GetError());
 	}
 
 	SDL_GPUShaderCreateInfo shader_create_info = {
@@ -182,14 +194,14 @@ SDL_GPUShader* ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, u
 
 	SDL_GPUShader* shader = SDL_CreateGPUShader(rose__device, &shader_create_info);
 	if (!shader) {
-		ROSE_PANIC("SDL_CreateGPUShader() failed! [%s] %s", path, SDL_GetError());
+		ROSE_PANIC("SDL_CreateGPUShader() failed! [path: %s] [error: %s]", path, SDL_GetError());
 	}
 
 	SDL_free(code);
 	return shader;
 }
 
-SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vert, const char* frag, uint32_t samplers, SDL_GPUVertexInputState input, SDL_GPUPrimitiveType primitive)
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vert, const char* frag, uInt32 samplers, SDL_GPUVertexInputState input, SDL_GPUPrimitiveType primitive)
 {
 	SDL_GPUShader* vertex_shader_program = ROSE__SDLLoadShader(vert, SDL_GPU_SHADERSTAGE_VERTEX, 1, 0);
 	SDL_GPUShader* fragment_shader_program = ROSE__SDLLoadShader(frag, SDL_GPU_SHADERSTAGE_FRAGMENT, 0, samplers);
@@ -261,12 +273,9 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void)
 		.num_vertex_attributes = sizeof(vertex_attributes) / sizeof(vertex_attributes[0]),
 	};
 
-	return ROSE__SDLCreateGraphicsPipeline(
-		"shaders/sprite_vertex.spv",
-		"shaders/sprite_fragment.spv",
-		1, vertex_input_state,
-		SDL_GPU_PRIMITIVETYPE_TRIANGLELIST
-	);
+	const char vert_path = "shaders/sprite_vertex.spv";
+	const char frag_path = "shaders/sprite_fragment.spv";
+	return ROSE__SDLCreateGraphicsPipeline(vert_path, frag_path, 1, vertex_input_state, SDL_GPU_PRIMITIVETYPE_TRIANGLELIST);
 }
 
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangles(void)
@@ -290,12 +299,9 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangles(void)
 		.num_vertex_attributes = 1,
 	};
 
-	return ROSE__SDLCreateGraphicsPipeline(
-		"shaders/triangles_vertex.spv",
-		"shaders/triangles_fragment.spv",
-		0, vertex_input_state,
-		SDL_GPU_PRIMITIVETYPE_TRIANGLELIST
-	);
+	const char* vert_path = "shaders/triangles_vertex.spv";
+	const char* frag_path = "shaders/triangles_fragment.spv";
+	return ROSE__SDLCreateGraphicsPipeline(vert_path, frag_path, 0, vertex_input_state, SDL_GPU_PRIMITIVETYPE_TRIANGLELIST);
 }
 
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoints(void)
@@ -319,12 +325,9 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoints(void)
 		.num_vertex_attributes = 1,
 	};
 
-	return ROSE__SDLCreateGraphicsPipeline(
-		"shaders/points_vertex.spv",
-		"shaders/points_fragment.spv",
-		0, vertex_input_state,
-		SDL_GPU_PRIMITIVETYPE_POINTLIST
-	);
+	const char* vert_path = "shaders/points_vertex.spv";
+	const char* frag_path = "shaders/points_fragment.spv";
+	return ROSE__SDLCreateGraphicsPipeline(vert_path, frag_path, 0, vertex_input_state, SDL_GPU_PRIMITIVETYPE_POINTLIST);
 }
 
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineLines(void)
@@ -348,11 +351,8 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineLines(void)
 		.num_vertex_attributes = 1,
 	};
 
-	return ROSE__SDLCreateGraphicsPipeline(
-		"shaders/triangles_vertex.spv",
-		"shaders/triangles_fragment.spv",
-		0, vertex_input_state,
-		SDL_GPU_PRIMITIVETYPE_LINELIST
-	);
+	const char* vert_path = "shaders/triangles_vertex.spv";
+	const char* frag_path = "shaders/triangles_fragment.spv";
+	return ROSE__SDLCreateGraphicsPipeline(vert_path, frag_path, 0, vertex_input_state, SDL_GPU_PRIMITIVETYPE_LINELIST);
 }
 

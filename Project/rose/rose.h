@@ -26,8 +26,7 @@
 
 #pragma warning (push, 0)
 #include "SDL3/SDL.h"
-#include "stb_image.h"
-#include "stb_image_write.h"
+#include "png.h"
 #pragma warning (pop)
 
 #include <stdio.h>
@@ -315,9 +314,19 @@ typedef enum ROSE_Scancode {
 	ROSE_SCANCODE_COUNT = SDL_SCANCODE_COUNT,
 } ROSE_Scancode;
 
+typedef int8_t  Int8;
+typedef int16_t Int16;
+typedef int32_t Int32;
+typedef int64_t Int64;
+
+typedef uint8_t  uInt8;
+typedef uint16_t uInt16;
+typedef uint32_t uInt32;
+typedef uint64_t uInt64;
+
 typedef struct ROSE_ScreenInfo {
-	uint32_t width;  // read only
-	uint32_t height; // read only
+	uInt32 width;  // read only
+	uInt32 height; // read only
 	bool minimized;  // read only
 } ROSE_ScreenInfo;
 
@@ -344,8 +353,8 @@ ROSE_GLOBAL(SDL_GPUDevice*, rose__device)
 ROSE_GLOBAL(SDL_GPUSampler*, rose__sampler)
 ROSE_GLOBAL(SDL_GPUTexture*, rose__ascii_texture)
 ROSE_GLOBAL(SDL_GPUTexture*, rose__dummy_texture)
-
 ROSE_GLOBAL(SDL_GPUBuffer*, rose__sprite_quad_buffer)
+
 ROSE_GLOBAL(SDL_GPUGraphicsPipeline*, rose__sprite_pipeline)
 ROSE_GLOBAL(SDL_GPUGraphicsPipeline*, rose__triangles_pipeline)
 ROSE_GLOBAL(SDL_GPUGraphicsPipeline*, rose__points_pipeline)
@@ -364,35 +373,31 @@ ROSE_GLOBAL(bool, rose__present_mode_dirty)
 
 ROSE_GLOBAL(float, rose__saved_mouse_px)
 ROSE_GLOBAL(float, rose__saved_mouse_py)
-ROSE_GLOBAL(uint32_t, rose__curr_mouse_state)
-ROSE_GLOBAL(uint32_t, rose__prev_mouse_state)
+ROSE_GLOBAL(uInt32, rose__curr_mouse_state)
+ROSE_GLOBAL(uInt32, rose__prev_mouse_state)
 ROSE_GLOBAL(bool, rose__curr_keyboard_state[SDL_SCANCODE_COUNT])
 ROSE_GLOBAL(bool, rose__prev_keyboard_state[SDL_SCANCODE_COUNT])
 
 #define ROSE_ASCII_WIDTH 7
 #define ROSE_ASCII_HEIGHT 11
 #define ROSE_ASCII_GLYPHS 95
-#define ROSE__TEXTURE_PADDING 16u
 
-typedef struct { float   r, g, b, a; } ROSE_Color;
-typedef struct { uint8_t r, g, b, a; } ROSE_RGBA;
+#define ROSE_COLOR(R, G, B, A) \
+((uInt32)(                     \
+(((uInt32)(R)) << 24) |        \
+(((uInt32)(G)) << 16) |        \
+(((uInt32)(B)) << 8)  |        \
+(((uInt32)(A)))))
 
-#define ROSE_COLOR(r, g, b, a) \
-((ROSE_Color){                 \
-(float)(r) / 255.0f,           \
-(float)(g) / 255.0f,           \
-(float)(b) / 255.0f,           \
-(float)(a) / 255.0f })
-
-#define ROSE_COLOR_WHITE  ROSE_COLOR(255, 255, 255, 255)
-#define ROSE_COLOR_BLACK  ROSE_COLOR(  0,   0,   0, 255)
-#define ROSE_COLOR_RED    ROSE_COLOR(255,   0,   0, 255)
-#define ROSE_COLOR_GREEN  ROSE_COLOR(  0, 255,   0, 255)
-#define ROSE_COLOR_BLUE   ROSE_COLOR(  0,   0, 255, 255)
-#define ROSE_COLOR_CYAN   ROSE_COLOR(  0, 255, 255, 255)
-#define ROSE_COLOR_PURPLE ROSE_COLOR(255,   0, 255, 255)
-#define ROSE_COLOR_YELLOW ROSE_COLOR(255, 255,   0, 255)
-#define ROSE_COLOR_TRANS  ROSE_COLOR(255, 255, 255,   0)
+#define ROSE_COLOR_WHITE  ((uInt32) 0xFFFFFFFF)
+#define ROSE_COLOR_BLACK  ((uInt32) 0x000000FF)
+#define ROSE_COLOR_RED    ((uInt32) 0xFF0000FF)
+#define ROSE_COLOR_GREEN  ((uInt32) 0x00FF00FF)
+#define ROSE_COLOR_BLUE   ((uInt32) 0x0000FFFF)
+#define ROSE_COLOR_CYAN   ((uInt32) 0x00FFFFFF)
+#define ROSE_COLOR_PURPLE ((uInt32) 0xFF00FFFF)
+#define ROSE_COLOR_YELLOW ((uInt32) 0xFFFF00FF)
+#define ROSE_COLOR_TRANS  ((uInt32) 0xFFFFFF00)
 
 typedef struct ROSE_VertexSprite {
 	float position[2];
@@ -404,52 +409,52 @@ typedef struct ROSE_Vertex2D {
 } ROSE_Vertex2D;
 
 typedef struct ROSE_Perlin {
-	uint32_t seed;
-	uint32_t divisions;
-	uint32_t layers;
+	uInt32 seed;
+	uInt32 divisions;
+	uInt32 layers;
 	float attenuation;
 	float division_growth;
-	uint32_t _width;
-	uint32_t _height;
+	uInt32 _width;
+	uInt32 _height;
 	float* _noise;
 } ROSE_Perlin;
 
 typedef struct ROSE_Image {
-	uint32_t _width;
-	uint32_t _height;
-	uint8_t* _pixels;
+	uInt32 _width;
+	uInt32 _height;
+	uInt32* _pixels;
 } ROSE_Image;
 
 typedef struct ROSE_Text {
-	uint32_t scale;
-	int32_t xpos;
-	int32_t ypos;
-	ROSE_Color color;
-	uint32_t _num_characters;
-	uint32_t _num_vertices;
-	uint32_t _character_capacity;
+	uInt32 scale;
+	Int32 xpos;
+	Int32 ypos;
+	uInt32 color;
+	uInt32 _character_count;
+	uInt32 _vertex_count;
+	uInt32 _character_capacity;
 	char* _string;
 	SDL_GPUBuffer* _vertex_buffer;
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Text;
 
 typedef struct ROSE_Sprite {
-	uint32_t scale;
-	int32_t xpos;
-	int32_t ypos;
-	uint32_t _width;
-	uint32_t _height;
-	ROSE_Color color;
+	uInt32 scale;
+	Int32 xpos;
+	Int32 ypos;
+	uInt32 _width;
+	uInt32 _height;
+	uInt32 color;
 	SDL_GPUTexture* _texture;
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Sprite;
 
 typedef struct ROSE_Button {
-	uint32_t scale;
-	int32_t xpos;
-	int32_t ypos;
-	uint32_t width;
-	uint32_t _width;
+	uInt32 scale;
+	Int32 xpos;
+	Int32 ypos;
+	uInt32 width;
+	uInt32 _width;
 	bool _curr_pressed;
 	bool _prev_pressed;
 	ROSE_Sprite _sprite_normal;
@@ -458,14 +463,14 @@ typedef struct ROSE_Button {
 } ROSE_Button;
 
 typedef struct ROSE_Slider {
-	uint32_t scale;
-	int32_t xpos;
-	int32_t ypos;
-	uint32_t width;
+	uInt32 scale;
+	Int32 xpos;
+	Int32 ypos;
+	uInt32 width;
 	float* subject;
 	float min;
 	float max;
-	uint32_t _width;
+	uInt32 _width;
 	bool _curr_aquired;
 	bool _prev_aquired;
 	ROSE_Sprite _sprite_handle_normal;
@@ -485,70 +490,63 @@ typedef struct ROSE_Mesh {
 	float xpos;
 	float ypos;
 	float diameter;
-	ROSE_Color color;
-	uint32_t _num_vertices;
-	uint32_t _vertex_capacity;
+	uInt32 color;
+	uInt32 _num_vertices;
+	uInt32 _vertex_capacity;
 	SDL_GPUBuffer* _vertex_buffer;
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Mesh;
 
-void ROSE_Init(const char* title, uint32_t screen_width, uint32_t screen_height);
+void ROSE_Init(const char* title, uInt32 screen_width, uInt32 screen_height);
 void ROSE_Quit(void);
 
 void ROSE_WindowVSync(bool vsync);
-bool ROSE_WindowPollEvents(void);
-void ROSE_WindowBeginFrame(ROSE_Color clear_color);
-void ROSE_WindowEndFrame(void);
-double ROSE_WindowDeltaTime(void);
+bool ROSE_WindowIsOpen(void);
+void ROSE_WindowFrameClear(uInt32 clear_color);
+void ROSE_WindowFrameRender(void);
 
-bool ROSE_MousePressing(uint32_t mouse_button);
-bool ROSE_MousePressed(uint32_t mouse_button);
-bool ROSE_MouseReleased(uint32_t mouse_button);
+bool ROSE_MousePressing(uInt32 mouse_button);
+bool ROSE_MousePressed(uInt32 mouse_button);
+bool ROSE_MouseReleased(uInt32 mouse_button);
 void ROSE_MouseHide(void);
 void ROSE_MouseReveal(void);
 
 bool ROSE_KeyboardPressing(ROSE_Scancode scancode);
 bool ROSE_KeyboardPressed(ROSE_Scancode scancode);
 bool ROSE_KeyboardReleased(ROSE_Scancode scancode);
-ROSE_Scancode ROSE_KeyboardCurrPressing(void);
-ROSE_Scancode ROSE_KeyboardLastPressed(void);
-ROSE_Scancode ROSE_KeyboardLastReleased(void);
 
-ROSE_Perlin ROSE_PerlinCreate(uint32_t width, uint32_t height);
+ROSE_Perlin ROSE_PerlinCreate(uInt32 width, uInt32 height);
 void        ROSE_PerlinDestroy(ROSE_Perlin* perlin);
 void        ROSE_PerlinGenerate(ROSE_Perlin* perlin);
-float       ROSE_PerlinGetIntensity(ROSE_Perlin* perlin, uint32_t xpos, uint32_t ypos);
-void        ROSE_PerlinSetIntensity(ROSE_Perlin* perlin, uint32_t xpos, uint32_t ypos, float intensity);
-void        ROSE__PerlinLayer(float* intensities, uint32_t width, uint32_t height, float divisions, float amplitude);
+float       ROSE_PerlinGetIntensity(ROSE_Perlin* perlin, uInt32 xpos, uInt32 ypos);
+void        ROSE_PerlinSetIntensity(ROSE_Perlin* perlin, uInt32 xpos, uInt32 ypos, float intensity);
+void        ROSE__PerlinLayer(float* intensities, uInt32 width, uInt32 height, float divisions, float amplitude);
 
-ROSE_Image  ROSE_ImageCreate(uint32_t width, uint32_t height);
+ROSE_Image  ROSE_ImageCreate(uInt32 width, uInt32 height);
 ROSE_Image  ROSE_ImageCreateFromPerlin(ROSE_Perlin* perlin);
-ROSE_Image  ROSE_ImageLoadFromFile(const char* path);
 void        ROSE_ImageDestroy(ROSE_Image* image);
-void        ROSE_ImageSavePNG(ROSE_Image* image, const char* path);
-void        ROSE_ImageResize(ROSE_Image* image, uint32_t width, uint32_t height);
-void        ROSE_ImageFillColor(ROSE_Image* image, ROSE_Color color);
-void        ROSE_ImageFillRGBA(ROSE_Image* image, ROSE_RGBA color);
-ROSE_Color  ROSE_ImageGetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
-ROSE_RGBA   ROSE_ImageGetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos);
-void        ROSE_ImageSetPixelColor(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_Color color);
-void        ROSE_ImageSetPixelRGBA(ROSE_Image* image, uint32_t xpos, uint32_t ypos, ROSE_RGBA color);
+ROSE_Image  ROSE_ImageLoad(const char* path);
+void        ROSE_ImageSave(ROSE_Image* image, const char* path);
+void        ROSE_ImageResize(ROSE_Image* image, uInt32 width, uInt32 height);
+void        ROSE_ImageFillColor(ROSE_Image* image, uInt32 color);
+uInt32      ROSE_ImageGetPixel(ROSE_Image* image, uInt32 xpos, uInt32 ypos);
+void        ROSE_ImageSetPixel(ROSE_Image* image, uInt32 xpos, uInt32 ypos, uInt32 color);
 
 ROSE_Text   ROSE_TextCreate(const char* format, ...);
 ROSE_Text   ROSE_TextCreateEmpty(void);
 void        ROSE_TextDestroy(ROSE_Text* text);
 void        ROSE_TextUpdateString(ROSE_Text* text, const char* format, ...);
 void        ROSE_TextDraw(ROSE_Text* text);
-void        ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uint32_t num_characters);
-void        ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uint32_t num_characters);
+void        ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uInt32 num_characters);
+void        ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uInt32 num_characters);
 
 ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image);
-ROSE_Sprite ROSE_SpriteCreateEmpty(uint32_t width, uint32_t height);
+ROSE_Sprite ROSE_SpriteCreateEmpty(uInt32 width, uInt32 height);
 ROSE_Sprite ROSE_SpriteLoadFromFile(const char* path);
 void        ROSE_SpriteDestroy(ROSE_Sprite* sprite);
 void        ROSE_SpriteUpdateTexture(ROSE_Sprite* sprite, ROSE_Image* image);
 void        ROSE_SpriteDraw(ROSE_Sprite* sprite);
-ROSE_Sprite ROSE_SpriteCreateGUIBox(uint32_t width, uint32_t height, bool normal);
+ROSE_Sprite ROSE_SpriteCreateGUIBox(uInt32 width, uInt32 height, bool normal);
 
 ROSE_Button ROSE_ButtonCreate(const char* string);
 ROSE_Button ROSE_ButtonCreateEmpty(void);
@@ -567,24 +565,24 @@ bool        ROSE_SliderReleased(ROSE_Slider* slider);
 bool        ROSE_SliderPressing(ROSE_Slider* slider);
 void        ROSE_SliderDraw(ROSE_Slider* slider);
 
-ROSE_Mesh   ROSE_MeshCreate(ROSE_Vertex2D* vertices, uint32_t num_vertices);
+ROSE_Mesh   ROSE_MeshCreate(ROSE_Vertex2D* vertices, uInt32 num_vertices);
 ROSE_Mesh   ROSE_MeshCreateEmpty(void);
-void        ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uint32_t num_vertices);
+void        ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uInt32 num_vertices);
 void        ROSE_MeshDestroy(ROSE_Mesh* mesh);
 void        ROSE_MeshDraw(ROSE_Mesh* mesh);
-void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uint32_t num_vertices);
+void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uInt32 num_vertices);
 
-SDL_GPUSampler*  ROSE__SDLCreateSampler(void);
-SDL_GPUTexture*  ROSE__SDLCreateTexture(ROSE_Image* image);
-void             ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, SDL_GPUTransferBuffer** transfer_buffer, ROSE_Image* image);
-SDL_GPUBuffer*   ROSE__SDLCreateVertexBuffer(void* vertices, uint32_t num_vertices, uint32_t vertex_size);
-SDL_GPUCopyPass* ROSE__SDLAcquireCopyPass(void);
-void             ROSE__SDLSubmitCopyPass(void);
-void             ROSE__SDLBindGraphicsPipeline(SDL_GPUGraphicsPipeline* pipeline);
-void             ROSE__SDLBindVertexBuffer(SDL_GPUBuffer* vertex_buffer);
-void             ROSE__SDLBindTexture(SDL_GPUTexture* texture);
-SDL_GPUShader*   ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uint32_t uniforms, uint32_t samplers);
-SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vert, const char* frag, uint32_t samplers, SDL_GPUVertexInputState input, SDL_GPUPrimitiveType primitive);
+SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
+SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
+void                     ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, SDL_GPUTransferBuffer** transfer_buffer, ROSE_Image* image);
+SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uInt32 num_vertices, uInt32 vertex_size);
+SDL_GPUCopyPass*         ROSE__SDLAcquireCopyPass(void);
+void                     ROSE__SDLSubmitCopyPass(void);
+void                     ROSE__SDLBindGraphicsPipeline(SDL_GPUGraphicsPipeline* pipeline);
+void                     ROSE__SDLBindVertexBuffer(SDL_GPUBuffer* vertex_buffer);
+void                     ROSE__SDLBindTexture(SDL_GPUTexture* texture);
+SDL_GPUShader*           ROSE__SDLLoadShader(const char* path, SDL_GPUShaderStage stage, uInt32 uniforms, uInt32 samplers);
+SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipeline(const char* vert, const char* frag, uInt32 samplers, SDL_GPUVertexInputState input, SDL_GPUPrimitiveType primitive);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangles(void);
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoints(void);

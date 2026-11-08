@@ -6,14 +6,15 @@
 #include "rose.h"
 
 #define MAX_STRING_LENGTH 512
+#define VERTS_PER_QUAD 6
 
 ROSE_Text ROSE_TextCreate(const char* format, ...)
 {
 	char string[MAX_STRING_LENGTH] = { '\0' };
-	va_list arguments = { 0 };
-	va_start(arguments, format);
-	vsnprintf(string, sizeof(string), format, arguments);
-	va_end(arguments);
+	va_list args = { 0 };
+	va_start(args, format);
+	vsnprintf(string, sizeof(string), format, args);
+	va_end(args);
 
 	ROSE_Text text = ROSE_TextCreateEmpty();
 	ROSE_TextUpdateString(&text, "%s", string);
@@ -27,8 +28,8 @@ ROSE_Text ROSE_TextCreateEmpty(void)
 		.xpos = 0,
 		.ypos = 0,
 		.color = ROSE_COLOR_WHITE,
-		._num_characters = 0,
-		._num_vertices = 0,
+		._character_count = 0,
+		._vertex_count = 0,
 		._character_capacity = 0,
 		._string = NULL,
 		._vertex_buffer = NULL,
@@ -38,39 +39,46 @@ ROSE_Text ROSE_TextCreateEmpty(void)
 
 void ROSE_TextDestroy(ROSE_Text* text)
 {
-	if (text) {
-		if (text->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, text->_vertex_buffer);
-		if (text->_transfer_buffer) SDL_ReleaseGPUTransferBuffer(rose__device, text->_transfer_buffer);
-		if (text->_string) free(text->_string);
-		*text = (ROSE_Text){ 0 };
+	if (text->_vertex_buffer) {
+		SDL_ReleaseGPUBuffer(rose__device, text->_vertex_buffer);
 	}
+	
+	if (text->_transfer_buffer) {
+		SDL_ReleaseGPUTransferBuffer(rose__device, text->_transfer_buffer);
+	}
+
+	if (text->_string) {
+		free(text->_string);
+	}
+
+	*text = (ROSE_Text){ 0 };
 }
 
 void ROSE_TextUpdateString(ROSE_Text* text, const char* format, ...)
 {
 	char string[MAX_STRING_LENGTH] = { '\0' };
-	va_list arguments = { 0 };
-	va_start(arguments, format);
-	vsnprintf(string, sizeof(string), format, arguments);
-	va_end(arguments);
+	va_list args = { 0 };
+	va_start(args, format);
+	vsnprintf(string, sizeof(string), format, args);
+	va_end(args);
 
-	uint32_t num_characters = (uint32_t)strlen(string);
-	bool unchanged = (num_characters == text->_num_characters)
-		&& ((num_characters == 0) || (memcmp(text->_string, string, num_characters) == 0));
-
-	if (unchanged)
+	uInt32 character_count = (uInt32)strlen(string);
+	bool unchanged = (character_count == text->_character_count)
+		&& ((character_count == 0) || (memcmp(text->_string, string, character_count) == 0));
+	if (unchanged) {
 		return;
+	}
 
-	ROSE__TextReserveCharacterCapacity(text, num_characters);
-	text->_num_characters = num_characters;
-	text->_num_vertices = num_characters * 6;
-
-	if (num_characters == 0)
+	ROSE__TextReserveCharacterCapacity(text, character_count);
+	text->_character_count = character_count;
+	text->_vertex_count = character_count * 6;
+	if (character_count == 0) {
 		return;
+	}
 
-	memcpy(text->_string, string, num_characters);
+	memcpy(text->_string, string, character_count);
 	ROSE_VertexSprite* vertices = SDL_MapGPUTransferBuffer(rose__device, text->_transfer_buffer, true);
-	ROSE__TextWriteCharactersToVertices(vertices, string, num_characters);
+	ROSE__TextWriteCharactersToVertices(vertices, string, character_count);
 	SDL_UnmapGPUTransferBuffer(rose__device, text->_transfer_buffer);
 
 	SDL_GPUTransferBufferLocation source_buffer_location = {
@@ -79,7 +87,7 @@ void ROSE_TextUpdateString(ROSE_Text* text, const char* format, ...)
 
 	SDL_GPUBufferRegion destination_buffer_region = {
 		.buffer = text->_vertex_buffer,
-		.size = text->_num_vertices * (uint32_t)sizeof(ROSE_VertexSprite),
+		.size = text->_vertex_count * (uInt32)sizeof(ROSE_VertexSprite),
 	};
 
 	SDL_UploadToGPUBuffer(ROSE__SDLAcquireCopyPass(), &source_buffer_location, &destination_buffer_region, true);
@@ -87,9 +95,17 @@ void ROSE_TextUpdateString(ROSE_Text* text, const char* format, ...)
 
 void ROSE_TextDraw(ROSE_Text* text)
 {
-	if (rose_screen.minimized) return;
-	if (!rose__render_pass) ROSE_PANIC("ROSE_TextDraw() called outside of a frame!");
-	if (text->_num_vertices == 0) return;
+	if (rose_screen.minimized) {
+		return;
+	}
+
+	if (!rose__render_pass) {
+		ROSE_PANIC("ROSE_TextDraw() called outside of a frame!");
+	}
+
+	if (text->_vertex_count == 0) {
+		return;
+	}
 
 	float scaled_width = (float)ROSE_ASCII_WIDTH * (float)text->scale;
 	float scaled_height = (float)ROSE_ASCII_HEIGHT * (float)text->scale;
@@ -104,6 +120,12 @@ void ROSE_TextDraw(ROSE_Text* text)
 		float TintColor[4];
 	} Uniform;
 
+	const uInt32 color = text->color;
+	float r = ((float)((uInt8)(color << 24))) / 255.0f;
+	float g = ((float)((uInt8)(color << 16))) / 255.0f;
+	float b = ((float)((uInt8)(color << 8)))  / 255.0f;
+	float a = ((float)((uInt8)(color)))       / 255.0f;
+
 	Uniform uniform = {
 		.TransformMatrix = {
 			w, 0, 0, 0,
@@ -112,10 +134,7 @@ void ROSE_TextDraw(ROSE_Text* text)
 			x, y, 0, 1,
 		},
 		.TintColor = {
-			text->color.r,
-			text->color.g,
-			text->color.b,
-			text->color.a,
+			r, g, b, a,
 		}
 	};
 
@@ -123,16 +142,16 @@ void ROSE_TextDraw(ROSE_Text* text)
 	SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), sizeof(uniform));
 	ROSE__SDLBindVertexBuffer(text->_vertex_buffer);
 	ROSE__SDLBindTexture(rose__ascii_texture);
-	SDL_DrawGPUPrimitives(rose__render_pass, text->_num_vertices, 1, 0, 0);
+	SDL_DrawGPUPrimitives(rose__render_pass, text->_vertex_count, 1, 0, 0);
 }
 
-void ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uint32_t num_characters)
+void ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uInt32 num_characters)
 {
 	const float w = (1.0f / (float)ROSE_ASCII_GLYPHS);
-	for (uint32_t i = 0; i < num_characters; i++) {
-		uint32_t index = i * 6;
+	for (uInt32 i = 0; i < num_characters; i++) {
+		uInt32 index = i * 6;
 		unsigned char c = (unsigned char)string[i];
-		uint32_t character_index = ((c >= 32) && (c <= 126)) ? (c - 32) : ('?' - 32);
+		uInt32 character_index = ((c >= 32) && (c <= 126)) ? (c - 32) : ('?' - 32);
 		float x = (w * (float)character_index);
 		vertices[index + 0] = (ROSE_VertexSprite){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
 		vertices[index + 1] = (ROSE_VertexSprite){ { (float)(i + 1),  0.0f }, { (float)(x + w), 1.0f } };
@@ -143,25 +162,35 @@ void ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char
 	}
 }
 
-void ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uint32_t num_characters)
+void ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uInt32 num_characters)
 {
-	if (num_characters <= text->_character_capacity)
+	if (num_characters <= text->_character_capacity) {
 		return;
+	}
 
-	const uint32_t min_capacity = 32;
-	uint32_t capacity = text->_character_capacity;
+	const uInt32 min_capacity = 32;
+	uInt32 capacity = text->_character_capacity;
 	if (capacity == 0) {
 		capacity = min_capacity;
 	}
 
-	while (capacity < num_characters)
+	while (capacity < num_characters) {
 		capacity *= 2;
+	}
 
-	uint32_t vertex_buffer_size = capacity * 6 * (uint32_t)sizeof(ROSE_VertexSprite);
+	uInt32 vertex_buffer_size = capacity * VERTS_PER_QUAD * (uInt32)sizeof(ROSE_VertexSprite);
 
-	if (text->_vertex_buffer) SDL_ReleaseGPUBuffer(rose__device, text->_vertex_buffer);
-	if (text->_transfer_buffer) SDL_ReleaseGPUTransferBuffer(rose__device, text->_transfer_buffer);
-	if (text->_string) free(text->_string);
+	if (text->_vertex_buffer) {
+		SDL_ReleaseGPUBuffer(rose__device, text->_vertex_buffer);
+	}
+
+	if (text->_transfer_buffer) {
+		SDL_ReleaseGPUTransferBuffer(rose__device, text->_transfer_buffer);
+	}
+
+	if (text->_string) {
+		free(text->_string);
+	}
 
 	SDL_GPUBufferCreateInfo buffer_create_info = {
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
