@@ -20,26 +20,14 @@ SDL_GPUSampler* ROSE__SDLCreateSampler(void)
 	return sampler;
 }
 
-uint32_t ROSE__SDLPadTextureSize(uint32_t size)
-{
-	if (size == 0) return ROSE__TEXTURE_PADDING;
-	return ((size + (ROSE__TEXTURE_PADDING - 1)) / ROSE__TEXTURE_PADDING) * ROSE__TEXTURE_PADDING;
-}
-
-void ROSE__SDLTexCoordScale(uint32_t width, uint32_t height, float scale[2])
-{
-	scale[0] = (float)width / (float)ROSE__SDLPadTextureSize(width);
-	scale[1] = (float)height / (float)ROSE__SDLPadTextureSize(height);
-}
-
 SDL_GPUTexture* ROSE__SDLCreateTexture(ROSE_Image* image)
 {
 	SDL_GPUTextureCreateInfo texture_create_info = {
 		.type = SDL_GPU_TEXTURETYPE_2D,
 		.format = SDL_GPU_TEXTUREFORMAT_R8G8B8A8_UNORM,
 		.usage = SDL_GPU_TEXTUREUSAGE_SAMPLER,
-		.width = ROSE__SDLPadTextureSize(image->_width),
-		.height = ROSE__SDLPadTextureSize(image->_height),
+		.width = image->_width,
+		.height = image->_height,
 		.layer_count_or_depth = 1,
 		.num_levels = 1,
 		.sample_count = SDL_GPU_SAMPLECOUNT_1,

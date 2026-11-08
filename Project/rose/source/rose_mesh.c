@@ -90,7 +90,6 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 		float TransformMatrix[16];
 		float TintColor[4];
 		float PixelDiameter;
-		uint8_t _padding[4];
 	} Uniform;
 
 	Uniform uniform = {
