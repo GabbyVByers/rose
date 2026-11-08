@@ -1,6 +1,6 @@
 
 /*
- *   Source File [rose_sprite.c]
+ *   Source [rose_sprite.c]
  */
 
 #include "rose.h"

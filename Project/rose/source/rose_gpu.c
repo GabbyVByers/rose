@@ -1,6 +1,6 @@
 
 /*
- *   Source File [rose_gpu.c]
+ *   Source [rose_gpu.c]
  */
 
 #include "rose.h"

@@ -1,6 +1,6 @@
 
 /*
- *   Source File [rose_mesh.c]
+ *   Source [rose_mesh.c]
  */
 
 #include "rose.h"

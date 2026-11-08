@@ -161,8 +161,6 @@
   <ItemGroup>
     <ClCompile Include="libraries\stb-master\stb_image.c" />
     <ClCompile Include="main.c" />
-    <ClCompile Include="map_image.c" />
-    <ClCompile Include="map_provinces.c" />
     <ClCompile Include="rose\source\rose_button.c" />
     <ClCompile Include="rose\source\rose_gpu.c" />
     <ClCompile Include="rose\source\rose_perlin.c" />
@@ -264,7 +262,6 @@
     <ClInclude Include="libraries\SDL3-3.4.18\include\SDL3\SDL_vulkan.h" />
     <ClInclude Include="libraries\stb-master\stb_image.h" />
     <ClInclude Include="libraries\stb-master\stb_image_write.h" />
-    <ClInclude Include="map.h" />
     <ClInclude Include="rose\rose.h" />
   </ItemGroup>
   <ItemGroup>

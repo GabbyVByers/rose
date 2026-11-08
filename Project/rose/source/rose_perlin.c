@@ -1,6 +1,6 @@
 
 /*
- *   Source File [rose_perlin.c]
+ *   Source [rose_perlin.c]
  */
 
 #include "rose.h"

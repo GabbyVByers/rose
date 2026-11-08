@@ -1,6 +1,6 @@
 
 /*
- *   Header File [rose.h]
+ *   Header [rose.h]
  */
 
 #ifndef ROSE_ROSE_HEADER_GUARD

@@ -1,6 +1,6 @@
 
 /*
- *   Source File [rose_peripherals.c]
+ *   Source [rose_peripherals.c]
  */
 
 #include "rose.h"

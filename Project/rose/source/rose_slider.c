@@ -1,6 +1,6 @@
 
 /*
- *   Source File [rose_slider.c]
+ *   Source [rose_slider.c]
  */
 
 #include "rose.h"

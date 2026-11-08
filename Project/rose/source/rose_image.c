@@ -1,6 +1,6 @@
 
 /*
- *   Source File [rose_image.c]
+ *   Source [rose_image.c]
  */
 
 #include "rose.h"
