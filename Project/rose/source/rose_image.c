@@ -60,7 +60,7 @@ ROSE_Image ROSE_ImageLoad(const char* path)
 {
 	uInt32 width = 0;
 	uInt32 height = 0;
-	uInt32 pixels = NULL;
+	uInt32* pixels = NULL;
 	int retcode = png_decode(path, &pixels, &width, &height);
 
 	ROSE_Image image = { 0 };

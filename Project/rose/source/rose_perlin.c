@@ -8,7 +8,9 @@
 ROSE_Perlin ROSE_PerlinCreate(uInt32 width, uInt32 height)
 {
 	float* noise = NULL;
-	if ((width != 0) && (height != 0)) {
+	const bool nonzero = (width != 0) && (height != 0);
+
+	if (nonzero) {
 		uInt32 count = width * height;
 		noise = calloc(count, sizeof(float));
 	}

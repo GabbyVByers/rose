@@ -160,7 +160,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="libraries\png\png.c" />
-    <ClCompile Include="libraries\stb-master\stb_image.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="rose\source\rose_button.c" />
     <ClCompile Include="rose\source\rose_gpu.c" />
@@ -262,8 +261,6 @@
     <ClInclude Include="libraries\SDL3-3.4.18\include\SDL3\SDL_version.h" />
     <ClInclude Include="libraries\SDL3-3.4.18\include\SDL3\SDL_video.h" />
     <ClInclude Include="libraries\SDL3-3.4.18\include\SDL3\SDL_vulkan.h" />
-    <ClInclude Include="libraries\stb-master\stb_image.h" />
-    <ClInclude Include="libraries\stb-master\stb_image_write.h" />
     <ClInclude Include="rose\rose.h" />
   </ItemGroup>
   <ItemGroup>

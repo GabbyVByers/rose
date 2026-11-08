@@ -6,22 +6,10 @@
 #ifndef ROSE_ROSE_HEADER_GUARD
 #define ROSE_ROSE_HEADER_GUARD
 
-#if defined(NDEBUG)
+#ifdef NDEBUG
 #define ROSE_RELEASE
 #else
 #define ROSE_DEBUG
-#endif
-
-#if defined(__SANITIZE_ADDRESS__)
-#pragma message("ASan ENABLED")
-#else
-#pragma message("ASan DISABLED")
-#endif
-
-#if !defined(__SANITIZE_ADDRESS__) && defined(ROSE_DEBUG)
-#define ROSE_CRTDBG
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
 #endif
 
 #pragma warning (push, 0)
@@ -36,8 +24,8 @@
 #include <float.h>
 #include <assert.h>
 
-#if !defined(ROSE_PANIC)
-#if defined(ROSE_RELEASE)
+#ifndef ROSE_PANIC
+#ifdef ROSE_RELEASE
 #define rose_panic_abort exit(EXIT_FAILURE)
 #else
 #define rose_panic_abort abort()
@@ -325,9 +313,9 @@ typedef uint32_t uInt32;
 typedef uint64_t uInt64;
 
 typedef struct ROSE_ScreenInfo {
-	uInt32 width;  // read only
-	uInt32 height; // read only
-	bool minimized;  // read only
+	uInt32 width;   // read only
+	uInt32 height;  // read only
+	bool minimized; // read only
 } ROSE_ScreenInfo;
 
 typedef struct ROSE_MouseInfo {

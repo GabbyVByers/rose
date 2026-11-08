@@ -273,9 +273,9 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void)
 		.num_vertex_attributes = sizeof(vertex_attributes) / sizeof(vertex_attributes[0]),
 	};
 
-	const char vert_path = "shaders/sprite_vertex.spv";
-	const char frag_path = "shaders/sprite_fragment.spv";
-	return ROSE__SDLCreateGraphicsPipeline(vert_path, frag_path, 1, vertex_input_state, SDL_GPU_PRIMITIVETYPE_TRIANGLELIST);
+	const char* vert = "shaders/sprite_vertex.spv";
+	const char* frag = "shaders/sprite_fragment.spv";
+	return ROSE__SDLCreateGraphicsPipeline(vert, frag, 1, vertex_input_state, SDL_GPU_PRIMITIVETYPE_TRIANGLELIST);
 }
 
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangles(void)
@@ -299,9 +299,9 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangles(void)
 		.num_vertex_attributes = 1,
 	};
 
-	const char* vert_path = "shaders/triangles_vertex.spv";
-	const char* frag_path = "shaders/triangles_fragment.spv";
-	return ROSE__SDLCreateGraphicsPipeline(vert_path, frag_path, 0, vertex_input_state, SDL_GPU_PRIMITIVETYPE_TRIANGLELIST);
+	const char* vert = "shaders/triangles_vertex.spv";
+	const char* frag = "shaders/triangles_fragment.spv";
+	return ROSE__SDLCreateGraphicsPipeline(vert, frag, 0, vertex_input_state, SDL_GPU_PRIMITIVETYPE_TRIANGLELIST);
 }
 
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoints(void)
@@ -325,9 +325,9 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoints(void)
 		.num_vertex_attributes = 1,
 	};
 
-	const char* vert_path = "shaders/points_vertex.spv";
-	const char* frag_path = "shaders/points_fragment.spv";
-	return ROSE__SDLCreateGraphicsPipeline(vert_path, frag_path, 0, vertex_input_state, SDL_GPU_PRIMITIVETYPE_POINTLIST);
+	const char* vert = "shaders/points_vertex.spv";
+	const char* frag = "shaders/points_fragment.spv";
+	return ROSE__SDLCreateGraphicsPipeline(vert, frag, 0, vertex_input_state, SDL_GPU_PRIMITIVETYPE_POINTLIST);
 }
 
 SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineLines(void)
@@ -351,8 +351,8 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineLines(void)
 		.num_vertex_attributes = 1,
 	};
 
-	const char* vert_path = "shaders/triangles_vertex.spv";
-	const char* frag_path = "shaders/triangles_fragment.spv";
-	return ROSE__SDLCreateGraphicsPipeline(vert_path, frag_path, 0, vertex_input_state, SDL_GPU_PRIMITIVETYPE_LINELIST);
+	const char* vert = "shaders/triangles_vertex.spv";
+	const char* frag = "shaders/triangles_fragment.spv";
+	return ROSE__SDLCreateGraphicsPipeline(vert, frag, 0, vertex_input_state, SDL_GPU_PRIMITIVETYPE_LINELIST);
 }
 
