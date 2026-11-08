@@ -8,7 +8,7 @@
 
 int main(void)
 {
-	ROSE_Init("Van Gogh's Epic Odyssey", 1600, 900);
+	ROSE_Init("My Window", 1600, 900);
 	ROSE_WindowVSync(true);
 
 	while (ROSE_WindowPollEvents())
