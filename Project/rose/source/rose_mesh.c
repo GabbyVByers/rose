@@ -5,17 +5,17 @@
 
 #include "rose.h"
 
-ROSE_Mesh ROSE_MeshCreate(ROSE_Vertex2D* vertices, uInt32 num_vertices)
+ROSE_Mesh ROSE_MeshCreate(ROSE_Vertex2D* vertices, uInt32 vertex_count)
 {
 	ROSE_Mesh mesh = ROSE_MeshCreateEmpty();
-	ROSE_MeshUpdateVertices(&mesh, vertices, num_vertices);
+	ROSE_MeshUpdateVertices(&mesh, vertices, vertex_count);
 	return mesh;
 }
 
 ROSE_Mesh ROSE_MeshCreateEmpty(void)
 {
 	return (ROSE_Mesh) {
-		.shape = ROSE_TRIANGLES,
+		.primitive = ROSE_TRIANGLES,
 		.scale = 1.0f,
 		.xpos = 0.0f,
 		.ypos = 0.0f,
@@ -28,16 +28,16 @@ ROSE_Mesh ROSE_MeshCreateEmpty(void)
 	};
 }
 
-void ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uInt32 num_vertices)
+void ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uInt32 vertex_count)
 {
-	ROSE__MeshReserveVertexCapacity(mesh, num_vertices);
-	mesh->_num_vertices = num_vertices;
+	ROSE__MeshReserveVertexCapacity(mesh, vertex_count);
+	mesh->_num_vertices = vertex_count;
 
-	if (num_vertices == 0) {
+	if (vertex_count == 0) {
 		return;
 	}
 
-	uInt32 vertex_buffer_size = num_vertices * (uInt32)sizeof(ROSE_Vertex2D);
+	uInt32 vertex_buffer_size = vertex_count * (uInt32)sizeof(ROSE_Vertex2D);
 	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, mesh->_transfer_buffer, true);
 	memcpy(transfer_buffer_beginning, vertices, vertex_buffer_size);
 	SDL_UnmapGPUTransferBuffer(rose__device, mesh->_transfer_buffer);
@@ -106,9 +106,9 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 	} Uniform;
 
 	const uInt32 color = mesh->color;
-	float r = ((float)((uInt8)(color << 24))) / 255.0f;
-	float g = ((float)((uInt8)(color << 16))) / 255.0f;
-	float b = ((float)((uInt8)(color << 8))) / 255.0f;
+	float r = ((float)((uInt8)(color >> 24))) / 255.0f;
+	float g = ((float)((uInt8)(color >> 16))) / 255.0f;
+	float b = ((float)((uInt8)(color >> 8))) / 255.0f;
 	float a = ((float)((uInt8)(color))) / 255.0f;
 
 	Uniform uniform = {
@@ -124,32 +124,36 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 		.PixelDiameter = mesh->diameter,
 	};
 
-	switch (mesh->shape) {
-		case (ROSE_TRIANGLES): {
-			ROSE__SDLBindGraphicsPipeline(rose__triangles_pipeline);
-			SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
-		}
-		break;
-		case (ROSE_LINES): {
-			ROSE__SDLBindGraphicsPipeline(rose__lines_pipeline);
-			SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
-		}
-		break;
-		case (ROSE_POINTS): {
-			ROSE__SDLBindGraphicsPipeline(rose__points_pipeline);
-			SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size_points);
-		}
-		break;
-		default: ROSE_PANIC("ROSE_MeshDraw() invalid shape! [%d]", (int)mesh->shape);
+	uInt32 primitive = mesh->primitive;
+	const bool draw_triangles = (primitive & ROSE_TRIANGLES) != 0;
+	const bool draw_lines     = (primitive & ROSE_LINES)     != 0;
+	const bool draw_points    = (primitive & ROSE_POINTS)    != 0;
+
+	if (draw_triangles) {
+		ROSE__SDLBindGraphicsPipeline(rose__triangles_pipeline);
+		SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
+		ROSE__SDLBindVertexBuffer(mesh->_vertex_buffer);
+		SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
 	}
 
-	ROSE__SDLBindVertexBuffer(mesh->_vertex_buffer);
-	SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
+	if (draw_lines) {
+		ROSE__SDLBindGraphicsPipeline(rose__lines_pipeline);
+		SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
+		ROSE__SDLBindVertexBuffer(mesh->_vertex_buffer);
+		SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
+	}
+
+	if (draw_points) {
+		ROSE__SDLBindGraphicsPipeline(rose__points_pipeline);
+		SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size_points);
+		ROSE__SDLBindVertexBuffer(mesh->_vertex_buffer);
+		SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
+	}
 }
 
-void ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uInt32 num_vertices)
+void ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uInt32 vertex_count)
 {
-	if (num_vertices <= mesh->_vertex_capacity) {
+	if (vertex_count <= mesh->_vertex_capacity) {
 		return;
 	}
 
@@ -159,7 +163,7 @@ void ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uInt32 num_vertices)
 		capacity = min_capacity;
 	}
 
-	while (capacity < num_vertices) capacity *= 2;
+	while (capacity < vertex_count) capacity *= 2;
 	uInt32 vertex_buffer_size = capacity * (uInt32)sizeof(ROSE_Vertex2D);
 	
 	if (mesh->_vertex_buffer) {

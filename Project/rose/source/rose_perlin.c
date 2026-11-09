@@ -5,25 +5,24 @@
 
 #include "rose.h"
 
-ROSE_Perlin ROSE_PerlinCreate(uInt32 width, uInt32 height)
+ROSE_Perlin ROSE_PerlinCreateEmpty(uInt32 width, uInt32 height)
 {
 	float* noise = NULL;
 	const bool nonzero = (width != 0) && (height != 0);
-
 	if (nonzero) {
 		uInt32 count = width * height;
 		noise = calloc(count, sizeof(float));
 	}
 
 	return (ROSE_Perlin) {
-		.seed = rand(),
-		.divisions = 1,
-		.layers = 1,
-		.attenuation = 0.5f,
-		.division_growth = 2.0f,
-		._width = width,
-		._height = height,
-		._noise = noise,
+		.seed            = 1,
+		.divisions       = 1,
+		.layers          = 1,
+		.attenuation     = 0.5f, // < 1
+		.division_growth = 2.0f, // > 1
+		._width          = width,
+		._height         = height,
+		._noise          = noise,
 	};
 }
 

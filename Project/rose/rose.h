@@ -44,11 +44,11 @@ do {                                                        \
 } while (0)
 #endif
 
-#define ROSE_BUTTON_LEFT   SDL_BUTTON_LEFT
-#define ROSE_BUTTON_MIDDLE SDL_BUTTON_MIDDLE
-#define ROSE_BUTTON_RIGHT  SDL_BUTTON_RIGHT
-#define ROSE_BUTTON_X1     SDL_BUTTON_X1
-#define ROSE_BUTTON_X2     SDL_BUTTON_X2
+#define ROSE_MOUSE_BUTTON_LEFT   SDL_BUTTON_LEFT
+#define ROSE_MOUSE_BUTTON_RIGHT  SDL_BUTTON_RIGHT
+#define ROSE_MOUSE_BUTTON_MIDDLE SDL_BUTTON_MIDDLE
+#define ROSE_MOUSE_BUTTON_X1     SDL_BUTTON_X1
+#define ROSE_MOUSE_BUTTON_X2     SDL_BUTTON_X2
 
 typedef enum ROSE_Scancode {
 	ROSE_SCANCODE_UNKNOWN = SDL_SCANCODE_UNKNOWN,
@@ -319,11 +319,9 @@ typedef struct ROSE_ScreenInfo {
 } ROSE_ScreenInfo;
 
 typedef struct ROSE_MouseInfo {
-	float xpos;   // read only
-	float ypos;   // read only
-	float xvel;   // read only
-	float yvel;   // read only
-	float scroll; // read only
+	float scroll;     // read only
+	float xpos, ypos; // read only
+	float xvel, yvel; // read only
 } ROSE_MouseInfo;
 
 #ifdef __MAIN__
@@ -369,6 +367,10 @@ ROSE_GLOBAL(bool, rose__prev_keyboard_state[SDL_SCANCODE_COUNT])
 #define ROSE_ASCII_WIDTH 7
 #define ROSE_ASCII_HEIGHT 11
 #define ROSE_ASCII_GLYPHS 95
+
+#define ROSE_POINTS    (1u << 0)
+#define ROSE_LINES     (1u << 1)
+#define ROSE_TRIANGLES (1u << 2)
 
 #define ROSE_COLOR(R, G, B, A) \
 ((uInt32)(                     \
@@ -466,14 +468,8 @@ typedef struct ROSE_Slider {
 	ROSE_Sprite _sprite_bar;
 } ROSE_Slider;
 
-typedef enum ROSE_SHAPE {
-	ROSE_TRIANGLES,
-	ROSE_LINES,
-	ROSE_POINTS,
-} ROSE_SHAPE;
-
 typedef struct ROSE_Mesh {
-	ROSE_SHAPE shape;
+	uInt32 primitive;
 	float scale;
 	float xpos;
 	float ypos;
@@ -490,12 +486,12 @@ void ROSE_Quit(void);
 
 void ROSE_WindowVSync(bool vsync);
 bool ROSE_WindowIsOpen(void);
-void ROSE_WindowFrameClear(uInt32 clear_color);
+void ROSE_WindowFrameClear(uInt32 color);
 void ROSE_WindowFrameRender(void);
 
-bool ROSE_MousePressing(uInt32 mouse_button);
-bool ROSE_MousePressed(uInt32 mouse_button);
-bool ROSE_MouseReleased(uInt32 mouse_button);
+bool ROSE_MousePressing(uInt32 button);
+bool ROSE_MousePressed(uInt32 button);
+bool ROSE_MouseReleased(uInt32 button);
 void ROSE_MouseHide(void);
 void ROSE_MouseReveal(void);
 
@@ -503,7 +499,7 @@ bool ROSE_KeyboardPressing(ROSE_Scancode scancode);
 bool ROSE_KeyboardPressed(ROSE_Scancode scancode);
 bool ROSE_KeyboardReleased(ROSE_Scancode scancode);
 
-ROSE_Perlin ROSE_PerlinCreate(uInt32 width, uInt32 height);
+ROSE_Perlin ROSE_PerlinCreateEmpty(uInt32 width, uInt32 height);
 void        ROSE_PerlinDestroy(ROSE_Perlin* perlin);
 void        ROSE_PerlinGenerate(ROSE_Perlin* perlin);
 float       ROSE_PerlinGetIntensity(ROSE_Perlin* perlin, uInt32 xpos, uInt32 ypos);
@@ -553,17 +549,17 @@ bool        ROSE_SliderReleased(ROSE_Slider* slider);
 bool        ROSE_SliderPressing(ROSE_Slider* slider);
 void        ROSE_SliderDraw(ROSE_Slider* slider);
 
-ROSE_Mesh   ROSE_MeshCreate(ROSE_Vertex2D* vertices, uInt32 num_vertices);
+ROSE_Mesh   ROSE_MeshCreate(ROSE_Vertex2D* vertices, uInt32 vertex_count);
 ROSE_Mesh   ROSE_MeshCreateEmpty(void);
-void        ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uInt32 num_vertices);
+void        ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uInt32 vertex_count);
 void        ROSE_MeshDestroy(ROSE_Mesh* mesh);
 void        ROSE_MeshDraw(ROSE_Mesh* mesh);
-void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uInt32 num_vertices);
+void        ROSE__MeshReserveVertexCapacity(ROSE_Mesh* mesh, uInt32 vertex_count);
 
 SDL_GPUSampler*          ROSE__SDLCreateSampler(void);
 SDL_GPUTexture*          ROSE__SDLCreateTexture(ROSE_Image* image);
 void                     ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, SDL_GPUTransferBuffer** transfer_buffer, ROSE_Image* image);
-SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uInt32 num_vertices, uInt32 vertex_size);
+SDL_GPUBuffer*           ROSE__SDLCreateVertexBuffer(void* vertices, uInt32 vertex_count, uInt32 vertex_stride);
 SDL_GPUCopyPass*         ROSE__SDLAcquireCopyPass(void);
 void                     ROSE__SDLSubmitCopyPass(void);
 void                     ROSE__SDLBindGraphicsPipeline(SDL_GPUGraphicsPipeline* pipeline);

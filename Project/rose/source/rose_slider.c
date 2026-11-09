@@ -87,11 +87,11 @@ void ROSE_SliderDraw(ROSE_Slider* slider)
 	const bool mouse_over = horizontal && vertical;
 
 	slider->_prev_aquired = slider->_curr_aquired;
-	if (mouse_over && ROSE_MousePressed(ROSE_BUTTON_LEFT)) {
+	if (mouse_over && ROSE_MousePressed(ROSE_MOUSE_BUTTON_LEFT)) {
 		slider->_curr_aquired = true;
 	}
 
-	if (ROSE_MouseReleased(ROSE_BUTTON_LEFT)) {
+	if (ROSE_MouseReleased(ROSE_MOUSE_BUTTON_LEFT)) {
 		slider->_curr_aquired = false;
 	}
 

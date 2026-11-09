@@ -70,10 +70,10 @@ void ROSE_ButtonDraw(ROSE_Button* button)
 
 	const bool mouse_over = horizontal && vertical;
 
-	if (ROSE_MousePressed(ROSE_BUTTON_LEFT) && (mouse_over))
+	if (ROSE_MousePressed(ROSE_MOUSE_BUTTON_LEFT) && (mouse_over))
 		button->_curr_pressed = true;
 
-	if (ROSE_MouseReleased(ROSE_BUTTON_LEFT) || (!mouse_over))
+	if (ROSE_MouseReleased(ROSE_MOUSE_BUTTON_LEFT) || (!mouse_over))
 		button->_curr_pressed = false;
 
 	if (button->_curr_pressed) {

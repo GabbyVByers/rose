@@ -121,9 +121,9 @@ void ROSE_TextDraw(ROSE_Text* text)
 	} Uniform;
 
 	const uInt32 color = text->color;
-	float r = ((float)((uInt8)(color << 24))) / 255.0f;
-	float g = ((float)((uInt8)(color << 16))) / 255.0f;
-	float b = ((float)((uInt8)(color << 8)))  / 255.0f;
+	float r = ((float)((uInt8)(color >> 24))) / 255.0f;
+	float g = ((float)((uInt8)(color >> 16))) / 255.0f;
+	float b = ((float)((uInt8)(color >> 8)))  / 255.0f;
 	float a = ((float)((uInt8)(color)))       / 255.0f;
 
 	Uniform uniform = {

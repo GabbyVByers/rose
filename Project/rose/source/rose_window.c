@@ -68,7 +68,7 @@ bool ROSE_WindowIsOpen(void)
 	return true;
 }
 
-void ROSE_WindowFrameClear(uInt32 clear_color)
+void ROSE_WindowFrameClear(uInt32 color)
 {
 	if (rose__render_pass) {
 		ROSE_PANIC("ROSE_WindowFrameClear() called twice without ROSE_WindowFrameRender()!");
@@ -94,10 +94,10 @@ void ROSE_WindowFrameClear(uInt32 clear_color)
 	rose_screen.width = width;
 	rose_screen.height = height;
 
-	uInt8 r = (uInt8)(clear_color >> 24);
-	uInt8 g = (uInt8)(clear_color >> 16);
-	uInt8 b = (uInt8)(clear_color >> 8);
-	uInt8 a = (uInt8)(clear_color);
+	uInt8 r = (uInt8)(color >> 24);
+	uInt8 g = (uInt8)(color >> 16);
+	uInt8 b = (uInt8)(color >> 8);
+	uInt8 a = (uInt8)(color);
 
 	SDL_GPUColorTargetInfo color_target_info = {
 		.texture = rose__swapchain_texture,

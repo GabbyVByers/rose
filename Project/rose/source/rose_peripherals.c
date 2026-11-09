@@ -5,21 +5,21 @@
 
 #include "rose.h"
 
-bool ROSE_MousePressing(uInt32 mouse_button)
+bool ROSE_MousePressing(uInt32 button)
 {
-	return (rose__curr_mouse_state & SDL_BUTTON_MASK(mouse_button)) != 0;
+	return (rose__curr_mouse_state & SDL_BUTTON_MASK(button)) != 0;
 }
 
-bool ROSE_MousePressed(uInt32 mouse_button)
+bool ROSE_MousePressed(uInt32 button)
 {
-	return ((rose__prev_mouse_state & SDL_BUTTON_MASK(mouse_button)) == 0)
-		&& ((rose__curr_mouse_state & SDL_BUTTON_MASK(mouse_button)) != 0);
+	return ((rose__prev_mouse_state & SDL_BUTTON_MASK(button)) == 0)
+		&& ((rose__curr_mouse_state & SDL_BUTTON_MASK(button)) != 0);
 }
 
-bool ROSE_MouseReleased(uInt32 mouse_button)
+bool ROSE_MouseReleased(uInt32 button)
 {
-	return ((rose__prev_mouse_state & SDL_BUTTON_MASK(mouse_button)) != 0)
-		&& ((rose__curr_mouse_state & SDL_BUTTON_MASK(mouse_button)) == 0);
+	return ((rose__prev_mouse_state & SDL_BUTTON_MASK(button)) != 0)
+		&& ((rose__curr_mouse_state & SDL_BUTTON_MASK(button)) == 0);
 }
 
 void ROSE_MouseHide(void)

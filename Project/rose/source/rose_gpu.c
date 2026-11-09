@@ -75,9 +75,9 @@ void ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, SDL_GPUTransferBuffe
 	SDL_UploadToGPUTexture(ROSE__SDLAcquireCopyPass(), &texture_transfer_info, &destination_texture_region, true);
 }
 
-SDL_GPUBuffer* ROSE__SDLCreateVertexBuffer(void* vertices, uInt32 num_vertices, uInt32 vertex_size)
+SDL_GPUBuffer* ROSE__SDLCreateVertexBuffer(void* vertices, uInt32 vertex_count, uInt32 vertex_stride)
 {
-	uInt32 size = num_vertices * vertex_size;
+	uInt32 size = vertex_count * vertex_stride;
 	SDL_GPUBufferCreateInfo buffer_create_info = {
 		.usage = SDL_GPU_BUFFERUSAGE_VERTEX,
 		.size = size,
