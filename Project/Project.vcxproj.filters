@@ -24,9 +24,6 @@
     <ClCompile Include="rose\source\rose_image.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="rose\source\rose_init.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="rose\source\rose_peripherals.c">
       <Filter>Source Files</Filter>
     </ClCompile>

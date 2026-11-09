@@ -381,6 +381,16 @@ ROSE_GLOBAL(bool, rose__prev_keyboard_state[SDL_SCANCODE_COUNT])
 (((uInt32)(B)) << 8)  |        \
 (((uInt32)(A)))))
 
+#define ROSE_COLOR_R_U8(color) ((uInt8)(((uInt32)(color)) >> 24)) // todo: use
+#define ROSE_COLOR_G_U8(color) ((uInt8)(((uInt32)(color)) >> 16)) // todo: use
+#define ROSE_COLOR_B_U8(color) ((uInt8)(((uInt32)(color)) >>  8)) // todo: use
+#define ROSE_COLOR_A_U8(color) ((uInt8)(((uInt32)(color)) >>  0)) // todo: use
+
+#define ROSE_COLOR_R_F32(color) (((float)ROSE_COLOR_R_U8(color)) / 255.0f) // todo: use
+#define ROSE_COLOR_G_F32(color) (((float)ROSE_COLOR_G_U8(color)) / 255.0f) // todo: use
+#define ROSE_COLOR_B_F32(color) (((float)ROSE_COLOR_B_U8(color)) / 255.0f) // todo: use
+#define ROSE_COLOR_A_F32(color) (((float)ROSE_COLOR_A_U8(color)) / 255.0f) // todo: use
+
 #define ROSE_COLOR_WHITE  ((uInt32) 0xFFFFFFFF)
 #define ROSE_COLOR_BLACK  ((uInt32) 0x000000FF)
 #define ROSE_COLOR_RED    ((uInt32) 0xFF0000FF)
@@ -486,9 +496,8 @@ typedef struct ROSE_Mesh {
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Mesh;
 
-void ROSE_Init(const char* title, uInt32 width, uInt32 height);
-void ROSE_Quit(void);
-
+void ROSE_WindowInit(const char* title, uInt32 width, uInt32 height);
+void ROSE_WindowShutdown(void);
 void ROSE_WindowVSync(bool vsync);
 bool ROSE_WindowIsOpen(void);
 void ROSE_WindowFrameClear(uInt32 color);

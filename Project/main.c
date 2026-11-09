@@ -8,10 +8,8 @@
 
 int main(void)
 {
-	ROSE_Init("My Window", 1600, 900);
+	ROSE_WindowInit("My Window", 1600, 900);
 	ROSE_WindowVSync(true);
-
-
 
 	while (ROSE_WindowIsOpen())
 	{
@@ -19,7 +17,7 @@ int main(void)
 		ROSE_WindowFrameRender();
 	}
 
-	ROSE_Quit();
+	ROSE_WindowShutdown();
 	return EXIT_SUCCESS;
 }
 
