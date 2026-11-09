@@ -93,8 +93,8 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 	const uInt32 color = sprite->color;
 	float r = ((float)((uInt8)(color >> 24))) / 255.0f;
 	float g = ((float)((uInt8)(color >> 16))) / 255.0f;
-	float b = ((float)((uInt8)(color >> 8))) / 255.0f;
-	float a = ((float)((uInt8)(color))) / 255.0f;
+	float b = ((float)((uInt8)(color >> 8)))  / 255.0f;
+	float a = ((float)((uInt8)(color)))       / 255.0f;
 
 	Uniform uniform = {
 		.TransformMatrix = {
@@ -128,14 +128,14 @@ ROSE_Sprite ROSE_SpriteCreateGUIBox(uInt32 width, uInt32 height, bool normal)
 	ROSE_Image image = ROSE_ImageCreate(width, height);
 	ROSE_ImageFillColor(&image, color);
 
-	for (uInt32 y = 0; y < height; y++) {
-		ROSE_ImageSetPixel(&image, (width - 1), y, color_bottom);
-		ROSE_ImageSetPixel(&image, 0, y, color_top);
+	for (uInt32 x = 0; x < width; x++) {
+		ROSE_ImageSetPixel(&image, x, (height - 1), color_top);
+		ROSE_ImageSetPixel(&image, x, 0, color_bottom);
 	}
 
-	for (uInt32 x = 0; x < width; x++) {
-		ROSE_ImageSetPixel(&image, x, (height - 1), color_bottom);
-		ROSE_ImageSetPixel(&image, x, 0, color_top);
+	for (uInt32 y = 0; y < height; y++) {
+		ROSE_ImageSetPixel(&image, 0, y, color_top);
+		ROSE_ImageSetPixel(&image, (width - 1), y, color_bottom);
 	}
 
 	ROSE_Sprite sprite = ROSE_SpriteCreate(&image);

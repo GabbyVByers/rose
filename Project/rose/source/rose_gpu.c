@@ -55,8 +55,11 @@ void ROSE__SDLUploadImageToTexture(SDL_GPUTexture* texture, SDL_GPUTransferBuffe
 		*transfer_buffer = SDL_CreateGPUTransferBuffer(rose__device, &transfer_buffer_create_info);
 	}
 
-	void* transfer_buffer_beginning = SDL_MapGPUTransferBuffer(rose__device, *transfer_buffer, true);
-	memcpy(transfer_buffer_beginning, image->_pixels, count * sizeof(uInt32));
+	uInt32* transfer_pixels = SDL_MapGPUTransferBuffer(rose__device, *transfer_buffer, true);
+	for (uInt32 i = 0; i < count; i++) {
+		transfer_pixels[i] = SDL_Swap32BE(image->_pixels[i]);
+	}
+
 	SDL_UnmapGPUTransferBuffer(rose__device, *transfer_buffer);
 
 	SDL_GPUTextureTransferInfo texture_transfer_info = {
