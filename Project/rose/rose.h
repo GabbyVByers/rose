@@ -313,15 +313,17 @@ typedef uint32_t uInt32;
 typedef uint64_t uInt64;
 
 typedef struct ROSE_ScreenInfo {
-	uInt32 width;   // read only
-	uInt32 height;  // read only
-	bool minimized; // read only
+	uInt32 width;
+	uInt32 height;
+	bool minimized;
 } ROSE_ScreenInfo;
 
 typedef struct ROSE_MouseInfo {
-	float scroll;     // read only
-	float xpos, ypos; // read only
-	float xvel, yvel; // read only
+	float scroll;
+	float xpos;
+	float ypos;
+	float xvel;
+	float yvel;
 } ROSE_MouseInfo;
 
 #ifdef __MAIN__
@@ -389,80 +391,83 @@ ROSE_GLOBAL(bool, rose__prev_keyboard_state[SDL_SCANCODE_COUNT])
 #define ROSE_COLOR_YELLOW ((uInt32) 0xFFFF00FF)
 #define ROSE_COLOR_TRANS  ((uInt32) 0xFFFFFF00)
 
-typedef struct ROSE_VertexSprite {
-	float position[2];
-	float texcoords[2];
-} ROSE_VertexSprite;
+typedef struct ROSE_Vertex2Dtex {
+	float xpos;
+	float ypos;
+	float xtex;
+	float ytex;
+} ROSE_Vertex2Dtex;
 
 typedef struct ROSE_Vertex2D {
-	float position[2];
+	float xpos;
+	float ypos;
 } ROSE_Vertex2D;
 
 typedef struct ROSE_Perlin {
 	uInt32 seed;
 	uInt32 divisions;
 	uInt32 layers;
-	float attenuation;
-	float division_growth;
+	float  attenuation;
+	float  division_growth;
 	uInt32 _width;
 	uInt32 _height;
 	float* _noise;
 } ROSE_Perlin;
 
 typedef struct ROSE_Image {
-	uInt32 _width;
-	uInt32 _height;
+	uInt32  _width;
+	uInt32  _height;
 	uInt32* _pixels;
 } ROSE_Image;
 
 typedef struct ROSE_Text {
-	uInt32 scale;
-	Int32 xpos;
-	Int32 ypos;
+	float  scale;
+	float  xpos;
+	float  ypos;
 	uInt32 color;
-	uInt32 _character_count;
+	char*  _string;
 	uInt32 _vertex_count;
+	uInt32 _character_count;
 	uInt32 _character_capacity;
-	char* _string;
 	SDL_GPUBuffer* _vertex_buffer;
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Text;
 
 typedef struct ROSE_Sprite {
-	uInt32 scale;
-	Int32 xpos;
-	Int32 ypos;
+	float  scale;
+	float  xpos;
+	float  ypos;
+	uInt32 color;
 	uInt32 _width;
 	uInt32 _height;
-	uInt32 color;
 	SDL_GPUTexture* _texture;
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Sprite;
 
 typedef struct ROSE_Button {
 	uInt32 scale;
-	Int32 xpos;
-	Int32 ypos;
+	Int32  xpos;
+	Int32  ypos;
 	uInt32 width;
 	uInt32 _width;
-	bool _curr_pressed;
-	bool _prev_pressed;
+	bool   _curr_pressed;
+	bool   _prev_pressed;
+	ROSE_Text _text;
 	ROSE_Sprite _sprite_normal;
 	ROSE_Sprite _sprite_pressed;
-	ROSE_Text _text;
 } ROSE_Button;
 
 typedef struct ROSE_Slider {
 	uInt32 scale;
-	Int32 xpos;
-	Int32 ypos;
+	Int32  xpos;
+	Int32  ypos;
 	uInt32 width;
 	float* subject;
-	float min;
-	float max;
+	float  min;
+	float  max;
 	uInt32 _width;
-	bool _curr_aquired;
-	bool _prev_aquired;
+	bool   _curr_aquired;
+	bool   _prev_aquired;
 	ROSE_Sprite _sprite_handle_normal;
 	ROSE_Sprite _sprite_handle_pressed;
 	ROSE_Sprite _sprite_bar;
@@ -470,18 +475,18 @@ typedef struct ROSE_Slider {
 
 typedef struct ROSE_Mesh {
 	uInt32 primitive;
-	float scale;
-	float xpos;
-	float ypos;
-	float diameter;
+	float  scale;
+	float  xpos;
+	float  ypos;
+	float  diameter;
 	uInt32 color;
-	uInt32 _num_vertices;
+	uInt32 _vertex_count;
 	uInt32 _vertex_capacity;
 	SDL_GPUBuffer* _vertex_buffer;
 	SDL_GPUTransferBuffer* _transfer_buffer;
 } ROSE_Mesh;
 
-void ROSE_Init(const char* title, uInt32 screen_width, uInt32 screen_height);
+void ROSE_Init(const char* title, uInt32 width, uInt32 height);
 void ROSE_Quit(void);
 
 void ROSE_WindowVSync(bool vsync);
@@ -521,8 +526,8 @@ ROSE_Text   ROSE_TextCreateEmpty(void);
 void        ROSE_TextDestroy(ROSE_Text* text);
 void        ROSE_TextUpdateString(ROSE_Text* text, const char* format, ...);
 void        ROSE_TextDraw(ROSE_Text* text);
-void        ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uInt32 num_characters);
-void        ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uInt32 num_characters);
+void        ROSE__TextWriteCharactersToVertices(ROSE_Vertex2Dtex* vertices, const char* string, uInt32 character_count);
+void        ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uInt32 character_count);
 
 ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image);
 ROSE_Sprite ROSE_SpriteCreateEmpty(uInt32 width, uInt32 height);

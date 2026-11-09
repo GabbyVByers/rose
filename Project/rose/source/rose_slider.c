@@ -13,17 +13,17 @@ ROSE_Slider ROSE_SliderCreate(void)
 	ROSE_Sprite sprite_handle_pressed = ROSE_SpriteCreateGUIBox(width, height, false);
 
 	return (ROSE_Slider) {
-		.scale = 1,
-		.xpos = 0,
-		.ypos = 0,
-		.width = 100,
-		._width = 0,
-		.subject = NULL,
-		.min = 0.0f,
-		.max = 1.0f,
-		._sprite_handle_normal = sprite_handle_normal,
+		.scale                  = 1,
+		.xpos                   = 0,
+		.ypos                   = 0,
+		.width                  = 100,
+		._width                 = 0,
+		.subject                = NULL,
+		.min                    = 0.0f,
+		.max                    = 1.0f,
+		._sprite_handle_normal  = sprite_handle_normal,
 		._sprite_handle_pressed = sprite_handle_pressed,
-		._sprite_bar = ROSE_SpriteCreateEmpty(1, 1),
+		._sprite_bar            = ROSE_SpriteCreateEmpty(1, 1),
 	};
 }
 

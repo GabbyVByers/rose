@@ -8,13 +8,13 @@
 ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 {
 	return (ROSE_Sprite) {
-		.scale = 1,
-		.xpos = 0,
-		.ypos = 0,
-		._width = image->_width,
-		._height = image->_height,
-		.color = ROSE_COLOR_WHITE,
-		._texture = ROSE__SDLCreateTexture(image),
+		.scale            = 1.0f,
+		.xpos             = 0.0f,
+		.ypos             = 0.0f,
+		.color            = ROSE_COLOR_WHITE,
+		._width           = image->_width,
+		._height          = image->_height,
+		._texture         = ROSE__SDLCreateTexture(image),
 		._transfer_buffer = NULL,
 	};
 }
@@ -22,13 +22,13 @@ ROSE_Sprite ROSE_SpriteCreate(ROSE_Image* image)
 ROSE_Sprite ROSE_SpriteCreateEmpty(uInt32 width, uInt32 height)
 {
 	return (ROSE_Sprite) {
-		.scale = 1,
-		.xpos = 0,
-		.ypos = 0,
-		._width = width,
-		._height = height,
-		.color = ROSE_COLOR_WHITE,
-		._texture = NULL,
+		.scale            = 1.0f,
+		.xpos             = 0.0f,
+		.ypos             = 0.0f,
+		.color            = ROSE_COLOR_WHITE,
+		._width           = width,
+		._height          = height,
+		._texture         = NULL,
 		._transfer_buffer = NULL,
 	};
 }
@@ -82,8 +82,8 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 
 	float w = (scaled_width / (float)rose_screen.width) * 2.0f;
 	float h = (scaled_height / (float)rose_screen.height) * 2.0f;
-	float x = -1.0f + (((float)sprite->xpos / (float)rose_screen.width) * 2.0f);
-	float y = 1.0f - (((float)sprite->ypos / (float)rose_screen.height) * 2.0f);
+	float x = -1.0f + ((sprite->xpos / (float)rose_screen.width) * 2.0f);
+	float y = 1.0f - ((sprite->ypos / (float)rose_screen.height) * 2.0f);
 
 	typedef struct Uniform {
 		float TransformMatrix[16];
@@ -117,22 +117,16 @@ void ROSE_SpriteDraw(ROSE_Sprite* sprite)
 
 ROSE_Sprite ROSE_SpriteCreateGUIBox(uInt32 width, uInt32 height, bool normal)
 {
-	const bool zero = (width != 0) && (height != 0);
-	if (zero) {
+	if ((width == 0) || (height == 0)) {
 		return ROSE_SpriteCreateEmpty(width, height);
 	}
-
-	ROSE_Image image = ROSE_ImageCreate(width, height);
 
 	const uInt32 color        = ROSE_COLOR(100, 100, 100, 255);
 	const uInt32 color_top    = (normal) ? ROSE_COLOR(135, 135, 135, 255) : ROSE_COLOR( 60,  60,  60, 255);
 	const uInt32 color_bottom = (normal) ? ROSE_COLOR( 70,  70,  70, 255) : ROSE_COLOR(135, 135, 135, 255);
 
-	for (uInt32 y = 0; y < height; y++) {
-		for (uInt32 x = 0; x < width; x++) {
-			ROSE_ImageSetPixel(&image, x, y, color);
-		}
-	}
+	ROSE_Image image = ROSE_ImageCreate(width, height);
+	ROSE_ImageFillColor(&image, color);
 
 	for (uInt32 y = 0; y < height; y++) {
 		ROSE_ImageSetPixel(&image, (width - 1), y, color_bottom);

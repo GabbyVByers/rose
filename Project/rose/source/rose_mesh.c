@@ -21,7 +21,7 @@ ROSE_Mesh ROSE_MeshCreateEmpty(void)
 		.ypos = 0.0f,
 		.diameter = 1.0f,
 		.color = ROSE_COLOR_WHITE,
-		._num_vertices = 0,
+		._vertex_count = 0,
 		._vertex_capacity = 0,
 		._vertex_buffer = NULL,
 		._transfer_buffer = NULL,
@@ -31,7 +31,7 @@ ROSE_Mesh ROSE_MeshCreateEmpty(void)
 void ROSE_MeshUpdateVertices(ROSE_Mesh* mesh, ROSE_Vertex2D* vertices, uInt32 vertex_count)
 {
 	ROSE__MeshReserveVertexCapacity(mesh, vertex_count);
-	mesh->_num_vertices = vertex_count;
+	mesh->_vertex_count = vertex_count;
 
 	if (vertex_count == 0) {
 		return;
@@ -77,7 +77,7 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 		ROSE_PANIC("ROSE_MeshDraw() called outside of a frame!");
 	}
 
-	if (mesh->_num_vertices == 0) {
+	if (mesh->_vertex_count == 0) {
 		return;
 	}
 
@@ -133,21 +133,21 @@ void ROSE_MeshDraw(ROSE_Mesh* mesh)
 		ROSE__SDLBindGraphicsPipeline(rose__triangles_pipeline);
 		SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
 		ROSE__SDLBindVertexBuffer(mesh->_vertex_buffer);
-		SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
+		SDL_DrawGPUPrimitives(rose__render_pass, mesh->_vertex_count, 1, 0, 0);
 	}
 
 	if (draw_lines) {
 		ROSE__SDLBindGraphicsPipeline(rose__lines_pipeline);
 		SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size);
 		ROSE__SDLBindVertexBuffer(mesh->_vertex_buffer);
-		SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
+		SDL_DrawGPUPrimitives(rose__render_pass, mesh->_vertex_count, 1, 0, 0);
 	}
 
 	if (draw_points) {
 		ROSE__SDLBindGraphicsPipeline(rose__points_pipeline);
 		SDL_PushGPUVertexUniformData(rose__command_buffer, 0, ((void*)&uniform), uniform_size_points);
 		ROSE__SDLBindVertexBuffer(mesh->_vertex_buffer);
-		SDL_DrawGPUPrimitives(rose__render_pass, mesh->_num_vertices, 1, 0, 0);
+		SDL_DrawGPUPrimitives(rose__render_pass, mesh->_vertex_count, 1, 0, 0);
 	}
 }
 

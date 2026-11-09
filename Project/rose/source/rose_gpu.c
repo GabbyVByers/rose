@@ -246,14 +246,14 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void)
 		.location = 0,
 		.buffer_slot = 0,
 		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
-		.offset = offsetof(ROSE_VertexSprite, position),
+		.offset = offsetof(ROSE_Vertex2Dtex, xpos),
 	};
 
 	SDL_GPUVertexAttribute texcoords_attribute = {
 		.location = 1,
 		.buffer_slot = 0,
 		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
-		.offset = offsetof(ROSE_VertexSprite, texcoords),
+		.offset = offsetof(ROSE_Vertex2Dtex, xtex),
 	};
 
 	SDL_GPUVertexAttribute vertex_attributes[2] = {
@@ -262,7 +262,7 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineSprite(void)
 	};
 
 	SDL_GPUVertexBufferDescription vertex_buffer_description = {
-		.pitch = sizeof(ROSE_VertexSprite),
+		.pitch = sizeof(ROSE_Vertex2Dtex),
 		.input_rate = SDL_GPU_VERTEXINPUTRATE_VERTEX,
 	};
 
@@ -284,7 +284,7 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineTriangles(void)
 		.location = 0,
 		.buffer_slot = 0,
 		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
-		.offset = offsetof(ROSE_Vertex2D, position),
+		.offset = offsetof(ROSE_Vertex2D, xpos),
 	};
 
 	SDL_GPUVertexBufferDescription vertex_buffer_description = {
@@ -310,7 +310,7 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelinePoints(void)
 		.location = 0,
 		.buffer_slot = 0,
 		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
-		.offset = offsetof(ROSE_Vertex2D, position),
+		.offset = offsetof(ROSE_Vertex2D, xpos),
 	};
 
 	SDL_GPUVertexBufferDescription vertex_buffer_description = {
@@ -336,7 +336,7 @@ SDL_GPUGraphicsPipeline* ROSE__SDLCreateGraphicsPipelineLines(void)
 		.location = 0,
 		.buffer_slot = 0,
 		.format = SDL_GPU_VERTEXELEMENTFORMAT_FLOAT2,
-		.offset = offsetof(ROSE_Vertex2D, position),
+		.offset = offsetof(ROSE_Vertex2D, xpos),
 	};
 
 	SDL_GPUVertexBufferDescription vertex_buffer_description = {

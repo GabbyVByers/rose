@@ -5,7 +5,7 @@
 
 #include "rose.h"
 
-void ROSE_Init(const char* title, uInt32 screen_width, uInt32 screen_height)
+void ROSE_Init(const char* title, uInt32 width, uInt32 height)
 {
 	bool vkdebug = false;
 	#if defined(ROSE_DEBUG)
@@ -13,8 +13,8 @@ void ROSE_Init(const char* title, uInt32 screen_width, uInt32 screen_height)
 	#endif
 
 	const uInt32 screen_min = 256;
-	rose_screen.width = (screen_width < screen_min) ? screen_min : screen_width;
-	rose_screen.height = (screen_height < screen_min) ? screen_min : screen_height;
+	rose_screen.width = (width < screen_min) ? screen_min : width;
+	rose_screen.height = (height < screen_min) ? screen_min : height;
 
 	SDL_Init(SDL_INIT_VIDEO);
 	rose__window = SDL_CreateWindow(title, (int)rose_screen.width, (int)rose_screen.height, SDL_WINDOW_RESIZABLE);
@@ -30,19 +30,19 @@ void ROSE_Init(const char* title, uInt32 screen_width, uInt32 screen_height)
 	rose__points_pipeline = ROSE__SDLCreateGraphicsPipelinePoints();
 	rose__lines_pipeline = ROSE__SDLCreateGraphicsPipelineLines();
 
-	ROSE_VertexSprite quad_vertices[] = {
-		{ { 0, 0 }, { 0, 1 } },
-		{ { 1, 0 }, { 1, 1 } },
-		{ { 1,-1 }, { 1, 0 } },
-		{ { 0, 0 }, { 0, 1 } },
-		{ { 1,-1 }, { 1, 0 } },
-		{ { 0,-1 }, { 0, 0 } },
+	ROSE_Vertex2Dtex quad_vertices[] = {
+		{ .xpos = 0.0f, .ypos =  0.0f, .xtex = 0.0f, .ytex = 1.0f },
+		{ .xpos = 1.0f, .ypos =  0.0f, .xtex = 1.0f, .ytex = 1.0f },
+		{ .xpos = 1.0f, .ypos = -1.0f, .xtex = 1.0f, .ytex = 0.0f },
+		{ .xpos = 0.0f, .ypos =  0.0f, .xtex = 0.0f, .ytex = 1.0f },
+		{ .xpos = 1.0f, .ypos = -1.0f, .xtex = 1.0f, .ytex = 0.0f },
+		{ .xpos = 0.0f, .ypos = -1.0f, .xtex = 0.0f, .ytex = 0.0f },
 	};
 
 	rose__sprite_quad_buffer = ROSE__SDLCreateVertexBuffer(
 		quad_vertices,
 		sizeof(quad_vertices) / sizeof(quad_vertices[0]),
-		sizeof(ROSE_VertexSprite)
+		sizeof(ROSE_Vertex2Dtex)
 	);
 
 	ROSE_Image ascii_image = ROSE_ImageLoad("textures/ascii.png");
@@ -77,33 +77,33 @@ void ROSE_Quit(void)
 	rose_screen = (ROSE_ScreenInfo) { 0 };
 	rose_mouse  = (ROSE_MouseInfo) { 0 };
 
-	rose__window = NULL;
-	rose__device = NULL;
-	rose__sampler = NULL;
+	rose__window        = NULL;
+	rose__device        = NULL;
+	rose__sampler       = NULL;
 	rose__ascii_texture = NULL;
 	rose__dummy_texture = NULL;
 
 	rose__sprite_quad_buffer = NULL;
-	rose__sprite_pipeline = NULL;
+	rose__sprite_pipeline    = NULL;
 	rose__triangles_pipeline = NULL;
-	rose__points_pipeline = NULL;
-	rose__lines_pipeline = NULL;
+	rose__points_pipeline    = NULL;
+	rose__lines_pipeline     = NULL;
 
-	rose__render_pass = NULL;
-	rose__swapchain_texture = NULL;
-	rose__command_buffer = NULL;
+	rose__render_pass         = NULL;
+	rose__swapchain_texture   = NULL;
+	rose__command_buffer      = NULL;
 	rose__copy_command_buffer = NULL;
-	rose__copy_pass = NULL;
-	rose__bound_pipeline = NULL;
+	rose__copy_pass           = NULL;
+	rose__bound_pipeline      = NULL;
 	rose__bound_vertex_buffer = NULL;
-	rose__bound_texture = NULL;
-	rose__present_mode = SDL_GPU_PRESENTMODE_VSYNC;
-	rose__present_mode_dirty = false;
+	rose__bound_texture       = NULL;
+	rose__present_mode        = SDL_GPU_PRESENTMODE_VSYNC;
+	rose__present_mode_dirty  = false;
 
 	rose__saved_mouse_px = 0.0f;
 	rose__saved_mouse_py = 0.0f;
-	rose__curr_mouse_state = 0;
-	rose__prev_mouse_state = 0;
+	rose__curr_mouse_state = 0u;
+	rose__prev_mouse_state = 0u;
 	memset(rose__curr_keyboard_state, false, sizeof(rose__curr_keyboard_state));
 	memset(rose__prev_keyboard_state, false, sizeof(rose__prev_keyboard_state));
 }

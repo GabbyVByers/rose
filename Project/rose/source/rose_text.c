@@ -24,16 +24,16 @@ ROSE_Text ROSE_TextCreate(const char* format, ...)
 ROSE_Text ROSE_TextCreateEmpty(void)
 {
 	return (ROSE_Text) {
-		.scale = 1,
-		.xpos = 0,
-		.ypos = 0,
-		.color = ROSE_COLOR_WHITE,
-		._character_count = 0,
-		._vertex_count = 0,
+		.scale               = 1.0f,
+		.xpos                = 0.0f,
+		.ypos                = 0.0f,
+		.color               = ROSE_COLOR_WHITE,
+		._string             = NULL,
+		._vertex_count       = 0,
+		._character_count    = 0,
 		._character_capacity = 0,
-		._string = NULL,
-		._vertex_buffer = NULL,
-		._transfer_buffer = NULL,
+		._vertex_buffer      = NULL,
+		._transfer_buffer    = NULL,
 	};
 }
 
@@ -77,7 +77,7 @@ void ROSE_TextUpdateString(ROSE_Text* text, const char* format, ...)
 	}
 
 	memcpy(text->_string, string, character_count);
-	ROSE_VertexSprite* vertices = SDL_MapGPUTransferBuffer(rose__device, text->_transfer_buffer, true);
+	ROSE_Vertex2Dtex* vertices = SDL_MapGPUTransferBuffer(rose__device, text->_transfer_buffer, true);
 	ROSE__TextWriteCharactersToVertices(vertices, string, character_count);
 	SDL_UnmapGPUTransferBuffer(rose__device, text->_transfer_buffer);
 
@@ -87,7 +87,7 @@ void ROSE_TextUpdateString(ROSE_Text* text, const char* format, ...)
 
 	SDL_GPUBufferRegion destination_buffer_region = {
 		.buffer = text->_vertex_buffer,
-		.size = text->_vertex_count * (uInt32)sizeof(ROSE_VertexSprite),
+		.size = text->_vertex_count * (uInt32)sizeof(ROSE_Vertex2Dtex),
 	};
 
 	SDL_UploadToGPUBuffer(ROSE__SDLAcquireCopyPass(), &source_buffer_location, &destination_buffer_region, true);
@@ -107,13 +107,13 @@ void ROSE_TextDraw(ROSE_Text* text)
 		return;
 	}
 
-	float scaled_width = (float)ROSE_ASCII_WIDTH * (float)text->scale;
-	float scaled_height = (float)ROSE_ASCII_HEIGHT * (float)text->scale;
+	float scaled_width = (float)ROSE_ASCII_WIDTH * text->scale;
+	float scaled_height = (float)ROSE_ASCII_HEIGHT * text->scale;
 
 	float w = (scaled_width / (float)rose_screen.width) * 2.0f;
 	float h = (scaled_height / (float)rose_screen.height) * 2.0f;
-	float x = -1.0f + (((float)text->xpos / (float)rose_screen.width) * 2.0f);
-	float y = 1.0f - (((float)text->ypos / (float)rose_screen.height) * 2.0f);
+	float x = -1.0f + ((text->xpos / (float)rose_screen.width) * 2.0f);
+	float y = 1.0f - ((text->ypos / (float)rose_screen.height) * 2.0f);
 
 	typedef struct Uniform {
 		float TransformMatrix[16];
@@ -145,26 +145,26 @@ void ROSE_TextDraw(ROSE_Text* text)
 	SDL_DrawGPUPrimitives(rose__render_pass, text->_vertex_count, 1, 0, 0);
 }
 
-void ROSE__TextWriteCharactersToVertices(ROSE_VertexSprite* vertices, const char* string, uInt32 num_characters)
+void ROSE__TextWriteCharactersToVertices(ROSE_Vertex2Dtex* vertices, const char* string, uInt32 character_count)
 {
 	const float w = (1.0f / (float)ROSE_ASCII_GLYPHS);
-	for (uInt32 i = 0; i < num_characters; i++) {
+	for (uInt32 i = 0; i < character_count; i++) {
 		uInt32 index = i * 6;
 		unsigned char c = (unsigned char)string[i];
 		uInt32 character_index = ((c >= 32) && (c <= 126)) ? (c - 32) : ('?' - 32);
 		float x = (w * (float)character_index);
-		vertices[index + 0] = (ROSE_VertexSprite){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
-		vertices[index + 1] = (ROSE_VertexSprite){ { (float)(i + 1),  0.0f }, { (float)(x + w), 1.0f } };
-		vertices[index + 2] = (ROSE_VertexSprite){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
-		vertices[index + 3] = (ROSE_VertexSprite){ { (float)(i + 0),  0.0f }, { (float)(x),     1.0f } };
-		vertices[index + 4] = (ROSE_VertexSprite){ { (float)(i + 1), -1.0f }, { (float)(x + w), 0.0f } };
-		vertices[index + 5] = (ROSE_VertexSprite){ { (float)(i + 0), -1.0f }, { (float)(x),     0.0f } };
+		vertices[index + 0] = (ROSE_Vertex2Dtex){ .xpos = (float)(i + 0), .ypos =  0.0f, .xtex = (float)(x),     .ytex = 1.0f };
+		vertices[index + 1] = (ROSE_Vertex2Dtex){ .xpos = (float)(i + 1), .ypos =  0.0f, .xtex = (float)(x + w), .ytex = 1.0f };
+		vertices[index + 2] = (ROSE_Vertex2Dtex){ .xpos = (float)(i + 1), .ypos = -1.0f, .xtex = (float)(x + w), .ytex = 0.0f };
+		vertices[index + 3] = (ROSE_Vertex2Dtex){ .xpos = (float)(i + 0), .ypos =  0.0f, .xtex = (float)(x),     .ytex = 1.0f };
+		vertices[index + 4] = (ROSE_Vertex2Dtex){ .xpos = (float)(i + 1), .ypos = -1.0f, .xtex = (float)(x + w), .ytex = 0.0f };
+		vertices[index + 5] = (ROSE_Vertex2Dtex){ .xpos = (float)(i + 0), .ypos = -1.0f, .xtex = (float)(x),     .ytex = 0.0f };
 	}
 }
 
-void ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uInt32 num_characters)
+void ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uInt32 character_count)
 {
-	if (num_characters <= text->_character_capacity) {
+	if (character_count <= text->_character_capacity) {
 		return;
 	}
 
@@ -174,11 +174,11 @@ void ROSE__TextReserveCharacterCapacity(ROSE_Text* text, uInt32 num_characters)
 		capacity = min_capacity;
 	}
 
-	while (capacity < num_characters) {
+	while (capacity < character_count) {
 		capacity *= 2;
 	}
 
-	uInt32 vertex_buffer_size = capacity * VERTS_PER_QUAD * (uInt32)sizeof(ROSE_VertexSprite);
+	uInt32 vertex_buffer_size = capacity * VERTS_PER_QUAD * (uInt32)sizeof(ROSE_Vertex2Dtex);
 
 	if (text->_vertex_buffer) {
 		SDL_ReleaseGPUBuffer(rose__device, text->_vertex_buffer);
